@@ -11,20 +11,17 @@ font-family:'Segoe UI',Arial;
 margin:0;
 background:linear-gradient(135deg,#0f172a,#1e3a8a);
 }
-
 .container{
 max-width:420px;
 margin:auto;
 padding:10px;
 }
-
 .card{
 background:white;
 border-radius:16px;
 padding:15px;
 box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
-
 .tabs{
 display:flex;
 background:#1e3a8a;
@@ -32,7 +29,6 @@ border-radius:12px 12px 0 0;
 overflow:hidden;
 margin-bottom:10px;
 }
-
 .tab-btn{
 flex:1;
 padding:12px;
@@ -41,23 +37,19 @@ background:transparent;
 color:white;
 font-weight:700;
 }
-
 .tab-btn.active{
 background:#3b82f6;
 }
-
 h2{
 text-align:center;
 color:#1e3a8a;
 }
-
 label{
 font-weight:700;
 font-size:13px;
 margin-top:8px;
 display:block;
 }
-
 select,input[type="number"]{
 width:100%;
 padding:10px;
@@ -66,12 +58,10 @@ border:1px solid #cbd5f5;
 margin-bottom:10px;
 font-weight:600;
 }
-
 input[type="number"]{
 text-align:center;
 font-size:16px;
 }
-
 .row{
 display:flex;
 justify-content:space-between;
@@ -79,11 +69,9 @@ align-items:center;
 border-bottom:1px solid #eee;
 padding:8px 0;
 }
-
 .row input{
 width:80px;
 }
-
 button{
 width:100%;
 padding:14px;
@@ -92,15 +80,13 @@ border-radius:12px;
 background:#1e3a8a;
 color:white;
 font-weight:700;
-margin-top:15px;
+margin-top:10px;
 }
-
 img{
 width:100%;
 border-radius:10px;
 margin-top:8px;
 }
-
 #catatan{
 width:100%;
 padding:12px;
@@ -135,8 +121,8 @@ resize:none;
 
 <label>Jenis</label>
 <select id="jenis">
-<option value="Masuk">Jajan Masuk</option>
-<option value="Sisa">Jajan Sisa</option>
+<option value="Masuk">Masuk</option>
+<option value="Sisa">Sisa</option>
 </select>
 
 <label>Tempat</label>
@@ -145,10 +131,8 @@ resize:none;
 <option>Akhwat</option>
 </select>
 
-<!-- ITEM -->
 <div id="dynamicItems"></div>
 
-<!-- SLOT -->
 <div class="row">
 <select id="slot1"><option value="">-- Pilih --</option></select>
 <input type="number" id="slot1_jumlah">
@@ -162,7 +146,8 @@ resize:none;
 <label>Catatan</label>
 <textarea id="catatan"></textarea>
 
-<button onclick="kirim()">Simpan</button>
+<button onclick="kirim()">💾 Simpan</button>
+<button onclick="kirimWA()">📤 Kirim ke WA</button>
 <button onclick="location.href='laporan.html'">📊 Lihat Laporan</button>
 <button onclick="location.href='setting.html'">⚙️ Setting</button>
 
@@ -172,14 +157,15 @@ resize:none;
 
 <script>
 
-// TAB
-function showTab(tab,e){
-document.getElementById("inputTab").style.display = "block";
-document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-e.target.classList.add("active");
+// FORMAT TANGGAL
+function formatTanggal(){
+let hari = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+let bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+let d = new Date();
+return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]}`;
 }
 
-// LOAD ITEM (FIX OBJECT, TANPA HARGA)
+// LOAD ITEM
 function loadItems(){
 let container=document.getElementById("dynamicItems");
 container.innerHTML="";
@@ -202,7 +188,7 @@ container.appendChild(div);
 });
 }
 
-// DROPDOWN (TANPA HARGA)
+// DROPDOWN
 function loadDropdownItems(){
 let slot1=document.getElementById("slot1");
 let slot2=document.getElementById("slot2");
@@ -215,14 +201,12 @@ snap.forEach(c=>{
 let data = c.val();
 let nama = data.nama || data;
 
-let opt1=document.createElement("option");
-opt1.value=nama;
-opt1.textContent=nama;
+let opt=document.createElement("option");
+opt.value=nama;
+opt.textContent=nama;
 
-let opt2=opt1.cloneNode(true);
-
-slot1.appendChild(opt1);
-slot2.appendChild(opt2);
+slot1.appendChild(opt.cloneNode(true));
+slot2.appendChild(opt.cloneNode(true));
 });
 });
 }
@@ -232,7 +216,6 @@ async function kirim(){
 
 let items=[];
 
-// item utama
 document.querySelectorAll("#dynamicItems input").forEach(input=>{
 let val=input.value;
 if(val && val!=0){
@@ -243,7 +226,6 @@ jumlah:Number(val)
 }
 });
 
-// slot
 function tambahSlot(idBarang,idJumlah){
 let barang=document.getElementById(idBarang).value;
 let jumlah=document.getElementById(idJumlah).value;
@@ -259,7 +241,6 @@ jumlah:Number(jumlah)
 tambahSlot("slot1","slot1_jumlah");
 tambahSlot("slot2","slot2_jumlah");
 
-// foto
 let fotoBase64="";
 let f=document.getElementById("foto").files[0];
 if(f){
@@ -276,11 +257,67 @@ foto:fotoBase64
 };
 
 await db.ref("jajan").push(data);
-alert("Berhasil");
+alert("Berhasil disimpan");
 location.reload();
 }
 
-// KOMPRES FOTO
+// KIRIM WA
+function kirimWA(){
+
+let teks = formatTanggal()+"\n";
+
+let jenis = document.getElementById("jenis").value;
+let tempat = document.getElementById("tempat").value;
+
+teks += `${jenis} - ${tempat}\n\n`;
+
+document.querySelectorAll("#dynamicItems input").forEach(input=>{
+let val=input.value;
+if(val && val!=0){
+teks += `${input.dataset.nama} ${val}\n`;
+}
+});
+
+function tambahSlot(idBarang,idJumlah){
+let barang=document.getElementById(idBarang).value;
+let jumlah=document.getElementById(idJumlah).value;
+
+if(barang && jumlah && jumlah!=0){
+teks += `${barang} ${jumlah}\n`;
+}
+}
+
+tambahSlot("slot1","slot1_jumlah");
+tambahSlot("slot2","slot2_jumlah");
+
+db.ref("config/wa").once("value",snap=>{
+let wa = snap.val() || {};
+
+let pilih = prompt(
+"Pilih nomor:\n1. "+(wa.wa1||"-")+
+"\n2. "+(wa.wa2||"-")+
+"\n3. "+(wa.wa3||"-")+
+"\n4. "+(wa.wa4||"-")
+);
+
+let tujuan="";
+if(pilih==1) tujuan=wa.wa1;
+if(pilih==2) tujuan=wa.wa2;
+if(pilih==3) tujuan=wa.wa3;
+if(pilih==4) tujuan=wa.wa4;
+
+if(!tujuan){
+alert("Nomor belum diisi");
+return;
+}
+
+let url = `https://wa.me/${tujuan}?text=${encodeURIComponent(teks)}`;
+window.open(url,"_blank");
+
+});
+}
+
+// KOMPRES GAMBAR
 function kompresGambar(file){
 return new Promise(resolve=>{
 let reader=new FileReader();
