@@ -99,6 +99,18 @@ margin-bottom:10px;
 <button class="btn-primary" onclick="saveTheme()">Simpan Warna</button>
 </div>
 
+<!-- 🔥 NOMOR WA -->
+<div class="label-box">
+<b>Nomor WhatsApp (Format: 628xxx)</b>
+
+<input type="text" id="wa1" placeholder="Nomor 1">
+<input type="text" id="wa2" placeholder="Nomor 2">
+<input type="text" id="wa3" placeholder="Nomor 3">
+<input type="text" id="wa4" placeholder="Nomor 4">
+
+<button class="btn-primary" onclick="saveWA()">Simpan Nomor WA</button>
+</div>
+
 <!-- 🔥 ITEM + HARGA -->
 <div class="label-box">
 <b>Item + Harga</b>
@@ -130,7 +142,7 @@ databaseURL:"https://maqshof-d5772-default-rtdb.asia-southeast1.firebasedatabase
 const db = firebase.database();
 let lastDeleted=null;
 
-// 🔥 LOAD ITEM + HARGA
+// 🔥 LOAD ITEM
 function loadItems(){
 let list=document.getElementById("listItem");
 list.innerHTML="Loading...";
@@ -164,7 +176,7 @@ list.appendChild(div);
 });
 }
 
-// 🔥 TAMBAH ITEM + HARGA
+// 🔥 TAMBAH ITEM
 function tambahItem(){
 let nama=document.getElementById("namaItem").value.trim();
 let harga=document.getElementById("hargaItem").value;
@@ -226,6 +238,19 @@ bg:bg
 alert("Warna disimpan");
 }
 
+// 🔥 SIMPAN WA
+function saveWA(){
+let data={
+wa1:document.getElementById("wa1").value,
+wa2:document.getElementById("wa2").value,
+wa3:document.getElementById("wa3").value,
+wa4:document.getElementById("wa4").value
+};
+
+db.ref("config/wa").set(data);
+alert("Nomor WA disimpan");
+}
+
 // 🔥 LOAD CONFIG
 function loadConfig(){
 db.ref("config").once("value",snap=>{
@@ -238,6 +263,13 @@ document.getElementById("labelApp").value=data.label;
 if(data.theme){
 document.getElementById("colorPrimary").value=data.theme.primary || "#1e3a8a";
 document.getElementById("colorBg").value=data.theme.bg || "#0f172a";
+}
+
+if(data.wa){
+document.getElementById("wa1").value=data.wa.wa1 || "";
+document.getElementById("wa2").value=data.wa.wa2 || "";
+document.getElementById("wa3").value=data.wa.wa3 || "";
+document.getElementById("wa4").value=data.wa.wa4 || "";
 }
 });
 }
