@@ -192,12 +192,24 @@ list.innerHTML="Belum ada data";
 return;
 }
 
-let arr=Object.values(snap.val()).reverse();
+// ✅ ambil data + key
+let arr=[];
+
+snap.forEach(c=>{
+  let d = c.val();
+  d.key = c.key;
+  arr.push(d);
+});
+
+arr.reverse();
 
 arr.forEach(d=>{
 
 let items = (d.items || [])
-.map(i=>`• ${i.barang} (${i.jumlah})`)
+.map((i,idx)=>`
+• ${i.barang} (${i.jumlah})
+<span onclick="editJumlah('${d.key}',${idx},${i.jumlah})" style="cursor:pointer"> ✏️</span>
+`)
 .join("<br>");
 
 let div=document.createElement("div");
@@ -205,7 +217,12 @@ div.className="laporan-card";
 
 div.innerHTML=`
 <div class="laporan-header">${d.jenis} - ${d.tempat}</div>
-<div class="laporan-tanggal">${formatTanggal(d.waktu)}</div>
+
+<div class="laporan-tanggal">
+${formatTanggal(d.waktu)}
+<span onclick="editTanggal('${d.key}','${d.waktu}')" style="cursor:pointer"> ✏️</span>
+</div>
+
 <div class="laporan-items">${items}</div>
 
 ${d.catatan ? `
@@ -372,6 +389,58 @@ document.body.style.background=
 `linear-gradient(135deg,${c.theme.bg},${c.theme.primary})`;
 }
 });
+// ================= EDIT JUMLAH =================
+function editJumlah(key, index, oldValue){
+
+let baru = prompt("Ubah jumlah", oldValue);
+if(baru===null) return;
+
+db.ref("jajan/"+key+"/items").once("value",snap=>{
+
+let items = snap.val() || [];
+
+if(!items[index]) return;
+
+items[index].jumlah = Number(baru);
+
+db.ref("jajan/"+key).update({
+  items: items
+}).then(()=>{
+  loadLaporan();
+});
+
+});
+
+}
+
+// ================= EDIT TANGGAL =================
+function editTanggal(key, oldWaktu){
+
+let dateObj = new Date(oldWaktu);
+
+let local = dateObj.getFullYear() + "-" +
+String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
+String(dateObj.getDate()).padStart(2,"0") + " " +
+String(dateObj.getHours()).padStart(2,"0") + ":" +
+String(dateObj.getMinutes()).padStart(2,"0");
+
+let input = prompt("Edit tanggal (YYYY-MM-DD HH:mm)", local);
+if(input===null) return;
+
+let newDate = new Date(input);
+
+if(isNaN(newDate)){
+  alert("Format salah!");
+  return;
+}
+
+db.ref("jajan/"+key).update({
+  waktu: newDate.toISOString()
+}).then(()=>{
+  loadLaporan();
+});
+
+}
 </script>
 
 </body>
