@@ -12,26 +12,21 @@ font-family:'Segoe UI',Arial;
 margin:0;
 background:linear-gradient(135deg,#0f172a,#1e3a8a);
 }
-
 .container{
 max-width:420px;
 margin:auto;
 padding:10px;
 }
-
 .card{
 background:white;
 border-radius:16px;
 padding:15px;
 box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
-
 h2{
 text-align:center;
 color:#1e3a8a;
 }
-
-/* TAB */
 .tab-btn{
 flex:1;
 padding:10px;
@@ -39,7 +34,6 @@ border:none;
 color:white;
 cursor:pointer;
 }
-
 .active{ background:#1e3a8a; }
 .nonactive{ background:#94a3b8; }
 
@@ -58,28 +52,17 @@ color:#1e3a8a;
 margin-bottom:6px;
 }
 
-.laporan-tanggal{
-display:inline-block;
-background:#e0edff;
-color:#1e3a8a;
-padding:4px 10px;
-border-radius:8px;
-font-size:14px;
-font-weight:700;
-margin-bottom:8px;
-}
-
 .laporan-items{
 margin-top:6px;
-line-height:1.5;
 font-weight:600;
 }
 
-img{
-width:100%;
-border-radius:10px;
-margin-top:8px;
+input[type="number"],input[type="datetime-local"]{
+padding:6px;
+border-radius:8px;
+border:1px solid #ccc;
 }
+
 </style>
 </head>
 
@@ -90,7 +73,7 @@ margin-top:8px;
 
 <h2>Laporan Jajan</h2>
 
-<button onclick="kembali()" style="
+<button onclick="location.href='index.html'" style="
 width:100%;
 padding:12px;
 border:none;
@@ -98,23 +81,11 @@ border-radius:10px;
 background:#64748b;
 color:white;
 font-weight:700;
-margin-bottom:10px;
-">
-⬅️ Kembali ke Input
+margin-bottom:10px;">
+⬅️ Kembali
 </button>
 
-<div style="display:flex;margin-bottom:10px;">
-  <button id="btnLaporan" class="tab-btn active" onclick="showTab('laporan')">Laporan</button>
-  <button id="btnRekap" class="tab-btn nonactive" onclick="showTab('rekap')">Rekap</button>
-</div>
-
-<div id="tabLaporan">
-  <div id="listLaporan">Loading...</div>
-</div>
-
-<div id="tabRekap" style="display:none;">
-  <div id="rekapHarian">Loading...</div>
-</div>
+<div id="listLaporan">Loading...</div>
 
 </div>
 </div>
@@ -123,33 +94,7 @@ margin-bottom:10px;
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
-// =================== NAV ===================
-function kembali(){
-  window.location.href = "index.html";
-}
 
-// =================== TAB ===================
-function showTab(tab){
-  const laporan = document.getElementById("tabLaporan");
-  const rekap = document.getElementById("tabRekap");
-
-  const btnLaporan = document.getElementById("btnLaporan");
-  const btnRekap = document.getElementById("btnRekap");
-
-  if(tab==="laporan"){
-    laporan.style.display="block";
-    rekap.style.display="none";
-    btnLaporan.className="tab-btn active";
-    btnRekap.className="tab-btn nonactive";
-  }else{
-    laporan.style.display="none";
-    rekap.style.display="block";
-    btnLaporan.className="tab-btn nonactive";
-    btnRekap.className="tab-btn active";
-  }
-}
-
-// =================== FIREBASE ===================
 const firebaseConfig={
 databaseURL:"https://maqshof-d5772-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
@@ -157,27 +102,7 @@ databaseURL:"https://maqshof-d5772-default-rtdb.asia-southeast1.firebasedatabase
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-// =================== FORMAT ===================
-function formatTanggal(waktu){
-let date = new Date(waktu);
-
-let hari = date.toLocaleDateString("id-ID",{weekday:"long"});
-let tanggal = date.toLocaleDateString("id-ID",{day:"numeric", month:"long", year:"numeric"});
-let jam = date.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
-
-return `${hari}, ${tanggal} - ${jam}`;
-}
-
-function formatTanggalHari(waktu){
-let date = new Date(waktu);
-
-let hari = date.toLocaleDateString("id-ID",{weekday:"long"});
-let tanggal = date.toLocaleDateString("id-ID",{day:"numeric", month:"long", year:"numeric"});
-
-return `${hari}, ${tanggal}`;
-}
-
-// =================== LAPORAN ===================
+// ================= LOAD =================
 function loadLaporan(){
 
 let list=document.getElementById("listLaporan");
@@ -195,34 +120,39 @@ return;
 let arr=[];
 
 snap.forEach(c=>{
-  arr.push({
-    key:c.key,
-    data:c.val()
-  });
+arr.push({key:c.key,data:c.val()});
 });
 
 arr.reverse();
 
 arr.forEach(obj=>{
 
-let d = obj.data;
-let key = obj.key;
+let d=obj.data;
+let key=obj.key;
 
-let items = (d.items || [])
-.map(i=>`• ${i.barang} (${i.jumlah})`)
-.join("<br>");
+// ITEM
+let items=(d.items||[]).map((i,idx)=>`
+<div style="display:flex;justify-content:space-between;margin:4px 0;">
+<span>${i.barang}</span>
+<input type="number" value="${i.jumlah}" 
+onchange="updateJumlah('${key}',${idx},this.value)">
+</div>
+`).join("");
 
 let div=document.createElement("div");
 div.className="laporan-card";
 
 div.innerHTML=`
 <div class="laporan-header">${d.jenis} - ${d.tempat}</div>
-<div class="laporan-tanggal">${formatTanggal(d.waktu)}</div>
+
+<input type="datetime-local" 
+value="${formatInputDate(d.waktu)}"
+onchange="updateTanggal('${key}',this.value)"
+style="width:100%;margin-bottom:6px;">
+
 <div class="laporan-items">${items}</div>
 
-${d.catatan ? `<div style="margin-top:8px;color:red">Catatan: ${d.catatan}</div>`:""}
-
-<button onclick="editData('${key}')">✏️ Edit</button>
+${d.catatan ? `<div style="color:red">Catatan: ${d.catatan}</div>`:""}
 `;
 
 list.appendChild(div);
@@ -232,211 +162,47 @@ list.appendChild(div);
 });
 }
 
-// =================== REKAP (FINAL FIX) ===================
-function loadRekap(){
+// ================= FORMAT =================
+function formatInputDate(waktu){
+let d=new Date(waktu);
 
-let container=document.getElementById("rekapHarian");
-container.innerHTML="Loading...";
-
-// ambil harga item
-db.ref("items").once("value",snapItem=>{
-
-let hargaMap = {};
-
-if(snapItem.exists()){
-snapItem.forEach(c=>{
-let d = c.val();
-let nama = (d.nama || "").toLowerCase().trim();
-hargaMap[nama] = Number(d.harga || 0);
-});
+return d.getFullYear()+"-"+
+String(d.getMonth()+1).padStart(2,"0")+"-"+
+String(d.getDate()).padStart(2,"0")+"T"+
+String(d.getHours()).padStart(2,"0")+":"+
+String(d.getMinutes()).padStart(2,"0");
 }
 
-// ambil data jajan
-db.ref("jajan").once("value",snap=>{
+// ================= UPDATE =================
+function updateJumlah(key,index,value){
 
-if(!snap.exists()){
-container.innerHTML="Belum ada data";
+let jumlah=Number(value);
+
+if(isNaN(jumlah)||jumlah<0){
+alert("Jumlah tidak valid");
+loadLaporan();
 return;
 }
 
-let data=Object.values(snap.val());
-let grup={};
-
-data.forEach(d=>{
-
-if(!d.waktu) return;
-
-let dateObj = new Date(d.waktu);
-if(isNaN(dateObj)) return;
-
-let key = dateObj.toLocaleDateString("id-ID", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit"
-});
-
-let label = formatTanggalHari(dateObj);
-
-if(!grup[key]){
-grup[key]={
-label: label,
-masukIkhwan:0,
-masukAkhwat:0,
-sisaIkhwan:0,
-sisaAkhwat:0,
-totalUang:0
-};
+db.ref("jajan/"+key+"/items/"+index+"/jumlah").set(jumlah);
 }
 
-let jenis = (d.jenis || "").toLowerCase();
-let tempat = (d.tempat || "").toLowerCase();
+function updateTanggal(key,value){
 
-// loop item
-(d.items || []).forEach(i=>{
+let d=new Date(value);
 
-let nama = (i.barang || "").toLowerCase().trim();
-let jumlah = Number(i.jumlah || 0);
-let harga = hargaMap[nama] || 0;
-
-let subtotal = jumlah * harga;
-
-// masuk
-if(jenis.includes("masuk") && tempat.includes("ikhwan")){
-  grup[key].masukIkhwan += jumlah;
-  grup[key].totalUang += subtotal;
-}
-
-if(jenis.includes("masuk") && tempat.includes("akhwat")){
-  grup[key].masukAkhwat += jumlah;
-  grup[key].totalUang += subtotal;
-}
-
-// sisa
-if(jenis.includes("sisa") && tempat.includes("ikhwan")){
-  grup[key].sisaIkhwan += jumlah;
-}
-
-if(jenis.includes("sisa") && tempat.includes("akhwat")){
-  grup[key].sisaAkhwat += jumlah;
-}
-
-});
-
-});
-
-// render
-container.innerHTML="";
-
-Object.keys(grup)
-.sort((a,b)=> new Date(b) - new Date(a))
-.forEach(key=>{
-
-let g = grup[key];
-
-let terjual = (g.masukIkhwan + g.masukAkhwat) - (g.sisaIkhwan + g.sisaAkhwat);
-if(terjual < 0) terjual = 0;
-
-let div=document.createElement("div");
-div.className="laporan-card";
-
-div.innerHTML=`
-<div class="laporan-header">Rekap</div>
-<div class="laporan-tanggal">${g.label}</div>
-
-<div class="laporan-items">
-Masuk Ikhwan: ${g.masukIkhwan}<br>
-Masuk Akhwat: ${g.masukAkhwat}<br>
-Sisa Ikhwan: ${g.sisaIkhwan}<br>
-Sisa Akhwat: ${g.sisaAkhwat}<br><br>
-
-<b>Terjual: ${terjual}</b><br>
-<b>Total: Rp ${g.totalUang.toLocaleString("id-ID")}</b>
-</div>
-`;
-
-container.appendChild(div);
-
-});
-
-});
-
-});
-}
-
-// =================== INIT ===================
+if(isNaN(d)){
+alert("Tanggal salah");
 loadLaporan();
-loadRekap();
-
-db.ref("config").once("value",snap=>{
-let c=snap.val();
-if(!c) return;
-
-if(c.label){
-document.querySelector("h2").innerText="Laporan "+c.label;
+return;
 }
 
-if(c.theme){
-document.body.style.background=
-`linear-gradient(135deg,${c.theme.bg},${c.theme.primary})`;
-}
-});
-function editData(key){
-
-db.ref("jajan/"+key).once("value",snap=>{
-
-let d = snap.val();
-
-// 🔥 FORMAT TANGGAL BIAR ENAK DIEDIT
-let dateObj = new Date(d.waktu);
-let local = dateObj.getFullYear() + "-" +
-String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
-String(dateObj.getDate()).padStart(2,"0") + " " +
-String(dateObj.getHours()).padStart(2,"0") + ":" +
-String(dateObj.getMinutes()).padStart(2,"0");
-
-// =======================
-let jenis = prompt("Jenis (Masuk/Sisa)", d.jenis);
-if(jenis===null) return;
-
-let tempat = prompt("Tempat (Ikhwan/Akhwat)", d.tempat);
-if(tempat===null) return;
-
-let catatan = prompt("Catatan", d.catatan || "");
-
-let waktuInput = prompt("Tanggal (YYYY-MM-DD HH:mm)", local);
-if(waktuInput===null) return;
-
-// 🔥 VALIDASI TANGGAL
-let newDate = new Date(waktuInput);
-if(isNaN(newDate)){
-  alert("Format tanggal salah!");
-  return;
+db.ref("jajan/"+key+"/waktu").set(d.toISOString());
 }
 
-// =======================
-// ITEM
-let barang = prompt("Nama barang", d.items?.[0]?.barang || "");
-let jumlah = prompt("Jumlah", d.items?.[0]?.jumlah || 0);
+// ================= INIT =================
+loadLaporan();
 
-// =======================
-// SIMPAN
-db.ref("jajan/"+key).update({
-  jenis: jenis,
-  tempat: tempat,
-  catatan: catatan,
-  waktu: newDate.toISOString(),
-  items: [{
-    barang: barang,
-    jumlah: Number(jumlah)
-  }]
-}).then(()=>{
-  alert("Berhasil diupdate");
-  loadLaporan();
-});
-
-});
-}
-  
 </script>
 
 </body>
