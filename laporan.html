@@ -192,7 +192,7 @@ list.innerHTML="Belum ada data";
 return;
 }
 
-// ✅ ambil data + key
+// ambil data + key
 let arr=[];
 
 snap.forEach(c=>{
@@ -206,24 +206,27 @@ arr.reverse();
 arr.forEach(d=>{
 
 let items = (d.items || [])
-.map((i,idx)=>`
-• ${i.barang} (${i.jumlah})
-<span onclick="editJumlah('${d.key}',${idx},${i.jumlah})" style="cursor:pointer"> ✏️</span>
-`)
+.map(i=>`• ${i.barang} (${i.jumlah})`)
 .join("<br>");
 
 let div=document.createElement("div");
 div.className="laporan-card";
 
 div.innerHTML=`
-<div class="laporan-header">${d.jenis} - ${d.tempat}</div>
-
-<div class="laporan-tanggal">
-${formatTanggal(d.waktu)}
-<span onclick="editTanggal('${d.key}','${d.waktu}')" style="cursor:pointer"> ✏️</span>
+<div class="laporan-header">
+${d.jenis} - ${d.tempat}
+<span onclick="toggleEdit('${d.key}')" style="cursor:pointer;float:right">✏️</span>
 </div>
 
-<div class="laporan-items">${items}</div>
+<div class="laporan-tanggal" id="tgl-${d.key}">
+${formatTanggal(d.waktu)}
+</div>
+
+<div class="laporan-items" id="items-${d.key}">
+${items}
+</div>
+
+<div id="edit-${d.key}" style="display:none;margin-top:10px"></div>
 
 ${d.catatan ? `
 <div style="margin-top:8px;font-weight:700;color:#dc2626">
@@ -441,6 +444,121 @@ db.ref("jajan/"+key).update({
 });
 
 }
+
+function toggleEdit(key){
+
+let box = document.getElementById("edit-"+key);
+
+// toggle buka tutup
+if(box.style.display==="block"){
+  box.style.display="none";
+  box.innerHTML="";
+  return;
+}
+
+// ambil data
+db.ref("jajan/"+key).once("value",snap=>{
+
+let d = snap.val();
+
+// format tanggal ke input
+let dateObj = new Date(d.waktu);
+let local = dateObj.getFullYear() + "-" +
+String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
+String(dateObj.getDate()).padStart(2,"0") + "T" +
+String(dateObj.getHours()).padStart(2,"0") + ":" +
+String(dateObj.getMinutes()).padStart(2,"0");
+
+// item input rapi
+let itemsHTML = (d.items || []).map((i,idx)=>`
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+  <span>${i.barang}</span>
+  <input type="number" value="${i.jumlah}" 
+    id="jml-${key}-${idx}" 
+    style="width:70px;padding:4px;border-radius:6px;border:1px solid #ccc">
+</div>
+`).join("");
+
+// tampilan edit (lebih clean)
+box.innerHTML=`
+<div style="
+background:#f8fafc;
+padding:10px;
+border-radius:10px;
+border:1px solid #e2e8f0;
+">
+
+<div style="margin-bottom:8px;font-weight:700;color:#1e3a8a">
+Edit Data
+</div>
+
+<div style="margin-bottom:8px">
+<label style="font-size:13px">Tanggal</label><br>
+<input type="datetime-local" id="tglEdit-${key}" value="${local}"
+style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc">
+</div>
+
+<div style="margin-top:6px;font-size:13px;margin-bottom:4px">Jumlah Item</div>
+
+${itemsHTML}
+
+<button onclick="simpanEdit('${key}')" style="
+margin-top:10px;
+padding:10px;
+width:100%;
+border:none;
+background:#1e3a8a;
+color:white;
+border-radius:8px;
+font-weight:700;
+">
+💾 Simpan
+</button>
+
+</div>
+`;
+
+box.style.display="block";
+
+});
+}
+
+
+// ================= SIMPAN =================
+function simpanEdit(key){
+
+db.ref("jajan/"+key).once("value",snap=>{
+
+let d = snap.val();
+let items = d.items || [];
+
+// ambil tanggal
+let tglInput = document.getElementById("tglEdit-"+key).value;
+let newDate = new Date(tglInput);
+
+if(isNaN(newDate)){
+  alert("Tanggal salah!");
+  return;
+}
+
+// ambil jumlah item
+items.forEach((i,idx)=>{
+  let val = document.getElementById(`jml-${key}-${idx}`).value;
+  items[idx].jumlah = Number(val || 0);
+});
+
+// simpan
+db.ref("jajan/"+key).update({
+  waktu: newDate.toISOString(),
+  items: items
+}).then(()=>{
+  alert("Berhasil diupdate");
+  loadLaporan();
+});
+
+});
+}
+
 </script>
 
 </body>
