@@ -192,9 +192,21 @@ list.innerHTML="Belum ada data";
 return;
 }
 
-let arr=Object.values(snap.val()).reverse();
+let arr=[];
 
-arr.forEach(d=>{
+snap.forEach(c=>{
+  arr.push({
+    key:c.key,
+    data:c.val()
+  });
+});
+
+arr.reverse();
+
+arr.forEach(obj=>{
+
+let d = obj.data;
+let key = obj.key;
 
 let items = (d.items || [])
 .map(i=>`• ${i.barang} (${i.jumlah})`)
@@ -208,13 +220,9 @@ div.innerHTML=`
 <div class="laporan-tanggal">${formatTanggal(d.waktu)}</div>
 <div class="laporan-items">${items}</div>
 
-${d.catatan ? `
-<div style="margin-top:8px;font-weight:700;color:#dc2626">
-Catatan: ${d.catatan}
-</div>
-` : ""}
+${d.catatan ? `<div style="margin-top:8px;color:red">Catatan: ${d.catatan}</div>`:""}
 
-${d.foto ? `<img src="${d.foto}">` : ""}
+<button onclick="editData('${key}')">✏️ Edit</button>
 `;
 
 list.appendChild(div);
@@ -372,6 +380,63 @@ document.body.style.background=
 `linear-gradient(135deg,${c.theme.bg},${c.theme.primary})`;
 }
 });
+function editData(key){
+
+db.ref("jajan/"+key).once("value",snap=>{
+
+let d = snap.val();
+
+// 🔥 FORMAT TANGGAL BIAR ENAK DIEDIT
+let dateObj = new Date(d.waktu);
+let local = dateObj.getFullYear() + "-" +
+String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
+String(dateObj.getDate()).padStart(2,"0") + " " +
+String(dateObj.getHours()).padStart(2,"0") + ":" +
+String(dateObj.getMinutes()).padStart(2,"0");
+
+// =======================
+let jenis = prompt("Jenis (Masuk/Sisa)", d.jenis);
+if(jenis===null) return;
+
+let tempat = prompt("Tempat (Ikhwan/Akhwat)", d.tempat);
+if(tempat===null) return;
+
+let catatan = prompt("Catatan", d.catatan || "");
+
+let waktuInput = prompt("Tanggal (YYYY-MM-DD HH:mm)", local);
+if(waktuInput===null) return;
+
+// 🔥 VALIDASI TANGGAL
+let newDate = new Date(waktuInput);
+if(isNaN(newDate)){
+  alert("Format tanggal salah!");
+  return;
+}
+
+// =======================
+// ITEM
+let barang = prompt("Nama barang", d.items?.[0]?.barang || "");
+let jumlah = prompt("Jumlah", d.items?.[0]?.jumlah || 0);
+
+// =======================
+// SIMPAN
+db.ref("jajan/"+key).update({
+  jenis: jenis,
+  tempat: tempat,
+  catatan: catatan,
+  waktu: newDate.toISOString(),
+  items: [{
+    barang: barang,
+    jumlah: Number(jumlah)
+  }]
+}).then(()=>{
+  alert("Berhasil diupdate");
+  loadLaporan();
+});
+
+});
+}
+  
 </script>
 
 </body>
