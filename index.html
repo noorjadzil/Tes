@@ -292,10 +292,9 @@ foto:fotoBase64
 
 await db.ref("jajan").push(data);
 
-// 🔥 AUTO KIRIM WA
+// 🔥 KIRIM WA / GROUP
 let selected = document.querySelector('input[name="wa"]:checked');
 
-if(selected){
 let teks = formatTanggal()+"\n";
 teks += `${data.jenis} - ${data.tempat}\n\n`;
 
@@ -303,7 +302,30 @@ data.items.forEach(i=>{
 teks += `${i.barang} ${i.jumlah}\n`;
 });
 
-let url = `https://wa.me/${selected.value}?text=${encodeURIComponent(teks)}`;
+if(data.catatan){
+teks += `\nCatatan: ${data.catatan}\n`;
+}
+
+teks += "\n— MAQSHOF —";
+
+// Cara terbaik untuk kirim ke GROUP WA:
+// Di HP akan muncul menu share, lalu pilih WhatsApp dan pilih grup.
+if(navigator.share){
+try{
+await navigator.share({
+title:"Laporan MAQSHOF",
+text:teks
+});
+}catch(err){
+console.log("Share dibatalkan", err);
+}
+}else{
+let url;
+if(selected){
+url = `https://wa.me/${selected.value}?text=${encodeURIComponent(teks)}`;
+}else{
+url = `https://wa.me/?text=${encodeURIComponent(teks)}`;
+}
 window.open(url,"_blank");
 }
 
