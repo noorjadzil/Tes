@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="manifest.json">
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
 <style>
 body{
 font-family:'Segoe UI',Arial;
@@ -68,9 +70,20 @@ justify-content:space-between;
 align-items:center;
 border-bottom:1px solid #eee;
 padding:8px 0;
+gap:8px;
 }
 .row input{
 width:80px;
+}
+.drag-handle{
+font-size:20px;
+cursor:grab;
+color:#64748b;
+padding:4px;
+}
+.item-name{
+flex:1;
+font-weight:700;
 }
 button{
 width:100%;
@@ -98,6 +111,36 @@ font-weight:600;
 box-sizing:border-box;
 resize:none;
 }
+.jenis-box{
+display:flex;
+gap:8px;
+margin:8px 0 12px;
+}
+.jenis-box button{
+margin-top:0;
+background:#e5e7eb;
+color:#1e293b;
+}
+.jenis-box button.active{
+background:#1e3a8a;
+color:white;
+}
+.crop-area{
+display:none;
+margin-top:10px;
+}
+.crop-area img{
+max-height:350px;
+object-fit:contain;
+}
+.small-btn{
+background:#16a34a;
+}
+.info{
+font-size:12px;
+color:#64748b;
+margin-top:4px;
+}
 </style>
 </head>
 
@@ -116,14 +159,20 @@ resize:none;
 <h2>Input Jajan</h2>
 
 <label>Foto</label>
-<input type="file" id="foto" accept="image/*">
-<img id="preview" style="display:none">
+<input type="file" id="foto" accept="image/*" capture="environment">
+<div class="info">Ambil foto langsung dari kamera, lalu bisa dipotong agar pas.</div>
+
+<div class="crop-area" id="cropArea">
+<img id="preview">
+<button class="small-btn" type="button" onclick="pakaiHasilCrop()">✅ Pakai Foto Ini</button>
+</div>
 
 <label>Jenis</label>
-<select id="jenis">
-<option value="Masuk">Masuk</option>
-<option value="Sisa">Sisa</option>
-</select>
+<div class="jenis-box">
+<button type="button" id="btnMasuk" class="active" onclick="setJenis('Masuk')">Masuk</button>
+<button type="button" id="btnSisa" onclick="setJenis('Sisa')">Sisa</button>
+</div>
+<input type="hidden" id="jenis" value="Masuk">
 
 <label>Tempat</label>
 <select id="tempat">
@@ -131,6 +180,7 @@ resize:none;
 <option>Akhwat</option>
 </select>
 
+<div class="info">Item bisa digeser dari bawah ke atas sesuai kebutuhan.</div>
 <div id="dynamicItems"></div>
 
 <div class="row">
@@ -146,7 +196,6 @@ resize:none;
 <label>Catatan</label>
 <textarea id="catatan"></textarea>
 
-<!-- 🔥 TAMBAHAN PILIH WA -->
 <label>Pilih Kirim ke WA</label>
 <div id="pilihWA"></div>
 
@@ -158,7 +207,12 @@ resize:none;
 </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+
 <script>
+let cropper = null;
+let fotoBase64Final = "";
 
 // FORMAT TANGGAL
 function formatTanggal(){
@@ -168,26 +222,125 @@ let d = new Date();
 return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]}`;
 }
 
+// PILIH JENIS SEKALI SENTUH
+function setJenis(jenis){
+document.getElementById("jenis").value = jenis;
+
+document.getElementById("btnMasuk").classList.remove("active");
+document.getElementById("btnSisa").classList.remove("active");
+
+if(jenis === "Masuk"){
+document.getElementById("btnMasuk").classList.add("active");
+}else{
+document.getElementById("btnSisa").classList.add("active");
+}
+}
+
+// FOTO + CROP
+document.getElementById("foto").addEventListener("change", function(){
+let file = this.files[0];
+if(!file) return;
+
+let reader = new FileReader();
+reader.onload = function(e){
+let preview = document.getElementById("preview");
+preview.src = e.target.result;
+document.getElementById("cropArea").style.display = "block";
+
+if(cropper){
+cropper.destroy();
+}
+
+cropper = new Cropper(preview, {
+aspectRatio: NaN,
+viewMode: 1,
+autoCropArea: 1,
+background: false
+});
+};
+reader.readAsDataURL(file);
+});
+
+function pakaiHasilCrop(){
+if(!cropper) return;
+
+let canvas = cropper.getCroppedCanvas({
+width: 600,
+imageSmoothingQuality: "high"
+});
+
+fotoBase64Final = canvas.toDataURL("image/jpeg", 0.6);
+
+let preview = document.getElementById("preview");
+preview.src = fotoBase64Final;
+
+cropper.destroy();
+cropper = null;
+
+alert("Foto siap digunakan");
+}
+
 // LOAD ITEM
 function loadItems(){
 let container=document.getElementById("dynamicItems");
 container.innerHTML="";
 
 db.ref("items").once("value",snap=>{
+let dataItems = [];
+
 snap.forEach(c=>{
 let data = c.val();
 let nama = data.nama || data;
+let urutan = data.urutan || 9999;
 
+dataItems.push({
+key:c.key,
+nama:nama,
+urutan:urutan
+});
+});
+
+dataItems.sort((a,b)=>a.urutan-b.urutan);
+
+dataItems.forEach(item=>{
 let div=document.createElement("div");
 div.className="row";
+div.setAttribute("data-key", item.key);
+div.setAttribute("data-nama", item.nama);
 
 div.innerHTML=`
-<span>${nama}</span>
-<input type="number" data-nama="${nama}">
+<span class="drag-handle">☰</span>
+<span class="item-name">${item.nama}</span>
+<input type="number" data-nama="${item.nama}">
 `;
 
 container.appendChild(div);
 });
+
+aktifkanGeserItem();
+});
+}
+
+// ITEM BISA DIGESER
+function aktifkanGeserItem(){
+new Sortable(document.getElementById("dynamicItems"), {
+animation:150,
+handle:".drag-handle",
+onEnd: function(){
+simpanUrutanItem();
+}
+});
+}
+
+// SIMPAN URUTAN ITEM KE FIREBASE
+function simpanUrutanItem(){
+let rows = document.querySelectorAll("#dynamicItems .row");
+
+rows.forEach((row,index)=>{
+let key = row.getAttribute("data-key");
+if(key){
+db.ref("items/" + key + "/urutan").set(index + 1);
+}
 });
 }
 
@@ -200,13 +353,25 @@ slot1.innerHTML='<option value="">-- Pilih --</option>';
 slot2.innerHTML='<option value="">-- Pilih --</option>';
 
 db.ref("items").once("value",snap=>{
+let dataItems = [];
+
 snap.forEach(c=>{
 let data = c.val();
 let nama = data.nama || data;
+let urutan = data.urutan || 9999;
 
+dataItems.push({
+nama:nama,
+urutan:urutan
+});
+});
+
+dataItems.sort((a,b)=>a.urutan-b.urutan);
+
+dataItems.forEach(item=>{
 let opt=document.createElement("option");
-opt.value=nama;
-opt.textContent=nama;
+opt.value=item.nama;
+opt.textContent=item.nama;
 
 slot1.appendChild(opt.cloneNode(true));
 slot2.appendChild(opt.cloneNode(true));
@@ -214,7 +379,7 @@ slot2.appendChild(opt.cloneNode(true));
 });
 }
 
-// 🔥 LOAD NOMOR WA
+// LOAD NOMOR WA
 function loadWAOptions(){
 let container = document.getElementById("pilihWA");
 container.innerHTML="Loading...";
@@ -275,10 +440,13 @@ jumlah:Number(jumlah)
 tambahSlot("slot1","slot1_jumlah");
 tambahSlot("slot2","slot2_jumlah");
 
-let fotoBase64="";
+let fotoBase64 = fotoBase64Final;
+
+if(!fotoBase64){
 let f=document.getElementById("foto").files[0];
 if(f){
 fotoBase64=await kompresGambar(f);
+}
 }
 
 let data={
@@ -292,7 +460,7 @@ foto:fotoBase64
 
 await db.ref("jajan").push(data);
 
-// 🔥 KIRIM WA / GROUP
+// KIRIM WA / GROUP
 let selected = document.querySelector('input[name="wa"]:checked');
 
 let teks = formatTanggal()+"\n";
@@ -308,8 +476,6 @@ teks += `\nCatatan: ${data.catatan}\n`;
 
 teks += "\n— MAQSHOF —";
 
-// Cara terbaik untuk kirim ke GROUP WA:
-// Di HP akan muncul menu share, lalu pilih WhatsApp dan pilih grup.
 if(navigator.share){
 try{
 await navigator.share({
@@ -354,6 +520,10 @@ reader.readAsDataURL(file);
 });
 }
 
+function showTab(tab,event){
+document.querySelectorAll(".tab-btn").forEach(btn=>btn.classList.remove("active"));
+event.target.classList.add("active");
+}
 </script>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -368,7 +538,7 @@ const db=firebase.database();
 window.onload=function(){
 loadItems();
 loadDropdownItems();
-loadWAOptions(); // 🔥 tambahan
+loadWAOptions();
 }
 
 // CONFIG
