@@ -159,7 +159,11 @@ margin-top:4px;
 <h2>Input Jajan</h2>
 
 <label>Foto</label>
-<input type="file" id="foto" accept="image/*" capture="environment">
+<label>Foto dari Kamera</label>
+<input type="file" id="fotoKamera" accept="image/*" capture="environment">
+
+<label>Foto dari Galeri</label>
+<input type="file" id="fotoGaleri" accept="image/*">
 <div class="info">Ambil foto langsung dari kamera, lalu bisa dipotong agar pas.</div>
 
 <div class="crop-area" id="cropArea">
@@ -237,7 +241,10 @@ document.getElementById("btnSisa").classList.add("active");
 }
 
 // FOTO + CROP
-document.getElementById("foto").addEventListener("change", function(){
+document.getElementById("fotoKamera").addEventListener("change", handleFoto);
+document.getElementById("fotoGaleri").addEventListener("change", handleFoto);
+
+function handleFoto(){
 let file = this.files[0];
 if(!file) return;
 
