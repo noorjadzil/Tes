@@ -478,10 +478,21 @@ teks += "\n— MAQSHOF —";
 
 if(navigator.share){
 try{
-await navigator.share({
+let shareData = {
 title:"Laporan MAQSHOF",
 text:teks
-});
+};
+
+if(fotoBase64){
+let fileFoto = dataURLtoFile(fotoBase64, "foto-maqshof.jpg");
+
+if(navigator.canShare && navigator.canShare({ files: [fileFoto] })){
+shareData.files = [fileFoto];
+}
+}
+
+await navigator.share(shareData);
+
 }catch(err){
 console.log("Share dibatalkan", err);
 }
@@ -518,6 +529,20 @@ resolve(canvas.toDataURL("image/jpeg",0.5));
 };
 reader.readAsDataURL(file);
 });
+}
+
+function dataURLtoFile(dataurl, filename) {
+  let arr = dataurl.split(',');
+  let mime = arr[0].match(/:(.*?);/)[1];
+  let bstr = atob(arr[1]);
+  let n = bstr.length;
+  let u8arr = new Uint8Array(n);
+
+  while(n--){
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new File([u8arr], filename, { type: mime });
 }
 
 function showTab(tab,event){
