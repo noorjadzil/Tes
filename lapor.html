@@ -6,116 +6,89 @@
 <title>Lapor WA</title>
 
 <style>
-*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:'Segoe UI',Arial,sans-serif;
+  font-family:Arial, sans-serif;
   background:linear-gradient(135deg,#0f172a,#1e3a8a);
-  color:#0f172a;
 }
 .container{
-  max-width:460px;
+  max-width:450px;
   margin:auto;
   padding:12px;
 }
 .card{
-  background:#fff;
-  border-radius:22px;
-  padding:16px;
-  box-shadow:0 12px 30px rgba(0,0,0,.25);
+  background:white;
+  border-radius:18px;
+  padding:15px;
 }
 h2{
   text-align:center;
   color:#1e3a8a;
-  margin:6px 0 16px;
 }
 label{
+  font-weight:bold;
   display:block;
-  font-size:13px;
-  font-weight:800;
-  margin:12px 0 6px;
+  margin-top:10px;
 }
 input,select,textarea{
   width:100%;
-  padding:12px;
-  border:1px solid #cbd5e1;
-  border-radius:14px;
-  font-size:15px;
-  font-weight:600;
+  padding:11px;
+  margin-top:5px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  box-sizing:border-box;
 }
-textarea{
-  resize:none;
-  min-height:70px;
-}
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-.row{
-  display:grid;
-  grid-template-columns:1fr 75px;
-  gap:8px;
-  align-items:center;
-  background:#f8fafc;
-  border:1px solid #e2e8f0;
+.item{
+  background:#f1f5f9;
   padding:10px;
-  border-radius:16px;
+  border-radius:12px;
   margin-top:8px;
 }
-.row b{
-  font-size:14px;
+.item-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
 }
-.row input{
+.item-row b{
+  flex:1;
+}
+.item-row input{
+  width:80px;
   text-align:center;
-  padding:10px;
 }
-.catatan{
-  grid-column:1/3;
-}
-.btn{
+button{
   width:100%;
-  border:none;
-  border-radius:16px;
   padding:14px;
   margin-top:12px;
-  font-size:15px;
-  font-weight:900;
-  color:white;
+  border:none;
+  border-radius:12px;
   background:#1e3a8a;
+  color:white;
+  font-weight:bold;
+  font-size:15px;
 }
-.btn-green{background:#16a34a}
-.btn-red{background:#dc2626}
-.btn-gray{background:#475569}
+.green{background:#16a34a}
+.red{background:#dc2626}
+.gray{background:#475569}
 .preview{
-  white-space:pre-wrap;
   background:#020617;
-  color:#e5e7eb;
-  border-radius:16px;
-  padding:14px;
-  margin-top:14px;
-  font-size:14px;
+  color:white;
+  padding:12px;
+  border-radius:12px;
+  margin-top:12px;
+  white-space:pre-wrap;
   line-height:1.6;
 }
-.item-setting{
+.setting-row{
   display:flex;
   gap:8px;
   margin-top:8px;
 }
-.item-setting input{
+.setting-row input{
   flex:1;
 }
-.item-setting button{
-  width:46px;
-  border:none;
-  border-radius:12px;
-  background:#dc2626;
-  color:white;
-  font-weight:900;
-}
-.small{
-  font-size:12px;
-  color:#64748b;
+.setting-row button{
+  width:45px;
   margin-top:5px;
 }
 </style>
@@ -126,7 +99,7 @@ textarea{
 <div class="container">
 <div class="card">
 
-<h2>Lapor WA Maqshof</h2>
+<h2>Lapor WA</h2>
 
 <label>Tempat</label>
 <select id="tempat">
@@ -134,14 +107,263 @@ textarea{
   <option>Akhwat</option>
 </select>
 
-<div class="grid">
-  <div>
-    <label>Tanggal</label>
-    <input type="date" id="tanggal">
-  </div>
-  <div>
-    <label>Waktu</label>
-    <select id="waktu">
-      <option>Pagi</option>
-      <option>Malam</option>
-    </
+<label>Tanggal</label>
+<input type="date" id="tanggal">
+
+<label>Waktu</label>
+<select id="waktu">
+  <option>Pagi</option>
+  <option>Malam</option>
+</select>
+
+<label>Jenis</label>
+<select id="jenis" onchange="renderItems()">
+  <option>Masuk</option>
+  <option>Sisa</option>
+</select>
+
+<label>Item Laporan</label>
+<div id="itemsBox"></div>
+
+<button class="green" onclick="buatLaporan()">📝 Buat Laporan</button>
+
+<div class="preview" id="preview">Hasil laporan akan muncul di sini...</div>
+
+<button onclick="kirimWA()">📤 Kirim ke WhatsApp</button>
+<button class="gray" onclick="salinTeks()">📋 Salin Teks</button>
+
+<hr>
+
+<h2>Setting Item</h2>
+
+<label>Tambah Item</label>
+<div class="setting-row">
+  <input id="itemBaru" placeholder="Nama item baru">
+  <button onclick="tambahItem()">+</button>
+</div>
+
+<div id="settingBox"></div>
+
+<button class="red" onclick="resetItem()">Reset Item</button>
+
+</div>
+</div>
+
+<script>
+let defaultItems = [
+  "Es Teh",
+  "Es Jeruk",
+  "Es Blewah",
+  "Es Coklat",
+  "Jus Alpukat",
+  "Es Sari Kedelai",
+  "Aneka Snack",
+  "Terang Bulan"
+];
+
+let laporanText = "";
+
+function getItems(){
+  let data = localStorage.getItem("items_lapor_maqshof");
+  if(data){
+    return JSON.parse(data);
+  }
+  localStorage.setItem("items_lapor_maqshof", JSON.stringify(defaultItems));
+  return defaultItems;
+}
+
+function saveItems(items){
+  localStorage.setItem("items_lapor_maqshof", JSON.stringify(items));
+}
+
+function setTanggal(){
+  let d = new Date();
+  let yyyy = d.getFullYear();
+  let mm = String(d.getMonth()+1).padStart(2,"0");
+  let dd = String(d.getDate()).padStart(2,"0");
+  document.getElementById("tanggal").value = yyyy + "-" + mm + "-" + dd;
+}
+
+function renderItems(){
+  let box = document.getElementById("itemsBox");
+  let jenis = document.getElementById("jenis").value;
+  box.innerHTML = "";
+
+  getItems().forEach(function(item){
+    let div = document.createElement("div");
+    div.className = "item";
+
+    let html = `
+      <div class="item-row">
+        <b>${item}</b>
+        <input type="number" min="0" placeholder="0" data-nama="${item}" class="jumlah">
+      </div>
+    `;
+
+    if(jenis === "Sisa"){
+      html += `
+        <input placeholder="Catatan, contoh: Retur 2 - Pecah" data-catatan="${item}" class="catatan">
+      `;
+    }
+
+    div.innerHTML = html;
+    box.appendChild(div);
+  });
+}
+
+function renderSetting(){
+  let box = document.getElementById("settingBox");
+  box.innerHTML = "";
+
+  getItems().forEach(function(item,index){
+    let div = document.createElement("div");
+    div.className = "setting-row";
+    div.innerHTML = `
+      <input value="${item}" onchange="editItem(${index}, this.value)">
+      <button class="red" onclick="hapusItem(${index})">×</button>
+    `;
+    box.appendChild(div);
+  });
+}
+
+function tambahItem(){
+  let input = document.getElementById("itemBaru");
+  let nama = input.value.trim();
+
+  if(!nama){
+    alert("Isi nama item dulu");
+    return;
+  }
+
+  let items = getItems();
+  items.push(nama);
+  saveItems(items);
+
+  input.value = "";
+  renderItems();
+  renderSetting();
+}
+
+function editItem(index,value){
+  let items = getItems();
+  items[index] = value;
+  saveItems(items);
+  renderItems();
+  renderSetting();
+}
+
+function hapusItem(index){
+  let items = getItems();
+  items.splice(index,1);
+  saveItems(items);
+  renderItems();
+  renderSetting();
+}
+
+function resetItem(){
+  localStorage.removeItem("items_lapor_maqshof");
+  renderItems();
+  renderSetting();
+}
+
+function formatTanggal(tgl){
+  let d = new Date(tgl + "T00:00:00");
+
+  let hari = [
+    "Ahad",
+    "Senin",
+    "Selasa",
+    "Rabu",
+    "Kamis",
+    "Jumat",
+    "Sabtu"
+  ];
+
+  let bulan = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember"
+  ];
+
+  return hari[d.getDay()] + ", " + d.getDate() + " " + bulan[d.getMonth()] + " " + d.getFullYear();
+}
+
+function buatLaporan(){
+  let tempat = document.getElementById("tempat").value;
+  let tanggal = document.getElementById("tanggal").value;
+  let waktu = document.getElementById("waktu").value;
+  let jenis = document.getElementById("jenis").value;
+
+  let teks = "";
+
+  teks += "Maqshof " + tempat + "\n";
+  teks += formatTanggal(tanggal) + " - " + waktu + "\n\n";
+  teks += jenis + " :\n\n";
+
+  document.querySelectorAll(".jumlah").forEach(function(input){
+    let jumlah = input.value;
+    let nama = input.getAttribute("data-nama");
+
+    if(jumlah && Number(jumlah) > 0){
+      if(jenis === "Sisa"){
+        let catatanInput = document.querySelector('[data-catatan="' + nama + '"]');
+        let catatan = catatanInput ? catatanInput.value.trim() : "";
+
+        if(catatan){
+          teks += nama + " " + jumlah + " (" + catatan + ")\n";
+        }else{
+          teks += nama + " " + jumlah + "\n";
+        }
+      }else{
+        teks += nama + " " + jumlah + "\n";
+      }
+    }
+  });
+
+  laporanText = teks;
+  document.getElementById("preview").innerText = laporanText;
+}
+
+function kirimWA(){
+  buatLaporan();
+
+  if(!laporanText){
+    alert("Belum ada laporan");
+    return;
+  }
+
+  if(navigator.share){
+    navigator.share({
+      title:"Laporan Maqshof",
+      text:laporanText
+    });
+  }else{
+    let url = "https://wa.me/?text=" + encodeURIComponent(laporanText);
+    window.open(url,"_blank");
+  }
+}
+
+function salinTeks(){
+  buatLaporan();
+
+  navigator.clipboard.writeText(laporanText).then(function(){
+    alert("Teks berhasil disalin");
+  });
+}
+
+setTanggal();
+renderItems();
+renderSetting();
+</script>
+
+</body>
+</html>
