@@ -206,7 +206,12 @@ arr.reverse();
 arr.forEach(d=>{
 
 let items = (d.items || [])
-.map(i=>`• ${i.barang} (${i.jumlah})`)
+.map(i=>{
+  if(i.masuk !== undefined || i.retur !== undefined){
+    return `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`;
+  }
+  return `• ${i.barang} (${Number(i.jumlah||0)})`;
+})
 .join("<br>");
 
 let div=document.createElement("div");
@@ -395,57 +400,29 @@ document.body.style.background=
 `linear-gradient(135deg,${c.theme.bg},${c.theme.primary})`;
 }
 });
-// ================= EDIT JUMLAH =================
-function editJumlah(key, index, oldValue){
-
-let baru = prompt("Ubah jumlah", oldValue);
-if(baru===null) return;
-
-db.ref("jajan/"+key+"/items").once("value",snap=>{
-
-let items = snap.val() || [];
-
-if(!items[index]) return;
-
-items[index].jumlah = Number(baru);
-
-db.ref("jajan/"+key).update({
-  items: items
-}).then(()=>{
-  loadLaporan();
-});
-
-});
-
+// ================= EDIT TRANSAKSI LENGKAP =================
+function escText(v){
+  return String(v ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
-// ================= EDIT TANGGAL =================
-function editTanggal(key, oldWaktu){
+function toLocalDatetime(waktu){
+  let dateObj = new Date(waktu || Date.now());
+  if(isNaN(dateObj)) dateObj = new Date();
 
-let dateObj = new Date(oldWaktu);
-
-let local = dateObj.getFullYear() + "-" +
-String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
-String(dateObj.getDate()).padStart(2,"0") + " " +
-String(dateObj.getHours()).padStart(2,"0") + ":" +
-String(dateObj.getMinutes()).padStart(2,"0");
-
-let input = prompt("Edit tanggal (YYYY-MM-DD HH:mm)", local);
-if(input===null) return;
-
-let newDate = new Date(input);
-
-if(isNaN(newDate)){
-  alert("Format salah!");
-  return;
+  return dateObj.getFullYear() + "-" +
+  String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
+  String(dateObj.getDate()).padStart(2,"0") + "T" +
+  String(dateObj.getHours()).padStart(2,"0") + ":" +
+  String(dateObj.getMinutes()).padStart(2,"0");
 }
 
-db.ref("jajan/"+key).update({
-  waktu: newDate.toISOString()
-}).then(()=>{
-  loadLaporan();
-});
-
+function itemMode(items){
+  return (items || []).some(i => i.masuk !== undefined || i.retur !== undefined) ? "masukRetur" : "jumlah";
 }
 
 // ================= EDIT TOGGLE =================
@@ -461,59 +438,71 @@ if(box.style.display==="block"){
 
 db.ref("jajan/"+key).once("value",snap=>{
 
-let d = snap.val();
+let d = snap.val() || {};
+let mode = itemMode(d.items || []);
 
-// format tanggal
-let dateObj = new Date(d.waktu);
-let local = dateObj.getFullYear() + "-" +
-String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
-String(dateObj.getDate()).padStart(2,"0") + "T" +
-String(dateObj.getHours()).padStart(2,"0") + ":" +
-String(dateObj.getMinutes()).padStart(2,"0");
+let jenis = escText(d.jenis || "Masuk");
+let tempat = escText(d.tempat || "Akhwat");
+let catatan = escText(d.catatan || "");
+let local = toLocalDatetime(d.waktu);
 
-// item
-let itemsHTML = (d.items || []).map((i,idx)=>`
-<div style="display:flex;justify-content:space-between;margin-bottom:6px">
-  <span>${i.barang}</span>
-  <input type="number" value="${i.jumlah}" 
-  id="jml-${key}-${idx}" 
-  style="width:70px;padding:4px;border-radius:6px;border:1px solid #ccc">
-</div>
-`).join("");
+let itemsHTML = (d.items || []).map((i,idx)=>rowItemHTML(key, idx, i, mode)).join("");
 
 box.innerHTML = `
-<div style="background:#f8fafc;padding:10px;border-radius:10px;border:1px solid #e2e8f0">
+<div style="background:#f8fafc;padding:12px;border-radius:14px;border:1px solid #e2e8f0">
 
-<b style="color:#1e3a8a">Edit Data</b><br><br>
+<b style="color:#1e3a8a;font-size:16px">✏️ Edit Transaksi Lengkap</b><br>
+<span style="font-size:12px;color:#64748b">Semua lini bisa diedit: tanggal, jenis, tempat, catatan, nama barang, jumlah/masuk-retur.</span><br><br>
 
-Tanggal:<br>
+<label style="font-size:12px;font-weight:700;color:#334155">Tanggal & Jam</label>
 <input type="datetime-local" id="tglEdit-${key}" value="${local}" 
-style="width:100%;padding:6px;border:1px solid #ccc;border-radius:6px"><br><br>
+style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:9px;margin:4px 0 10px"><br>
 
-${itemsHTML}
+<label style="font-size:12px;font-weight:700;color:#334155">Jenis</label>
+<select id="jenisEdit-${key}" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:9px;margin:4px 0 10px">
+  <option value="Masuk" ${jenis.toLowerCase().includes("masuk") ? "selected" : ""}>Masuk</option>
+  <option value="Sisa" ${jenis.toLowerCase().includes("sisa") ? "selected" : ""}>Sisa / Retur</option>
+</select>
 
-<button onclick="simpanEdit('${key}')" style="
-margin-top:10px;
+<label style="font-size:12px;font-weight:700;color:#334155">Tempat</label>
+<select id="tempatEdit-${key}" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:9px;margin:4px 0 10px">
+  <option value="Ikhwan" ${tempat.toLowerCase().includes("ikhwan") ? "selected" : ""}>Ikhwan</option>
+  <option value="Akhwat" ${tempat.toLowerCase().includes("akhwat") ? "selected" : ""}>Akhwat</option>
+</select>
+
+<label style="font-size:12px;font-weight:700;color:#334155">Catatan</label>
+<textarea id="catatanEdit-${key}" rows="2" style="width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:9px;margin:4px 0 12px">${catatan}</textarea>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+  <b style="color:#1e3a8a">Daftar Item</b>
+  <button onclick="tambahBarisEdit('${key}','${mode}')" style="border:none;border-radius:8px;background:#0f766e;color:white;padding:7px 10px;font-weight:700">+ Item</button>
+</div>
+
+<div id="editItems-${key}">${itemsHTML}</div>
+
+<button onclick="simpanEdit('${key}','${mode}')" style="
+margin-top:12px;
 width:100%;
-padding:10px;
+padding:11px;
 background:#1e3a8a;
 color:white;
 border:none;
-border-radius:8px;
-font-weight:700;
+border-radius:10px;
+font-weight:800;
 ">
-💾 Simpan
+💾 Simpan Perubahan
 </button>
 
 <button onclick="lihatRiwayat('${key}')" style="
-margin-top:6px;
+margin-top:7px;
 width:100%;
-padding:8px;
+padding:9px;
 background:#64748b;
 color:white;
 border:none;
-border-radius:6px;
+border-radius:8px;
 font-size:12px;
+font-weight:700;
 ">
 📜 Riwayat Edit
 </button>
@@ -528,16 +517,50 @@ box.style.display="block";
 });
 }
 
+function rowItemHTML(key, idx, i={}, mode="jumlah"){
+  let barang = escText(i.barang || "");
+  let jumlah = Number(i.jumlah || 0);
+  let masuk = Number(i.masuk || 0);
+  let retur = Number(i.retur || 0);
+
+  if(mode === "masukRetur"){
+    return `
+    <div class="edit-row-${key}" style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:8px;margin-bottom:8px">
+      <input placeholder="Nama barang" value="${barang}" data-field="barang" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px;margin-bottom:6px">
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="number" placeholder="Masuk" value="${masuk}" data-field="masuk" style="flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:8px">
+        <input type="number" placeholder="Retur" value="${retur}" data-field="retur" style="flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:8px">
+        <button onclick="hapusBarisEdit(this)" style="border:none;border-radius:8px;background:#dc2626;color:white;padding:8px">🗑️</button>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="edit-row-${key}" style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:8px;margin-bottom:8px">
+    <input placeholder="Nama barang" value="${barang}" data-field="barang" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px;margin-bottom:6px">
+    <div style="display:flex;gap:6px;align-items:center">
+      <input type="number" placeholder="Jumlah" value="${jumlah}" data-field="jumlah" style="flex:1;padding:8px;border:1px solid #cbd5e1;border-radius:8px">
+      <button onclick="hapusBarisEdit(this)" style="border:none;border-radius:8px;background:#dc2626;color:white;padding:8px">🗑️</button>
+    </div>
+  </div>`;
+}
+
+function tambahBarisEdit(key, mode){
+  let wrap = document.getElementById("editItems-"+key);
+  wrap.insertAdjacentHTML("beforeend", rowItemHTML(key, Date.now(), {}, mode));
+}
+
+function hapusBarisEdit(btn){
+  let row = btn.closest("div[class^='edit-row-']");
+  if(row) row.remove();
+}
 
 // ================= SIMPAN + RIWAYAT =================
-function simpanEdit(key){
+function simpanEdit(key, mode){
 
 db.ref("jajan/"+key).once("value",snap=>{
 
-let oldData = snap.val();
-let items = oldData.items || [];
-
-// tanggal
+let oldData = snap.val() || {};
 let tglInput = document.getElementById("tglEdit-"+key).value;
 let newDate = new Date(tglInput);
 
@@ -546,37 +569,55 @@ if(isNaN(newDate)){
   return;
 }
 
-// ambil item baru
-let newItems = items.map((i,idx)=>{
-  let val = document.getElementById(`jml-${key}-${idx}`).value;
-  return {
-    barang: i.barang,
-    jumlah: Number(val || 0)
-  };
-});
+let rows = [...document.querySelectorAll(`.edit-row-${key}`)];
+let newItems = rows.map(row=>{
+  let barang = row.querySelector('[data-field="barang"]').value.trim();
 
-// data baru
+  if(mode === "masukRetur"){
+    return {
+      barang: barang,
+      masuk: Number(row.querySelector('[data-field="masuk"]').value || 0),
+      retur: Number(row.querySelector('[data-field="retur"]').value || 0)
+    };
+  }
+
+  return {
+    barang: barang,
+    jumlah: Number(row.querySelector('[data-field="jumlah"]').value || 0)
+  };
+}).filter(i => i.barang !== "");
+
 let newData = {
   waktu: newDate.toISOString(),
+  jenis: document.getElementById("jenisEdit-"+key).value,
+  tempat: document.getElementById("tempatEdit-"+key).value,
+  catatan: document.getElementById("catatanEdit-"+key).value.trim(),
   items: newItems
 };
 
-// 🔥 simpan riwayat
-db.ref("jajan/"+key+"/riwayatEdit").push({
+let historyData = {
   waktuEdit: new Date().toISOString(),
-  sebelum: oldData.items,
-  sesudah: newItems
-});
+  sebelum: {
+    waktu: oldData.waktu || "",
+    jenis: oldData.jenis || "",
+    tempat: oldData.tempat || "",
+    catatan: oldData.catatan || "",
+    items: oldData.items || []
+  },
+  sesudah: newData
+};
 
-// 🔥 update utama
-db.ref("jajan/"+key).update(newData).then(()=>{
+// simpan riwayat dulu, lalu update transaksi utama
+db.ref("jajan/"+key+"/riwayatEdit").push(historyData).then(()=>{
+  return db.ref("jajan/"+key).update(newData);
+}).then(()=>{
   alert("Berhasil diupdate");
   loadLaporan();
+  loadRekap();
 });
 
 });
 }
-
 
 // ================= LIHAT RIWAYAT =================
 function lihatRiwayat(key){
@@ -599,13 +640,17 @@ if(!snap.exists()){
 let html = "";
 
 snap.forEach(c=>{
-let d = c.val();
+let d = c.val() || {};
+let sebelum = d.sebelum || {};
+let sesudah = d.sesudah || {};
 
 html += `
-<div style="border-top:1px solid #ccc;padding-top:5px;margin-top:5px">
+<div style="border-top:1px solid #cbd5e1;padding-top:7px;margin-top:7px;line-height:1.5">
 <b>${new Date(d.waktuEdit).toLocaleString("id-ID")}</b><br>
-Sebelum: ${d.sebelum.map(i=>i.jumlah).join(", ")}<br>
-Sesudah: ${d.sesudah.map(i=>i.jumlah).join(", ")}
+Dari: ${escText(sebelum.jenis)} - ${escText(sebelum.tempat)}<br>
+Ke: ${escText(sesudah.jenis)} - ${escText(sesudah.tempat)}<br>
+Item lama: ${(sebelum.items || []).map(i=>escText(i.barang)+"="+(i.jumlah ?? `M${i.masuk||0}/R${i.retur||0}`)).join(", ")}<br>
+Item baru: ${(sesudah.items || []).map(i=>escText(i.barang)+"="+(i.jumlah ?? `M${i.masuk||0}/R${i.retur||0}`)).join(", ")}
 </div>
 `;
 });
@@ -615,6 +660,7 @@ box.style.display="block";
 
 });
 }
+
 </script>
 
 </body>
