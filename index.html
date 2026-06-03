@@ -445,19 +445,41 @@ function saveWAOnlyItems(items){
   localStorage.setItem("items_lapor_maqshof_wa_only", JSON.stringify(items));
 }
 
+function ambilNilaiWAOnlySekarang(){
+  let data = {};
+
+  document.querySelectorAll(".jumlahWAOnly").forEach(el=>{
+    data[el.dataset.waonly] = el.value;
+  });
+
+  return data;
+}
+
 function renderWAOnlyItems(){
+
+  let nilaiLama = ambilNilaiWAOnlySekarang();
+
   let box = document.getElementById("waOnlyItemsBox");
   box.innerHTML = "";
 
   getWAOnlyItems().forEach(item=>{
+
     let div = document.createElement("div");
     div.className = "wa-item";
+
     div.innerHTML = `
       <div class="wa-item-row">
         <b>${item}</b>
-        <input type="number" min="0" placeholder="0" data-waonly="${item}" class="jumlahWAOnly">
+        <input
+          type="number"
+          min="0"
+          placeholder="0"
+          value="${nilaiLama[item] || ''}"
+          data-waonly="${item}"
+          class="jumlahWAOnly">
       </div>
     `;
+
     box.appendChild(div);
   });
 }
