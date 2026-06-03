@@ -75,6 +75,59 @@ line-height:1.5;
 font-weight:600;
 }
 
+.delete-toolbar{
+background:#f8fafc;
+border:1px solid #e2e8f0;
+border-radius:14px;
+padding:10px;
+margin-bottom:10px;
+display:none;
+}
+
+.delete-toolbar.active{display:block;}
+
+.delete-actions{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-top:8px;
+}
+
+.delete-actions button,.delete-toggle-btn{
+border:none;
+border-radius:10px;
+padding:10px;
+font-weight:800;
+cursor:pointer;
+}
+
+.delete-toggle-btn{
+width:100%;
+background:#991b1b;
+color:white;
+margin-bottom:10px;
+}
+
+.delete-check-wrap{
+display:none;
+margin-bottom:8px;
+background:#fee2e2;
+color:#991b1b;
+font-weight:800;
+padding:8px 10px;
+border-radius:10px;
+}
+
+.delete-check-wrap input{
+transform:scale(1.25);
+margin-right:8px;
+}
+
+.laporan-card.delete-selected{
+outline:3px solid #ef4444;
+background:#fff7f7;
+}
+
 img{
 width:100%;
 border-radius:10px;
@@ -106,6 +159,22 @@ margin-bottom:10px;
 <div style="display:flex;margin-bottom:10px;">
   <button id="btnLaporan" class="tab-btn active" onclick="showTab('laporan')">Laporan</button>
   <button id="btnRekap" class="tab-btn nonactive" onclick="showTab('rekap')">Rekap</button>
+</div>
+
+<button id="btnModeHapus" class="delete-toggle-btn" onclick="toggleModeHapus()">🗑️ Menu Hapus</button>
+
+<div id="deleteToolbar" class="delete-toolbar">
+  <b style="color:#991b1b">Mode Hapus Transaksi</b><br>
+  <span style="font-size:12px;color:#64748b">Centang transaksi yang ingin dihapus. Bisa pilih semua, lalu batalkan sebagian.</span>
+
+  <div class="delete-actions">
+    <button onclick="pilihSemuaHapus()" style="background:#1e3a8a;color:white">✅ Pilih Semua</button>
+    <button onclick="batalkanSemuaHapus()" style="background:#64748b;color:white">↩️ Batalkan Semua</button>
+  </div>
+
+  <button onclick="hapusYangDipilih()" style="margin-top:8px;width:100%;border:none;border-radius:10px;background:#dc2626;color:white;padding:11px;font-weight:900">
+    Hapus yang Dipilih (<span id="jumlahDipilih">0</span>)
+  </button>
 </div>
 
 <div id="tabLaporan">
@@ -142,6 +211,7 @@ function showTab(tab){
     btnLaporan.className="tab-btn active";
     btnRekap.className="tab-btn nonactive";
   }else{
+    if(modeHapusAktif) toggleModeHapus();
     laporan.style.display="none";
     rekap.style.display="block";
     btnLaporan.className="tab-btn nonactive";
@@ -156,6 +226,9 @@ databaseURL:"https://maqshof-d5772-default-rtdb.asia-southeast1.firebasedatabase
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
+
+let modeHapusAktif = false;
+let selectedHapus = new Set();
 
 // =================== FORMAT ===================
 function formatTanggal(waktu){
@@ -218,6 +291,10 @@ let div=document.createElement("div");
 div.className="laporan-card";
 
 div.innerHTML=`
+<label class="delete-check-wrap" id="checkWrap-${d.key}">
+  <input type="checkbox" class="hapus-check" data-key="${d.key}" onchange="togglePilihHapus('${d.key}', this.checked)">
+  Pilih untuk dihapus
+</label>
 <div class="laporan-header">
 ${d.jenis} - ${d.tempat}
 
@@ -246,6 +323,13 @@ ${d.foto ? `<img src="${d.foto}">` : ""}
 `;
 
 list.appendChild(div);
+if(modeHapusAktif){
+  let wrap = document.getElementById("checkWrap-"+d.key);
+  let cb = div.querySelector('.hapus-check');
+  if(wrap) wrap.style.display = "block";
+  if(cb) cb.checked = selectedHapus.has(d.key);
+  if(selectedHapus.has(d.key)) div.classList.add("delete-selected");
+}
 
 });
 
@@ -360,6 +444,10 @@ let div=document.createElement("div");
 div.className="laporan-card";
 
 div.innerHTML=`
+<label class="delete-check-wrap" id="checkWrap-${d.key}">
+  <input type="checkbox" class="hapus-check" data-key="${d.key}" onchange="togglePilihHapus('${d.key}', this.checked)">
+  Pilih untuk dihapus
+</label>
 <div class="laporan-header">Rekap</div>
 <div class="laporan-tanggal">${g.label}</div>
 
@@ -381,6 +469,116 @@ container.appendChild(div);
 });
 
 });
+}
+
+
+// =================== MENU HAPUS ===================
+function toggleModeHapus(){
+  modeHapusAktif = !modeHapusAktif;
+
+  const toolbar = document.getElementById("deleteToolbar");
+  const btn = document.getElementById("btnModeHapus");
+
+  if(modeHapusAktif){
+    toolbar.classList.add("active");
+    btn.innerText = "❌ Tutup Menu Hapus";
+    btn.style.background = "#64748b";
+  }else{
+    toolbar.classList.remove("active");
+    btn.innerText = "🗑️ Menu Hapus";
+    btn.style.background = "#991b1b";
+    selectedHapus.clear();
+  }
+
+  document.querySelectorAll(".delete-check-wrap").forEach(el=>{
+    el.style.display = modeHapusAktif ? "block" : "none";
+  });
+
+  document.querySelectorAll(".hapus-check").forEach(cb=>{
+    cb.checked = modeHapusAktif && selectedHapus.has(cb.dataset.key);
+  });
+
+  document.querySelectorAll(".laporan-card").forEach(card=>card.classList.remove("delete-selected"));
+  updateJumlahDipilih();
+}
+
+function togglePilihHapus(key, checked){
+  if(checked){
+    selectedHapus.add(key);
+  }else{
+    selectedHapus.delete(key);
+  }
+
+  let wrap = document.getElementById("checkWrap-"+key);
+  let card = wrap ? wrap.closest(".laporan-card") : null;
+  if(card){
+    card.classList.toggle("delete-selected", checked);
+  }
+
+  updateJumlahDipilih();
+}
+
+function pilihSemuaHapus(){
+  if(!modeHapusAktif) return;
+
+  document.querySelectorAll(".hapus-check").forEach(cb=>{
+    cb.checked = true;
+    selectedHapus.add(cb.dataset.key);
+    let card = cb.closest(".laporan-card");
+    if(card) card.classList.add("delete-selected");
+  });
+
+  updateJumlahDipilih();
+}
+
+function batalkanSemuaHapus(){
+  selectedHapus.clear();
+
+  document.querySelectorAll(".hapus-check").forEach(cb=>{
+    cb.checked = false;
+    let card = cb.closest(".laporan-card");
+    if(card) card.classList.remove("delete-selected");
+  });
+
+  updateJumlahDipilih();
+}
+
+function updateJumlahDipilih(){
+  let el = document.getElementById("jumlahDipilih");
+  if(el) el.innerText = selectedHapus.size;
+}
+
+function hapusYangDipilih(){
+  let keys = Array.from(selectedHapus);
+
+  if(keys.length === 0){
+    alert("Belum ada transaksi yang dipilih.");
+    return;
+  }
+
+  let yakin = confirm("Yakin hapus " + keys.length + " transaksi? Data yang dihapus tidak bisa dikembalikan.");
+  if(!yakin) return;
+
+  let updates = {};
+  keys.forEach(key=>{
+    updates["jajan/"+key] = null;
+  });
+
+  db.ref().update(updates).then(()=>{
+    alert("Berhasil menghapus " + keys.length + " transaksi.");
+    selectedHapus.clear();
+    modeHapusAktif = false;
+
+    document.getElementById("deleteToolbar").classList.remove("active");
+    let btn = document.getElementById("btnModeHapus");
+    btn.innerText = "🗑️ Menu Hapus";
+    btn.style.background = "#991b1b";
+
+    loadLaporan();
+    loadRekap();
+  }).catch(err=>{
+    alert("Gagal menghapus: " + err.message);
+  });
 }
 
 // =================== INIT ===================
