@@ -128,6 +128,84 @@ outline:3px solid #ef4444;
 background:#fff7f7;
 }
 
+.rekap-table-wrap{
+overflow-x:auto;
+margin-top:10px;
+border:1px solid #e2e8f0;
+border-radius:12px;
+}
+
+.rekap-table{
+width:100%;
+border-collapse:collapse;
+font-size:12px;
+min-width:760px;
+background:white;
+}
+
+.rekap-table th{
+background:#1e3a8a;
+color:white;
+padding:9px 7px;
+text-align:center;
+position:sticky;
+top:0;
+}
+
+.rekap-table td{
+border-bottom:1px solid #e2e8f0;
+padding:8px 7px;
+text-align:center;
+font-weight:700;
+}
+
+.rekap-table td:first-child,
+.rekap-table th:first-child{
+text-align:left;
+position:sticky;
+left:0;
+z-index:2;
+}
+
+.rekap-table td:first-child{
+background:#f8fafc;
+color:#1e3a8a;
+}
+
+.rekap-filter{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin:10px 0;
+}
+
+.rekap-filter select{
+width:100%;
+padding:10px;
+border:1px solid #cbd5e1;
+border-radius:10px;
+font-weight:700;
+color:#1e3a8a;
+background:white;
+}
+
+.rekap-summary{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-top:10px;
+}
+
+.rekap-summary div{
+background:#eff6ff;
+border:1px solid #bfdbfe;
+border-radius:10px;
+padding:9px;
+font-size:12px;
+font-weight:800;
+color:#1e3a8a;
+}
+
 img{
 width:100%;
 border-radius:10px;
@@ -159,6 +237,7 @@ margin-bottom:10px;
 <div style="display:flex;margin-bottom:10px;">
   <button id="btnLaporan" class="tab-btn active" onclick="showTab('laporan')">Laporan</button>
   <button id="btnRekap" class="tab-btn nonactive" onclick="showTab('rekap')">Rekap</button>
+  <button id="btnBulanan" class="tab-btn nonactive" onclick="showTab('bulanan')">Bulanan</button>
 </div>
 
 <button id="btnModeHapus" class="delete-toggle-btn" onclick="toggleModeHapus()">🗑️ Menu Hapus</button>
@@ -185,6 +264,10 @@ margin-bottom:10px;
   <div id="rekapHarian">Loading...</div>
 </div>
 
+<div id="tabBulanan" style="display:none;">
+  <div id="rekapBulanan">Loading...</div>
+</div>
+
 </div>
 </div>
 
@@ -201,22 +284,26 @@ function kembali(){
 function showTab(tab){
   const laporan = document.getElementById("tabLaporan");
   const rekap = document.getElementById("tabRekap");
+  const bulanan = document.getElementById("tabBulanan");
 
   const btnLaporan = document.getElementById("btnLaporan");
   const btnRekap = document.getElementById("btnRekap");
+  const btnBulanan = document.getElementById("btnBulanan");
+  const btnModeHapus = document.getElementById("btnModeHapus");
+  const deleteToolbar = document.getElementById("deleteToolbar");
 
-  if(tab==="laporan"){
-    laporan.style.display="block";
-    rekap.style.display="none";
-    btnLaporan.className="tab-btn active";
-    btnRekap.className="tab-btn nonactive";
-  }else{
-    if(modeHapusAktif) toggleModeHapus();
-    laporan.style.display="none";
-    rekap.style.display="block";
-    btnLaporan.className="tab-btn nonactive";
-    btnRekap.className="tab-btn active";
-  }
+  if(modeHapusAktif && tab !== "laporan") toggleModeHapus();
+
+  laporan.style.display = tab === "laporan" ? "block" : "none";
+  rekap.style.display = tab === "rekap" ? "block" : "none";
+  bulanan.style.display = tab === "bulanan" ? "block" : "none";
+
+  btnLaporan.className = tab === "laporan" ? "tab-btn active" : "tab-btn nonactive";
+  btnRekap.className = tab === "rekap" ? "tab-btn active" : "tab-btn nonactive";
+  btnBulanan.className = tab === "bulanan" ? "tab-btn active" : "tab-btn nonactive";
+
+  if(btnModeHapus) btnModeHapus.style.display = tab === "laporan" ? "block" : "none";
+  if(deleteToolbar && tab !== "laporan") deleteToolbar.classList.remove("active");
 }
 
 // =================== FIREBASE ===================
@@ -334,6 +421,93 @@ if(modeHapusAktif){
 });
 
 });
+}
+
+
+// =================== HITUNG REKAP FLEKSIBEL ===================
+function angka(v){
+  return Number(v || 0);
+}
+
+function tambahKeGrup(grup, d, hargaMap){
+  if(!d.waktu) return;
+
+  let dateObj = new Date(d.waktu);
+  if(isNaN(dateObj)) return;
+
+  let key = dateObj.toLocaleDateString("id-ID", {year:"numeric", month:"2-digit", day:"2-digit"});
+  let label = formatTanggalHari(dateObj);
+
+  if(!grup[key]){
+    grup[key]={label, tanggalObj:dateObj, masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
+  }
+
+  let jenis = (d.jenis || "").toLowerCase();
+  let tempat = (d.tempat || "").toLowerCase();
+
+  (d.items || []).forEach(i=>{
+    let nama = (i.barang || "").toLowerCase().trim();
+    let harga = hargaMap[nama] || 0;
+
+    // Format baru: dalam 1 item ada masuk dan retur/sisa
+    if(i.masuk !== undefined || i.retur !== undefined){
+      let masuk = angka(i.masuk);
+      let retur = angka(i.retur);
+
+      if(tempat.includes("ikhwan")){
+        grup[key].masukIkhwan += masuk;
+        grup[key].sisaIkhwan += retur;
+      }else if(tempat.includes("akhwat") || tempat.includes("akhawat")){
+        grup[key].masukAkhwat += masuk;
+        grup[key].sisaAkhwat += retur;
+      }else{
+        grup[key].masukAkhwat += masuk;
+        grup[key].sisaAkhwat += retur;
+      }
+
+      grup[key].totalUang += Math.max(masuk - retur, 0) * harga;
+      return;
+    }
+
+    // Format lama: jenis transaksi Masuk / Sisa, item hanya jumlah
+    let jumlah = angka(i.jumlah);
+
+    if(jenis.includes("masuk") && tempat.includes("ikhwan")){
+      grup[key].masukIkhwan += jumlah;
+      grup[key].totalUang += jumlah * harga;
+    }
+    if(jenis.includes("masuk") && (tempat.includes("akhwat") || tempat.includes("akhawat"))){
+      grup[key].masukAkhwat += jumlah;
+      grup[key].totalUang += jumlah * harga;
+    }
+    if((jenis.includes("sisa") || jenis.includes("retur")) && tempat.includes("ikhwan")){
+      grup[key].sisaIkhwan += jumlah;
+    }
+    if((jenis.includes("sisa") || jenis.includes("retur")) && (tempat.includes("akhwat") || tempat.includes("akhawat"))){
+      grup[key].sisaAkhwat += jumlah;
+    }
+  });
+}
+
+function hitungTerjual(g){
+  return Math.max((g.masukIkhwan + g.masukAkhwat) - (g.sisaIkhwan + g.sisaAkhwat), 0);
+}
+
+function ambilHargaDanJajan(callback){
+  db.ref("items").once("value",snapItem=>{
+    let hargaMap = {};
+    if(snapItem.exists()){
+      snapItem.forEach(c=>{
+        let d = c.val() || {};
+        let nama = (d.nama || d.barang || d.name || "").toLowerCase().trim();
+        hargaMap[nama] = Number(d.harga || 0);
+      });
+    }
+
+    db.ref("jajan").once("value",snap=>{
+      callback(hargaMap, snap);
+    });
+  });
 }
 
 // =================== REKAP (FINAL FIX) ===================
@@ -468,6 +642,150 @@ container.appendChild(div);
 }
 
 
+
+// =================== REKAP BULANAN TABEL ===================
+function loadRekapBulanan(){
+  let container = document.getElementById("rekapBulanan");
+  if(!container) return;
+  container.innerHTML = "Loading...";
+
+  ambilHargaDanJajan((hargaMap, snap)=>{
+    if(!snap.exists()){
+      container.innerHTML = "Belum ada data";
+      return;
+    }
+
+    let semuaData = Object.values(snap.val()).filter(d => d && d.waktu && !isNaN(new Date(d.waktu)));
+
+    if(!semuaData.length){
+      container.innerHTML = "Belum ada data";
+      return;
+    }
+
+    let now = new Date();
+    let bulanAktif = String(now.getMonth()+1).padStart(2,"0");
+    let tahunAktif = String(now.getFullYear());
+
+    // Kalau bulan sekarang belum ada data, otomatis pilih bulan data terbaru
+    let sortedData = [...semuaData].sort((a,b)=> new Date(b.waktu) - new Date(a.waktu));
+    let adaBulanIni = semuaData.some(d=>{
+      let x = new Date(d.waktu);
+      return String(x.getMonth()+1).padStart(2,"0") === bulanAktif && String(x.getFullYear()) === tahunAktif;
+    });
+    if(!adaBulanIni){
+      let latest = new Date(sortedData[0].waktu);
+      bulanAktif = String(latest.getMonth()+1).padStart(2,"0");
+      tahunAktif = String(latest.getFullYear());
+    }
+
+    renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif);
+  });
+}
+
+function renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif){
+  let container = document.getElementById("rekapBulanan");
+
+  let namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  let tahunSet = new Set();
+  semuaData.forEach(d=> tahunSet.add(String(new Date(d.waktu).getFullYear())));
+  let tahunList = Array.from(tahunSet).sort((a,b)=>Number(b)-Number(a));
+
+  let dataBulan = semuaData.filter(d=>{
+    let x = new Date(d.waktu);
+    return String(x.getMonth()+1).padStart(2,"0") === bulanAktif && String(x.getFullYear()) === tahunAktif;
+  });
+
+  let grup = {};
+  dataBulan.forEach(d=> tambahKeGrup(grup, d, hargaMap));
+
+  let total = {masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
+
+  let rows = Object.keys(grup).sort((a,b)=> grup[a].tanggalObj - grup[b].tanggalObj).map(key=>{
+    let g = grup[key];
+    let terjual = hitungTerjual(g);
+    total.masukIkhwan += g.masukIkhwan;
+    total.masukAkhwat += g.masukAkhwat;
+    total.sisaIkhwan += g.sisaIkhwan;
+    total.sisaAkhwat += g.sisaAkhwat;
+    total.totalUang += g.totalUang;
+
+    return `
+      <tr>
+        <td>${g.label}</td>
+        <td>${g.masukIkhwan}</td>
+        <td>${g.masukAkhwat}</td>
+        <td>${g.sisaIkhwan}</td>
+        <td>${g.sisaAkhwat}</td>
+        <td>${terjual}</td>
+        <td>Rp ${g.totalUang.toLocaleString("id-ID")}</td>
+      </tr>`;
+  }).join("");
+
+  let totalTerjual = Math.max((total.masukIkhwan + total.masukAkhwat) - (total.sisaIkhwan + total.sisaAkhwat), 0);
+
+  if(!rows){
+    rows = `<tr><td colspan="7" style="text-align:center;color:#64748b;background:white">Tidak ada data pada bulan ini</td></tr>`;
+  }
+
+  container.innerHTML = `
+    <div class="laporan-card">
+      <div class="laporan-header">Rekap Bulanan</div>
+      <div class="laporan-tanggal">${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}</div>
+
+      <div class="rekap-filter">
+        <select id="bulanRekap" onchange="renderRekapBulananCache()">
+          ${namaBulan.map((b,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${String(i+1).padStart(2,"0")===bulanAktif ? "selected" : ""}>${b}</option>`).join("")}
+        </select>
+        <select id="tahunRekap" onchange="renderRekapBulananCache()">
+          ${tahunList.map(t=>`<option value="${t}" ${t===tahunAktif ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="rekap-table-wrap">
+        <table class="rekap-table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Masuk Ikhwan</th>
+              <th>Masuk Akhwat</th>
+              <th>Sisa Ikhwan</th>
+              <th>Sisa Akhwat</th>
+              <th>Terjual</th>
+              <th>Total Uang</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr style="background:#eff6ff">
+              <td><b>TOTAL</b></td>
+              <td>${total.masukIkhwan}</td>
+              <td>${total.masukAkhwat}</td>
+              <td>${total.sisaIkhwan}</td>
+              <td>${total.sisaAkhwat}</td>
+              <td>${totalTerjual}</td>
+              <td>Rp ${total.totalUang.toLocaleString("id-ID")}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rekap-summary">
+        <div>Total Terjual<br><span style="font-size:18px">${totalTerjual}</span></div>
+        <div>Total Uang<br><span style="font-size:18px">Rp ${total.totalUang.toLocaleString("id-ID")}</span></div>
+      </div>
+    </div>`;
+
+  window.__rekapBulananCache = {semuaData, hargaMap};
+}
+
+function renderRekapBulananCache(){
+  let cache = window.__rekapBulananCache;
+  if(!cache) return loadRekapBulanan();
+  let bulan = document.getElementById("bulanRekap").value;
+  let tahun = document.getElementById("tahunRekap").value;
+  renderRekapBulanan(cache.semuaData, cache.hargaMap, bulan, tahun);
+}
+
 // =================== MENU HAPUS ===================
 function toggleModeHapus(){
   modeHapusAktif = !modeHapusAktif;
@@ -572,6 +890,7 @@ function hapusYangDipilih(){
 
     loadLaporan();
     loadRekap();
+    loadRekapBulanan();
   }).catch(err=>{
     alert("Gagal menghapus: " + err.message);
   });
@@ -580,6 +899,7 @@ function hapusYangDipilih(){
 // =================== INIT ===================
 loadLaporan();
 loadRekap();
+loadRekapBulanan();
 
 db.ref("config").once("value",snap=>{
 let c=snap.val();
@@ -875,6 +1195,7 @@ db.ref("jajan/"+key+"/riwayatEdit").push(historyData).then(()=>{
   alert("Berhasil diupdate");
   loadLaporan();
   loadRekap();
+  loadRekapBulanan();
 });
 
 });
