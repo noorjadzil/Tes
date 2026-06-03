@@ -266,9 +266,6 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
       <label>Catatan</label>
       <textarea id="catatan"></textarea>
 
-      <label>Pilih Kirim ke WA</label>
-      <div id="pilihWA"></div>
-
       <button class="green" type="button" onclick="buatPreviewWA()">📝 Preview Laporan WA</button>
       <div class="preview" id="previewWA">Hasil laporan WA akan muncul di sini...</div>
 
@@ -460,7 +457,6 @@ function renderWAOnlyItems(){
         <b>${item}</b>
         <input type="number" min="0" placeholder="0" data-waonly="${item}" class="jumlahWAOnly">
       </div>
-      <input type="text" placeholder="Catatan khusus item ini (opsional)" data-waonly-catatan="${item}" class="catatanWAOnly">
     `;
     box.appendChild(div);
   });
@@ -549,9 +545,7 @@ function ambilItemsWAOnly(){
     let jumlah = input.value;
     let nama = input.getAttribute("data-waonly");
     if(jumlah && Number(jumlah) > 0){
-      let catatanInput = document.querySelector('[data-waonly-catatan="' + nama + '"]');
-      let catatan = catatanInput ? catatanInput.value.trim() : "";
-      items.push({barang:nama,jumlah:Number(jumlah),catatan:catatan,waOnly:true});
+      items.push({barang:nama,jumlah:Number(jumlah),waOnly:true});
     }
   });
   return items;
@@ -574,11 +568,7 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
   });
 
   itemsWAOnly.forEach(i=>{
-    if(i.catatan){
-      teks += `${i.barang} ${i.jumlah} (${i.catatan})\n`;
-    }else{
-      teks += `${i.barang} ${i.jumlah}\n`;
-    }
+    teks += `${i.barang} ${i.jumlah}\n`;
   });
 
   if(catatan){
@@ -594,32 +584,6 @@ function buatPreviewWA(){
   let itemsWAOnly = ambilItemsWAOnly();
   laporanText = buatTeksWA(itemsFirebase, itemsWAOnly);
   document.getElementById("previewWA").innerText = laporanText;
-}
-
-function loadWAOptions(){
-  let container = document.getElementById("pilihWA");
-  container.innerHTML="Loading...";
-
-  db.ref("config/wa").once("value",snap=>{
-    let wa = snap.val() || {};
-    container.innerHTML="";
-
-    for(let i=1;i<=4;i++){
-      if(wa["wa"+i]){
-        let div=document.createElement("div");
-        div.className="row";
-        div.innerHTML=`
-          <label style="margin:0">
-            <input type="radio" name="wa" value="${wa["wa"+i]}">
-            ${wa["wa"+i]}
-          </label>
-        `;
-        container.appendChild(div);
-      }
-    }
-
-    if(container.innerHTML==="") container.innerHTML="Belum ada nomor WA";
-  });
 }
 
 async function kirim(){
@@ -656,7 +620,6 @@ async function kirim(){
   laporanText = buatTeksWA(itemsFirebase, itemsWAOnly);
   document.getElementById("previewWA").innerText = laporanText;
 
-  let selected = document.querySelector('input[name="wa"]:checked');
 
   if(navigator.share){
     try{
@@ -672,13 +635,7 @@ async function kirim(){
       console.log("Share dibatalkan", err);
     }
   }else{
-    let url;
-    if(selected){
-      url = `https://wa.me/${selected.value}?text=${encodeURIComponent(laporanText)}`;
-    }else{
-      url = `https://wa.me/?text=${encodeURIComponent(laporanText)}`;
-    }
-    window.open(url,"_blank");
+    window.open(`https://wa.me/?text=${encodeURIComponent(laporanText)}`,"_blank");
   }
 
   alert(itemsFirebase.length > 0 ? "Berhasil disimpan dan laporan WA dibuat" : "Laporan WA dibuat. Tidak ada item yang masuk Firebase");
@@ -724,7 +681,6 @@ window.onload=function(){
   setTanggalHariIni();
   loadItems();
   loadDropdownItems();
-  loadWAOptions();
   renderWAOnlyItems();
   renderSettingWAOnly();
 };
