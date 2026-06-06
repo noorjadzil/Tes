@@ -206,6 +206,32 @@ font-weight:800;
 color:#1e3a8a;
 }
 
+
+.share-bulanan-btn{
+width:100%;
+margin-top:10px;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#16a34a;
+color:white;
+font-weight:900;
+cursor:pointer;
+}
+
+.share-bulanan-btn:disabled{
+background:#94a3b8;
+cursor:not-allowed;
+}
+
+.share-note{
+font-size:12px;
+color:#64748b;
+font-weight:700;
+margin-top:7px;
+line-height:1.4;
+}
+
 img{
 width:100%;
 border-radius:10px;
@@ -727,10 +753,24 @@ function renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif){
     rows = `<tr><td colspan="7" style="text-align:center;color:#64748b;background:white">Tidak ada data pada bulan ini</td></tr>`;
   }
 
+  window.__rekapBulananLast = {
+    semuaData,
+    hargaMap,
+    bulanAktif,
+    tahunAktif,
+    judul: `Rekap Bulanan ${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}`,
+    grup,
+    total,
+    totalTerjual
+  };
+
   container.innerHTML = `
     <div class="laporan-card">
       <div class="laporan-header">Rekap Bulanan</div>
       <div class="laporan-tanggal">${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}</div>
+
+      <button class="share-bulanan-btn" onclick="kirimGambarRekapBulanan()">📷 Kirim Gambar Bulanan ke WA</button>
+      <div class="share-note">Di HP, gambar bisa langsung dibagikan ke WhatsApp. Kalau browser tidak mendukung, gambar akan di-download dulu.</div>
 
       <div class="rekap-filter">
         <select id="bulanRekap" onchange="renderRekapBulananCache()">
@@ -784,6 +824,257 @@ function renderRekapBulananCache(){
   let bulan = document.getElementById("bulanRekap").value;
   let tahun = document.getElementById("tahunRekap").value;
   renderRekapBulanan(cache.semuaData, cache.hargaMap, bulan, tahun);
+}
+
+
+// =================== KIRIM GAMBAR BULANAN KE WHATSAPP ===================
+function buatNamaFileAman(text){
+  return String(text || "rekap-bulanan")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/(^-|-$)/g,"") + ".png";
+}
+
+function canvasRoundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight){
+  let words = String(text || "").split(" ");
+  let line = "";
+  let lines = [];
+
+  words.forEach(word=>{
+    let test = line ? line + " " + word : word;
+    if(ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = word;
+    }else{
+      line = test;
+    }
+  });
+
+  if(line) lines.push(line);
+  lines.forEach((ln, i)=>ctx.fillText(ln, x, y + (i * lineHeight)));
+  return lines.length;
+}
+
+function gambarRekapBulananBlob(){
+  return new Promise((resolve, reject)=>{
+    let data = window.__rekapBulananLast;
+    if(!data){
+      reject(new Error("Data bulanan belum siap."));
+      return;
+    }
+
+    let keys = Object.keys(data.grup || {}).sort((a,b)=> data.grup[a].tanggalObj - data.grup[b].tanggalObj);
+    let rowCount = Math.max(keys.length, 1);
+    let width = 1200;
+    let headerH = 145;
+    let rowH = 52;
+    let totalH = 62;
+    let summaryH = 105;
+    let footerH = 45;
+    let height = headerH + rowH + (rowCount * rowH) + totalH + summaryH + footerH;
+
+    let canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d");
+
+    // background
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0,0,width,height);
+
+    // top header
+    ctx.fillStyle = "#1e3a8a";
+    ctx.fillRect(0,0,width,120);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 42px Segoe UI, Arial";
+    ctx.fillText(data.judul, 40, 55);
+    ctx.font = "bold 24px Segoe UI, Arial";
+    ctx.fillText("Laporan Jajan", 40, 92);
+
+    // date generated
+    ctx.textAlign = "right";
+    ctx.font = "20px Segoe UI, Arial";
+    ctx.fillText("Dibuat: " + new Date().toLocaleString("id-ID"), width - 40, 70);
+    ctx.textAlign = "left";
+
+    // table card
+    let tableX = 30;
+    let tableY = 145;
+    let tableW = width - 60;
+    let cols = [260, 140, 145, 140, 145, 120, 190];
+    let headers = ["Tanggal", "Masuk Ikhwan", "Masuk Akhwat", "Sisa Ikhwan", "Sisa Akhwat", "Terjual", "Total Uang"];
+
+    ctx.fillStyle = "white";
+    canvasRoundRect(ctx, tableX, tableY, tableW, rowH + rowCount*rowH + totalH, 18);
+    ctx.fill();
+
+    // table header
+    ctx.fillStyle = "#1e3a8a";
+    canvasRoundRect(ctx, tableX, tableY, tableW, rowH, 18);
+    ctx.fill();
+    ctx.fillRect(tableX, tableY + 25, tableW, rowH - 25);
+
+    let x = tableX;
+    ctx.font = "bold 18px Segoe UI, Arial";
+    ctx.fillStyle = "white";
+    headers.forEach((h, idx)=>{
+      ctx.textAlign = idx === 0 ? "left" : "center";
+      let tx = idx === 0 ? x + 16 : x + cols[idx]/2;
+      ctx.fillText(h, tx, tableY + 34);
+      x += cols[idx];
+    });
+
+    // rows
+    let y = tableY + rowH;
+    ctx.font = "bold 18px Segoe UI, Arial";
+    ctx.textBaseline = "middle";
+
+    if(!keys.length){
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "center";
+      ctx.fillText("Tidak ada data pada bulan ini", width/2, y + rowH/2);
+      y += rowH;
+    }else{
+      keys.forEach((key, rowIdx)=>{
+        let g = data.grup[key];
+        let terjual = hitungTerjual(g);
+        let vals = [g.label, g.masukIkhwan, g.masukAkhwat, g.sisaIkhwan, g.sisaAkhwat, terjual, "Rp " + g.totalUang.toLocaleString("id-ID")];
+
+        ctx.fillStyle = rowIdx % 2 === 0 ? "#ffffff" : "#f1f5f9";
+        ctx.fillRect(tableX, y, tableW, rowH);
+
+        let cx = tableX;
+        vals.forEach((v, idx)=>{
+          ctx.fillStyle = idx === 0 ? "#1e3a8a" : "#0f172a";
+          ctx.textAlign = idx === 0 ? "left" : "center";
+          let tx = idx === 0 ? cx + 16 : cx + cols[idx]/2;
+          ctx.fillText(String(v), tx, y + rowH/2);
+          cx += cols[idx];
+        });
+
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.beginPath();
+        ctx.moveTo(tableX, y + rowH);
+        ctx.lineTo(tableX + tableW, y + rowH);
+        ctx.stroke();
+        y += rowH;
+      });
+    }
+
+    // total row
+    let t = data.total || {};
+    let totalVals = ["TOTAL", t.masukIkhwan||0, t.masukAkhwat||0, t.sisaIkhwan||0, t.sisaAkhwat||0, data.totalTerjual||0, "Rp " + Number(t.totalUang||0).toLocaleString("id-ID")];
+    ctx.fillStyle = "#dbeafe";
+    ctx.fillRect(tableX, y, tableW, totalH);
+    ctx.font = "bold 20px Segoe UI, Arial";
+    let cx = tableX;
+    totalVals.forEach((v, idx)=>{
+      ctx.fillStyle = idx === 0 ? "#1e3a8a" : "#0f172a";
+      ctx.textAlign = idx === 0 ? "left" : "center";
+      let tx = idx === 0 ? cx + 16 : cx + cols[idx]/2;
+      ctx.fillText(String(v), tx, y + totalH/2);
+      cx += cols[idx];
+    });
+
+    // summary boxes
+    y += totalH + 28;
+    let boxW = (tableW - 20) / 2;
+    let boxH = 78;
+    [["Total Terjual", String(data.totalTerjual || 0)], ["Total Uang", "Rp " + Number((data.total||{}).totalUang || 0).toLocaleString("id-ID")]].forEach((item, idx)=>{
+      let bx = tableX + (idx * (boxW + 20));
+      ctx.fillStyle = "#eff6ff";
+      canvasRoundRect(ctx, bx, y, boxW, boxH, 16);
+      ctx.fill();
+      ctx.strokeStyle = "#bfdbfe";
+      ctx.stroke();
+      ctx.fillStyle = "#1e3a8a";
+      ctx.textAlign = "left";
+      ctx.font = "bold 18px Segoe UI, Arial";
+      ctx.fillText(item[0], bx + 22, y + 27);
+      ctx.font = "bold 30px Segoe UI, Arial";
+      ctx.fillText(item[1], bx + 22, y + 58);
+    });
+
+    // footer
+    ctx.fillStyle = "#64748b";
+    ctx.font = "16px Segoe UI, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Gambar ini dibuat otomatis dari aplikasi Laporan Jajan", width/2, height - 24);
+
+    canvas.toBlob(blob=>{
+      if(!blob){
+        reject(new Error("Gagal membuat gambar."));
+        return;
+      }
+      resolve(blob);
+    }, "image/png", 0.95);
+  });
+}
+
+async function kirimGambarRekapBulanan(){
+  let btn = document.querySelector(".share-bulanan-btn");
+  let oldText = btn ? btn.innerText : "";
+  try{
+    if(btn){
+      btn.disabled = true;
+      btn.innerText = "⏳ Membuat gambar...";
+    }
+
+    let data = window.__rekapBulananLast;
+    if(!data){
+      alert("Data bulanan belum siap. Coba buka tab Bulanan lagi.");
+      return;
+    }
+
+    let blob = await gambarRekapBulananBlob();
+    let filename = buatNamaFileAman(data.judul);
+    let file = new File([blob], filename, {type:"image/png"});
+    let pesan = data.judul + "\nTotal Terjual: " + (data.totalTerjual || 0) + "\nTotal Uang: Rp " + Number((data.total||{}).totalUang || 0).toLocaleString("id-ID");
+
+    // Cara terbaik di HP: Web Share API bisa membuka WhatsApp dengan gambar terlampir.
+    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      await navigator.share({
+        title: data.judul,
+        text: pesan,
+        files: [file]
+      });
+      return;
+    }
+
+    // Fallback: download gambar dulu, lalu buka WhatsApp berisi pesan.
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+
+    let waUrl = "https://wa.me/?text=" + encodeURIComponent(pesan + "\n\nGambar rekap sudah ter-download. Lampirkan gambar PNG tersebut di WhatsApp.");
+    window.open(waUrl, "_blank");
+  }catch(err){
+    alert("Gagal kirim gambar: " + err.message);
+  }finally{
+    if(btn){
+      btn.disabled = false;
+      btn.innerText = oldText || "📷 Kirim Gambar Bulanan ke WA";
+    }
+  }
 }
 
 // =================== MENU HAPUS ===================
