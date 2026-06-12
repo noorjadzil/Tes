@@ -585,9 +585,19 @@ function ambilHargaItem(i, hargaMap){
   return Number(i.harga || hargaMap[nama] || 0);
 }
 
+function kategoriLaporanKhusus(i){
+  let nama = normalText(i.barang);
+  let kategori = normalText(i.kategori);
+
+  if(kategori.includes("mie ayam") || nama.includes("mie ayam")) return "Mie Ayam";
+  if(kategori.includes("bakso") || kategori.includes("terang bulan") || nama.includes("bakso") || nama.includes("terang bulan")) return "Bakso & Terang Bulan";
+  if(kategori.includes("es") || kategori.includes("snack") || kategori.includes("jajanan 3000") || nama.startsWith("es ") || nama.includes("jus ") || nama.includes("aneka snack") || nama.includes("jajanan 3000")) return "Es, Snack & Jajanan 3000";
+
+  return "Item Khusus Lain";
+}
+
 function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
-  let grup = {};
-  let totalPerItem = {};
+  let laporan = {};
 
   dataBulan.forEach(d=>{
     if(!d.waktu) return;
@@ -604,15 +614,18 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
       let nama = String(i.barang || "").trim();
       if(!nama) return;
 
+      let grupNama = kategoriLaporanKhusus(i);
+      if(!laporan[grupNama]) laporan[grupNama] = {baris:{}, totalPerItem:{}, totalSemua:{masuk:0,sisa:0,totalUang:0}};
+
       let masuk = 0;
       let sisa = 0;
 
-      // Mendukung format baru: {barang, masuk, retur}
+      // Format baru: {barang, masuk, retur}. Ini aman untuk data baru.
       if(i.masuk !== undefined || i.retur !== undefined){
         masuk = angka(i.masuk);
         sisa = angka(i.retur);
       }else{
-        // Mendukung format lama: transaksi punya jenis Masuk / Sisa, item punya jumlah
+        // Format lama tetap dibaca: transaksi punya jenis Masuk/Sisa dan item punya jumlah.
         let jumlah = angka(i.jumlah);
         if(jenis.includes("masuk")) masuk = jumlah;
         if(jenis.includes("sisa") || jenis.includes("retur")) sisa = jumlah;
@@ -620,88 +633,123 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
 
       let harga = ambilHargaItem(i, hargaMap);
       let key = tanggalKey + "||" + nama;
+      let g = laporan[grupNama];
 
-      if(!grup[key]){
-        grup[key] = {tanggalKey, tanggalLabel, tanggalObj:dateObj, nama, masuk:0, sisa:0, harga: harga};
+      if(!g.baris[key]){
+        g.baris[key] = {tanggalKey, tanggalLabel, tanggalObj:dateObj, nama, masuk:0, sisa:0, harga:harga};
       }
 
-      grup[key].masuk += masuk;
-      grup[key].sisa += sisa;
-      if(harga) grup[key].harga = harga;
+      g.baris[key].masuk += masuk;
+      g.baris[key].sisa += sisa;
+      if(harga) g.baris[key].harga = harga;
 
-      if(!totalPerItem[nama]) totalPerItem[nama] = {nama, masuk:0, sisa:0, harga:harga};
-      totalPerItem[nama].masuk += masuk;
-      totalPerItem[nama].sisa += sisa;
-      if(harga) totalPerItem[nama].harga = harga;
+      if(!g.totalPerItem[nama]) g.totalPerItem[nama] = {nama, masuk:0, sisa:0, harga:harga};
+      g.totalPerItem[nama].masuk += masuk;
+      g.totalPerItem[nama].sisa += sisa;
+      if(harga) g.totalPerItem[nama].harga = harga;
     });
   });
 
-  let keys = Object.keys(grup).sort((a,b)=>{
-    let A = grup[a], B = grup[b];
-    return A.tanggalObj - B.tanggalObj || A.nama.localeCompare(B.nama);
-  });
+  let urutanGrup = ["Mie Ayam", "Bakso & Terang Bulan", "Es, Snack & Jajanan 3000", "Item Khusus Lain"];
+  let adaIsi = urutanGrup.some(nama => laporan[nama] && Object.keys(laporan[nama].baris).length);
 
-  if(!keys.length){
+  if(!adaIsi){
     return `
-      <div class="detail-khusus-title">Rincian Bulanan Item Khusus</div>
-      <div class="detail-note">Belum ada data item khusus pada bulan ini.</div>`;
+      <div class="detail-khusus-title">Laporan Produk Terpisah</div>
+      <div class="detail-note">Belum ada data produk terpisah pada bulan ini.</div>`;
   }
 
-  let rows = keys.map(key=>{
-    let g = grup[key];
-    let terjual = Math.max(g.masuk - g.sisa, 0);
-    let total = terjual * Number(g.harga || 0);
-    return `
-      <tr>
-        <td>${g.tanggalLabel}</td>
-        <td>${escText(g.nama)}</td>
-        <td>${g.masuk}</td>
-        <td>${g.sisa}</td>
-        <td>${terjual}</td>
-        <td>Rp ${Number(g.harga||0).toLocaleString("id-ID")}</td>
-        <td>Rp ${total.toLocaleString("id-ID")}</td>
-      </tr>`;
-  }).join("");
-
-  let totalRows = Object.values(totalPerItem).sort((a,b)=>a.nama.localeCompare(b.nama)).map(g=>{
-    let terjual = Math.max(g.masuk - g.sisa, 0);
-    let total = terjual * Number(g.harga || 0);
-    return `
-      <tr class="item-khusus-total">
-        <td colspan="2">TOTAL ${escText(g.nama)}</td>
-        <td>${g.masuk}</td>
-        <td>${g.sisa}</td>
-        <td>${terjual}</td>
-        <td>Rp ${Number(g.harga||0).toLocaleString("id-ID")}</td>
-        <td>Rp ${total.toLocaleString("id-ID")}</td>
-      </tr>`;
-  }).join("");
-
-  return `
-    <div class="detail-khusus-title">Rincian Bulanan Item Khusus</div>
+  let html = `
+    <div class="detail-khusus-title">Laporan Produk Terpisah</div>
     <div class="detail-note">
-      Hitungan per tanggal: Masuk - Sisa = Terjual, lalu Terjual × Harga = Total.
-      Contoh: Es Teh masuk 10, sisa 1, harga 3.700 → 9 × 3.700 = 33.300.
-    </div>
-    <div class="rekap-table-wrap">
-      <table class="rekap-table">
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Item</th>
-            <th>Masuk</th>
-            <th>Sisa</th>
-            <th>Terjual</th>
-            <th>Harga</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-          ${totalRows}
-        </tbody>
-      </table>
+      Laporan ini dipisah per pemilik/kelompok produk. Hitungan: Masuk - Sisa = Terjual, lalu Terjual × Harga = Total.
+      Bagian Cilok/Tahu/Batagor tetap memakai rekap lama dan tidak dicampur dengan kelompok ini.
     </div>`;
+
+  urutanGrup.forEach(grupNama=>{
+    let g = laporan[grupNama];
+    if(!g || !Object.keys(g.baris).length) return;
+
+    let keys = Object.keys(g.baris).sort((a,b)=>{
+      let A = g.baris[a], B = g.baris[b];
+      return A.tanggalObj - B.tanggalObj || A.nama.localeCompare(B.nama);
+    });
+
+    let totalMasuk = 0;
+    let totalSisa = 0;
+    let totalTerjualSemua = 0;
+    let totalUangSemua = 0;
+
+    let rows = keys.map(key=>{
+      let x = g.baris[key];
+      let terjual = Math.max(x.masuk - x.sisa, 0);
+      let total = terjual * Number(x.harga || 0);
+
+      totalMasuk += x.masuk;
+      totalSisa += x.sisa;
+      totalTerjualSemua += terjual;
+      totalUangSemua += total;
+
+      return `
+        <tr>
+          <td>${x.tanggalLabel}</td>
+          <td>${escText(x.nama)}</td>
+          <td>${x.masuk}</td>
+          <td>${x.sisa}</td>
+          <td>${terjual}</td>
+          <td>Rp ${Number(x.harga||0).toLocaleString("id-ID")}</td>
+          <td>Rp ${total.toLocaleString("id-ID")}</td>
+        </tr>`;
+    }).join("");
+
+    let totalRows = Object.values(g.totalPerItem).sort((a,b)=>a.nama.localeCompare(b.nama)).map(x=>{
+      let terjual = Math.max(x.masuk - x.sisa, 0);
+      let total = terjual * Number(x.harga || 0);
+      return `
+        <tr class="item-khusus-total">
+          <td colspan="2">TOTAL ${escText(x.nama)}</td>
+          <td>${x.masuk}</td>
+          <td>${x.sisa}</td>
+          <td>${terjual}</td>
+          <td>Rp ${Number(x.harga||0).toLocaleString("id-ID")}</td>
+          <td>Rp ${total.toLocaleString("id-ID")}</td>
+        </tr>`;
+    }).join("");
+
+    html += `
+      <div style="margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px">
+        <div style="font-size:15px;font-weight:900;color:#1e3a8a;margin-bottom:7px">${grupNama}</div>
+        <div class="rekap-table-wrap">
+          <table class="rekap-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Item</th>
+                <th>Masuk</th>
+                <th>Sisa</th>
+                <th>Terjual</th>
+                <th>Harga</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+              ${totalRows}
+              <tr style="background:#dbeafe;font-weight:900">
+                <td colspan="2">TOTAL LAPORAN ${grupNama}</td>
+                <td>${totalMasuk}</td>
+                <td>${totalSisa}</td>
+                <td>${totalTerjualSemua}</td>
+                <td>-</td>
+                <td>Rp ${totalUangSemua.toLocaleString("id-ID")}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  });
+
+  return html;
 }
 
 function ambilHargaDanJajan(callback){
@@ -951,7 +999,7 @@ function renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif){
 
   container.innerHTML = `
     <div class="laporan-card">
-      <div class="laporan-header">Rekap Bulanan</div>
+      <div class="laporan-header">Rekap Bulanan Cilok & Jajanan Lama</div>
       <div class="laporan-tanggal">${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}</div>
 
       <button class="share-bulanan-btn" onclick="kirimGambarRekapBulanan()">📷 Kirim Gambar Bulanan ke WA</button>
