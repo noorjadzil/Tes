@@ -128,6 +128,125 @@ outline:3px solid #ef4444;
 background:#fff7f7;
 }
 
+.rekap-table-wrap{
+overflow-x:auto;
+margin-top:10px;
+border:1px solid #e2e8f0;
+border-radius:12px;
+}
+
+.rekap-table{
+width:100%;
+border-collapse:collapse;
+font-size:12px;
+min-width:760px;
+background:white;
+}
+
+.rekap-table th{
+background:#1e3a8a;
+color:white;
+padding:9px 7px;
+text-align:center;
+position:sticky;
+top:0;
+}
+
+.rekap-table td{
+border-bottom:1px solid #e2e8f0;
+padding:8px 7px;
+text-align:center;
+font-weight:700;
+}
+
+.rekap-table td:first-child,
+.rekap-table th:first-child{
+text-align:left;
+position:sticky;
+left:0;
+z-index:2;
+}
+
+.rekap-table td:first-child{
+background:#f8fafc;
+color:#1e3a8a;
+}
+
+.rekap-filter{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin:10px 0;
+}
+
+.rekap-filter select{
+width:100%;
+padding:10px;
+border:1px solid #cbd5e1;
+border-radius:10px;
+font-weight:700;
+color:#1e3a8a;
+background:white;
+}
+
+.rekap-summary{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-top:10px;
+}
+
+.rekap-summary div{
+background:#eff6ff;
+border:1px solid #bfdbfe;
+border-radius:10px;
+padding:9px;
+font-size:12px;
+font-weight:800;
+color:#1e3a8a;
+}
+
+
+.share-bulanan-btn{
+width:100%;
+margin-top:10px;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#16a34a;
+color:white;
+font-weight:900;
+cursor:pointer;
+}
+
+.share-bulanan-btn:disabled{
+background:#94a3b8;
+cursor:not-allowed;
+}
+
+.share-note{
+font-size:12px;
+color:#64748b;
+font-weight:700;
+margin-top:7px;
+line-height:1.4;
+}
+
+.kategori-section{
+background:#f8fafc;
+border:1px solid #e2e8f0;
+border-radius:10px;
+padding:8px;
+margin:8px 0;
+}
+
+.kategori-title{
+color:#1e3a8a;
+font-weight:900;
+font-size:13px;
+margin-bottom:5px;
+}
+
 img{
 width:100%;
 border-radius:10px;
@@ -159,6 +278,7 @@ margin-bottom:10px;
 <div style="display:flex;margin-bottom:10px;">
   <button id="btnLaporan" class="tab-btn active" onclick="showTab('laporan')">Laporan</button>
   <button id="btnRekap" class="tab-btn nonactive" onclick="showTab('rekap')">Rekap</button>
+  <button id="btnBulanan" class="tab-btn nonactive" onclick="showTab('bulanan')">Bulanan</button>
 </div>
 
 <button id="btnModeHapus" class="delete-toggle-btn" onclick="toggleModeHapus()">🗑️ Menu Hapus</button>
@@ -185,6 +305,10 @@ margin-bottom:10px;
   <div id="rekapHarian">Loading...</div>
 </div>
 
+<div id="tabBulanan" style="display:none;">
+  <div id="rekapBulanan">Loading...</div>
+</div>
+
 </div>
 </div>
 
@@ -201,22 +325,26 @@ function kembali(){
 function showTab(tab){
   const laporan = document.getElementById("tabLaporan");
   const rekap = document.getElementById("tabRekap");
+  const bulanan = document.getElementById("tabBulanan");
 
   const btnLaporan = document.getElementById("btnLaporan");
   const btnRekap = document.getElementById("btnRekap");
+  const btnBulanan = document.getElementById("btnBulanan");
+  const btnModeHapus = document.getElementById("btnModeHapus");
+  const deleteToolbar = document.getElementById("deleteToolbar");
 
-  if(tab==="laporan"){
-    laporan.style.display="block";
-    rekap.style.display="none";
-    btnLaporan.className="tab-btn active";
-    btnRekap.className="tab-btn nonactive";
-  }else{
-    if(modeHapusAktif) toggleModeHapus();
-    laporan.style.display="none";
-    rekap.style.display="block";
-    btnLaporan.className="tab-btn nonactive";
-    btnRekap.className="tab-btn active";
-  }
+  if(modeHapusAktif && tab !== "laporan") toggleModeHapus();
+
+  laporan.style.display = tab === "laporan" ? "block" : "none";
+  rekap.style.display = tab === "rekap" ? "block" : "none";
+  bulanan.style.display = tab === "bulanan" ? "block" : "none";
+
+  btnLaporan.className = tab === "laporan" ? "tab-btn active" : "tab-btn nonactive";
+  btnRekap.className = tab === "rekap" ? "tab-btn active" : "tab-btn nonactive";
+  btnBulanan.className = tab === "bulanan" ? "tab-btn active" : "tab-btn nonactive";
+
+  if(btnModeHapus) btnModeHapus.style.display = tab === "laporan" ? "block" : "none";
+  if(deleteToolbar && tab !== "laporan") deleteToolbar.classList.remove("active");
 }
 
 // =================== FIREBASE ===================
@@ -250,6 +378,45 @@ let tanggal = date.toLocaleDateString("id-ID",{day:"numeric", month:"long", year
 return `${hari}, ${tanggal}`;
 }
 
+
+// =================== KATEGORI AMAN ===================
+function safeHTML(v){
+  return String(v ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function namaKategoriItem(i){
+  // Data lama tidak punya kategori. Jangan diubah, cukup dibaca sebagai kelompok lama.
+  return (i && i.kategori) ? String(i.kategori).trim() : "Cilok & Jajanan";
+}
+
+function formatItemLine(i){
+  if(i.masuk !== undefined || i.retur !== undefined){
+    return `• ${safeHTML(i.barang)} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`;
+  }
+  return `• ${safeHTML(i.barang)} (${Number(i.jumlah||0)})`;
+}
+
+function itemsGroupedHTML(items){
+  let grup = {};
+  (items || []).forEach(i=>{
+    let kategori = namaKategoriItem(i);
+    if(!grup[kategori]) grup[kategori] = [];
+    grup[kategori].push(i);
+  });
+
+  return Object.keys(grup).map(kategori=>`
+    <div class="kategori-section">
+      <div class="kategori-title">${safeHTML(kategori)}</div>
+      ${grup[kategori].map(formatItemLine).join("<br>")}
+    </div>
+  `).join("");
+}
+
 // =================== LAPORAN ===================
 function loadLaporan(){
 
@@ -278,14 +445,7 @@ arr.reverse();
 
 arr.forEach(d=>{
 
-let items = (d.items || [])
-.map(i=>{
-  if(i.masuk !== undefined || i.retur !== undefined){
-    return `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`;
-  }
-  return `• ${i.barang} (${Number(i.jumlah||0)})`;
-})
-.join("<br>");
+let items = itemsGroupedHTML(d.items || []);
 
 let div=document.createElement("div");
 div.className="laporan-card";
@@ -336,141 +496,655 @@ if(modeHapusAktif){
 });
 }
 
-// =================== REKAP (FINAL FIX) ===================
+
+// =================== HITUNG REKAP FLEKSIBEL ===================
+function angka(v){
+  return Number(v || 0);
+}
+
+function tambahKeGrup(grup, d, hargaMap){
+  if(!d.waktu) return;
+
+  let dateObj = new Date(d.waktu);
+  if(isNaN(dateObj)) return;
+
+  let key = dateObj.toLocaleDateString("id-ID", {year:"numeric", month:"2-digit", day:"2-digit"});
+  let label = formatTanggalHari(dateObj);
+
+  if(!grup[key]){
+    grup[key]={label, tanggalObj:dateObj, masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
+  }
+
+  let jenis = (d.jenis || "").toLowerCase();
+  let tempat = (d.tempat || "").toLowerCase();
+
+  (d.items || []).forEach(i=>{
+    let nama = (i.barang || "").toLowerCase().trim();
+    let harga = hargaMap[nama] || 0;
+
+    // Format baru: dalam 1 item ada masuk dan retur/sisa
+    if(i.masuk !== undefined || i.retur !== undefined){
+      let masuk = angka(i.masuk);
+      let retur = angka(i.retur);
+
+      if(tempat.includes("ikhwan")){
+        grup[key].masukIkhwan += masuk;
+        grup[key].sisaIkhwan += retur;
+      }else if(tempat.includes("akhwat") || tempat.includes("akhawat")){
+        grup[key].masukAkhwat += masuk;
+        grup[key].sisaAkhwat += retur;
+      }else{
+        grup[key].masukAkhwat += masuk;
+        grup[key].sisaAkhwat += retur;
+      }
+
+      grup[key].totalUang += Math.max(masuk - retur, 0) * harga;
+      return;
+    }
+
+    // Format lama: jenis transaksi Masuk / Sisa, item hanya jumlah
+    let jumlah = angka(i.jumlah);
+
+    if(jenis.includes("masuk") && tempat.includes("ikhwan")){
+      grup[key].masukIkhwan += jumlah;
+      grup[key].totalUang += jumlah * harga;
+    }
+    if(jenis.includes("masuk") && (tempat.includes("akhwat") || tempat.includes("akhawat"))){
+      grup[key].masukAkhwat += jumlah;
+      grup[key].totalUang += jumlah * harga;
+    }
+    if((jenis.includes("sisa") || jenis.includes("retur")) && tempat.includes("ikhwan")){
+      grup[key].sisaIkhwan += jumlah;
+    }
+    if((jenis.includes("sisa") || jenis.includes("retur")) && (tempat.includes("akhwat") || tempat.includes("akhawat"))){
+      grup[key].sisaAkhwat += jumlah;
+    }
+  });
+}
+
+function hitungTerjual(g){
+  return Math.max((g.masukIkhwan + g.masukAkhwat) - (g.sisaIkhwan + g.sisaAkhwat), 0);
+}
+
+
+function kosongGrup(label, tanggalObj){
+  return {label, tanggalObj, masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
+}
+
+function tambahKeGrupKategori(grupKategori, d, hargaMap){
+  if(!d.waktu) return;
+  let dateObj = new Date(d.waktu);
+  if(isNaN(dateObj)) return;
+
+  let key = dateObj.toLocaleDateString("id-ID", {year:"numeric", month:"2-digit", day:"2-digit"});
+  let label = formatTanggalHari(dateObj);
+  let jenis = (d.jenis || "").toLowerCase();
+  let tempat = (d.tempat || "").toLowerCase();
+
+  (d.items || []).forEach(i=>{
+    let kategori = namaKategoriItem(i);
+    if(!grupKategori[kategori]) grupKategori[kategori] = {};
+    if(!grupKategori[kategori][key]) grupKategori[kategori][key] = kosongGrup(label, dateObj);
+
+    let g = grupKategori[kategori][key];
+    let nama = (i.barang || "").toLowerCase().trim();
+    let harga = hargaMap[nama] || 0;
+
+    if(i.masuk !== undefined || i.retur !== undefined){
+      let masuk = angka(i.masuk);
+      let retur = angka(i.retur);
+      if(tempat.includes("ikhwan")){
+        g.masukIkhwan += masuk;
+        g.sisaIkhwan += retur;
+      }else{
+        g.masukAkhwat += masuk;
+        g.sisaAkhwat += retur;
+      }
+      g.totalUang += Math.max(masuk - retur, 0) * harga;
+      return;
+    }
+
+    let jumlah = angka(i.jumlah);
+    if(jenis.includes("masuk") && tempat.includes("ikhwan")){
+      g.masukIkhwan += jumlah;
+      g.totalUang += jumlah * harga;
+    }else if(jenis.includes("masuk")){
+      g.masukAkhwat += jumlah;
+      g.totalUang += jumlah * harga;
+    }else if((jenis.includes("sisa") || jenis.includes("retur")) && tempat.includes("ikhwan")){
+      g.sisaIkhwan += jumlah;
+    }else if(jenis.includes("sisa") || jenis.includes("retur")){
+      g.sisaAkhwat += jumlah;
+    }
+  });
+}
+
+function gabungGrupKategori(grupKategori){
+  let hasil = {};
+  Object.values(grupKategori || {}).forEach(grupTanggal=>{
+    Object.keys(grupTanggal).forEach(key=>{
+      let g = grupTanggal[key];
+      if(!hasil[key]) hasil[key] = kosongGrup(g.label, g.tanggalObj);
+      hasil[key].masukIkhwan += g.masukIkhwan;
+      hasil[key].masukAkhwat += g.masukAkhwat;
+      hasil[key].sisaIkhwan += g.sisaIkhwan;
+      hasil[key].sisaAkhwat += g.sisaAkhwat;
+      hasil[key].totalUang += g.totalUang;
+    });
+  });
+  return hasil;
+}
+
+function ambilHargaDanJajan(callback){
+  db.ref("items").once("value",snapItem=>{
+    let hargaMap = {};
+    if(snapItem.exists()){
+      snapItem.forEach(c=>{
+        let d = c.val() || {};
+        let nama = (d.nama || d.barang || d.name || "").toLowerCase().trim();
+        hargaMap[nama] = Number(d.harga || 0);
+      });
+    }
+
+    db.ref("jajan").once("value",snap=>{
+      callback(hargaMap, snap);
+    });
+  });
+}
+
+// =================== REKAP (DIPISAH KATEGORI, AMAN UNTUK DATA LAMA) ===================
 function loadRekap(){
+  let container=document.getElementById("rekapHarian");
+  container.innerHTML="Loading...";
 
-let container=document.getElementById("rekapHarian");
-container.innerHTML="Loading...";
+  ambilHargaDanJajan((hargaMap, snap)=>{
+    if(!snap.exists()){
+      container.innerHTML="Belum ada data";
+      return;
+    }
 
-// ambil harga item
-db.ref("items").once("value",snapItem=>{
+    let data = Object.values(snap.val());
+    let grupKategori = {};
+    data.forEach(d=> tambahKeGrupKategori(grupKategori, d, hargaMap));
 
-let hargaMap = {};
+    container.innerHTML = "";
 
-if(snapItem.exists()){
-snapItem.forEach(c=>{
-let d = c.val();
-let nama = (d.nama || "").toLowerCase().trim();
-hargaMap[nama] = Number(d.harga || 0);
-});
+    let kategoriList = Object.keys(grupKategori).sort((a,b)=>{
+      if(a === "Cilok & Jajanan") return -1;
+      if(b === "Cilok & Jajanan") return 1;
+      return a.localeCompare(b);
+    });
+
+    if(!kategoriList.length){
+      container.innerHTML="Belum ada data";
+      return;
+    }
+
+    kategoriList.forEach(kategori=>{
+      let grup = grupKategori[kategori];
+      let keys = Object.keys(grup).sort((a,b)=> grup[b].tanggalObj - grup[a].tanggalObj);
+
+      let header = document.createElement("div");
+      header.className = "laporan-card";
+      header.innerHTML = `<div class="laporan-header">Rekap: ${safeHTML(kategori)}</div>`;
+      container.appendChild(header);
+
+      keys.forEach(key=>{
+        let g = grup[key];
+        let terjual = hitungTerjual(g);
+        let div=document.createElement("div");
+        div.className="laporan-card";
+        div.innerHTML=`
+          <div class="laporan-tanggal">${g.label}</div>
+          <div class="laporan-items">
+            Masuk Ikhwan: ${g.masukIkhwan}<br>
+            Masuk Akhwat: ${g.masukAkhwat}<br>
+            Sisa Ikhwan: ${g.sisaIkhwan}<br>
+            Sisa Akhwat: ${g.sisaAkhwat}<br><br>
+            <b>Terjual: ${terjual}</b><br>
+            <b>Total: Rp ${g.totalUang.toLocaleString("id-ID")}</b>
+          </div>`;
+        container.appendChild(div);
+      });
+    });
+  });
 }
 
-// ambil data jajan
-db.ref("jajan").once("value",snap=>{
 
-if(!snap.exists()){
-container.innerHTML="Belum ada data";
-return;
+// =================== REKAP BULANAN TABEL ===================
+function loadRekapBulanan(){
+  let container = document.getElementById("rekapBulanan");
+  if(!container) return;
+  container.innerHTML = "Loading...";
+
+  ambilHargaDanJajan((hargaMap, snap)=>{
+    if(!snap.exists()){
+      container.innerHTML = "Belum ada data";
+      return;
+    }
+
+    let semuaData = Object.values(snap.val()).filter(d => d && d.waktu && !isNaN(new Date(d.waktu)));
+
+    if(!semuaData.length){
+      container.innerHTML = "Belum ada data";
+      return;
+    }
+
+    let now = new Date();
+    let bulanAktif = String(now.getMonth()+1).padStart(2,"0");
+    let tahunAktif = String(now.getFullYear());
+
+    // Kalau bulan sekarang belum ada data, otomatis pilih bulan data terbaru
+    let sortedData = [...semuaData].sort((a,b)=> new Date(b.waktu) - new Date(a.waktu));
+    let adaBulanIni = semuaData.some(d=>{
+      let x = new Date(d.waktu);
+      return String(x.getMonth()+1).padStart(2,"0") === bulanAktif && String(x.getFullYear()) === tahunAktif;
+    });
+    if(!adaBulanIni){
+      let latest = new Date(sortedData[0].waktu);
+      bulanAktif = String(latest.getMonth()+1).padStart(2,"0");
+      tahunAktif = String(latest.getFullYear());
+    }
+
+    renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif);
+  });
 }
 
-let data=Object.values(snap.val());
-let grup={};
+function renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif){
+  let container = document.getElementById("rekapBulanan");
 
-data.forEach(d=>{
+  let namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  let tahunSet = new Set();
+  semuaData.forEach(d=> tahunSet.add(String(new Date(d.waktu).getFullYear())));
+  let tahunList = Array.from(tahunSet).sort((a,b)=>Number(b)-Number(a));
 
-if(!d.waktu) return;
+  let dataBulan = semuaData.filter(d=>{
+    let x = new Date(d.waktu);
+    return String(x.getMonth()+1).padStart(2,"0") === bulanAktif && String(x.getFullYear()) === tahunAktif;
+  });
 
-let dateObj = new Date(d.waktu);
-if(isNaN(dateObj)) return;
+  let grupKategori = {};
+  dataBulan.forEach(d=> tambahKeGrupKategori(grupKategori, d, hargaMap));
+  let grupGabungan = gabungGrupKategori(grupKategori);
 
-let key = dateObj.toLocaleDateString("id-ID", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit"
-});
+  let total = {masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
 
-let label = formatTanggalHari(dateObj);
+  let kategoriList = Object.keys(grupKategori).sort((a,b)=>{
+    if(a === "Cilok & Jajanan") return -1;
+    if(b === "Cilok & Jajanan") return 1;
+    return a.localeCompare(b);
+  });
 
-if(!grup[key]){
-grup[key]={
-label: label,
-masukIkhwan:0,
-masukAkhwat:0,
-sisaIkhwan:0,
-sisaAkhwat:0,
-totalUang:0
-};
+  let tablesHTML = "";
+
+  kategoriList.forEach(kategori=>{
+    let grup = grupKategori[kategori];
+    let subtotal = {masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
+
+    let rows = Object.keys(grup).sort((a,b)=> grup[a].tanggalObj - grup[b].tanggalObj).map(key=>{
+      let g = grup[key];
+      let terjual = hitungTerjual(g);
+      subtotal.masukIkhwan += g.masukIkhwan;
+      subtotal.masukAkhwat += g.masukAkhwat;
+      subtotal.sisaIkhwan += g.sisaIkhwan;
+      subtotal.sisaAkhwat += g.sisaAkhwat;
+      subtotal.totalUang += g.totalUang;
+
+      total.masukIkhwan += g.masukIkhwan;
+      total.masukAkhwat += g.masukAkhwat;
+      total.sisaIkhwan += g.sisaIkhwan;
+      total.sisaAkhwat += g.sisaAkhwat;
+      total.totalUang += g.totalUang;
+
+      return `
+        <tr>
+          <td>${g.label}</td>
+          <td>${g.masukIkhwan}</td>
+          <td>${g.masukAkhwat}</td>
+          <td>${g.sisaIkhwan}</td>
+          <td>${g.sisaAkhwat}</td>
+          <td>${terjual}</td>
+          <td>Rp ${g.totalUang.toLocaleString("id-ID")}</td>
+        </tr>`;
+    }).join("");
+
+    let subtotalTerjual = hitungTerjual(subtotal);
+
+    tablesHTML += `
+      <div class="laporan-header" style="margin-top:16px">${safeHTML(kategori)}</div>
+      <div class="rekap-table-wrap">
+        <table class="rekap-table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Masuk Ikhwan</th>
+              <th>Masuk Akhwat</th>
+              <th>Sisa Ikhwan</th>
+              <th>Sisa Akhwat</th>
+              <th>Terjual</th>
+              <th>Total Uang</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr style="background:#eff6ff">
+              <td><b>SUBTOTAL</b></td>
+              <td>${subtotal.masukIkhwan}</td>
+              <td>${subtotal.masukAkhwat}</td>
+              <td>${subtotal.sisaIkhwan}</td>
+              <td>${subtotal.sisaAkhwat}</td>
+              <td>${subtotalTerjual}</td>
+              <td>Rp ${subtotal.totalUang.toLocaleString("id-ID")}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+  });
+
+  let totalTerjual = hitungTerjual(total);
+
+  if(!tablesHTML){
+    tablesHTML = `<div style="text-align:center;color:#64748b;background:white;padding:14px;border-radius:10px">Tidak ada data pada bulan ini</div>`;
+  }
+
+  window.__rekapBulananLast = {
+    semuaData,
+    hargaMap,
+    bulanAktif,
+    tahunAktif,
+    judul: `Rekap Bulanan ${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}`,
+    grup: grupGabungan,
+    grupKategori,
+    total,
+    totalTerjual
+  };
+
+  container.innerHTML = `
+    <div class="laporan-card">
+      <div class="laporan-header">Rekap Bulanan</div>
+      <div class="laporan-tanggal">${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}</div>
+
+      <button class="share-bulanan-btn" onclick="kirimGambarRekapBulanan()">📷 Kirim Gambar Bulanan ke WA</button>
+      <div class="share-note">Rekap di layar sudah dipisah kategori. Gambar WA tetap menampilkan total gabungan agar ringkas.</div>
+
+      <div class="rekap-filter">
+        <select id="bulanRekap" onchange="renderRekapBulananCache()">
+          ${namaBulan.map((b,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${String(i+1).padStart(2,"0")===bulanAktif ? "selected" : ""}>${b}</option>`).join("")}
+        </select>
+        <select id="tahunRekap" onchange="renderRekapBulananCache()">
+          ${tahunList.map(t=>`<option value="${t}" ${t===tahunAktif ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </div>
+
+      ${tablesHTML}
+
+      <div class="rekap-summary">
+        <div>Total Terjual Semua<br><span style="font-size:18px">${totalTerjual}</span></div>
+        <div>Total Uang Semua<br><span style="font-size:18px">Rp ${total.totalUang.toLocaleString("id-ID")}</span></div>
+      </div>
+    </div>`;
+
+  window.__rekapBulananCache = {semuaData, hargaMap};
 }
 
-let jenis = (d.jenis || "").toLowerCase();
-let tempat = (d.tempat || "").toLowerCase();
-
-// loop item
-(d.items || []).forEach(i=>{
-
-let nama = (i.barang || "").toLowerCase().trim();
-let jumlah = Number(i.jumlah || 0);
-let harga = hargaMap[nama] || 0;
-
-let subtotal = jumlah * harga;
-
-// masuk
-if(jenis.includes("masuk") && tempat.includes("ikhwan")){
-  grup[key].masukIkhwan += jumlah;
-  grup[key].totalUang += subtotal;
+function renderRekapBulananCache(){
+  let cache = window.__rekapBulananCache;
+  if(!cache) return loadRekapBulanan();
+  let bulan = document.getElementById("bulanRekap").value;
+  let tahun = document.getElementById("tahunRekap").value;
+  renderRekapBulanan(cache.semuaData, cache.hargaMap, bulan, tahun);
 }
 
-if(jenis.includes("masuk") && tempat.includes("akhwat")){
-  grup[key].masukAkhwat += jumlah;
-  grup[key].totalUang += subtotal;
+
+// =================== KIRIM GAMBAR BULANAN KE WHATSAPP ===================
+function buatNamaFileAman(text){
+  return String(text || "rekap-bulanan")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/(^-|-$)/g,"") + ".png";
 }
 
-// sisa
-if(jenis.includes("sisa") && tempat.includes("ikhwan")){
-  grup[key].sisaIkhwan += jumlah;
+function canvasRoundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
 }
 
-if(jenis.includes("sisa") && tempat.includes("akhwat")){
-  grup[key].sisaAkhwat += jumlah;
+function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight){
+  let words = String(text || "").split(" ");
+  let line = "";
+  let lines = [];
+
+  words.forEach(word=>{
+    let test = line ? line + " " + word : word;
+    if(ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = word;
+    }else{
+      line = test;
+    }
+  });
+
+  if(line) lines.push(line);
+  lines.forEach((ln, i)=>ctx.fillText(ln, x, y + (i * lineHeight)));
+  return lines.length;
 }
 
-});
+function gambarRekapBulananBlob(){
+  return new Promise((resolve, reject)=>{
+    let data = window.__rekapBulananLast;
+    if(!data){
+      reject(new Error("Data bulanan belum siap."));
+      return;
+    }
 
-});
+    let keys = Object.keys(data.grup || {}).sort((a,b)=> data.grup[a].tanggalObj - data.grup[b].tanggalObj);
+    let rowCount = Math.max(keys.length, 1);
+    let width = 1200;
+    let headerH = 145;
+    let rowH = 52;
+    let totalH = 62;
+    let summaryH = 105;
+    let footerH = 45;
+    let height = headerH + rowH + (rowCount * rowH) + totalH + summaryH + footerH;
 
-// render
-container.innerHTML="";
+    let canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d");
 
-Object.keys(grup)
-.sort((a,b)=> new Date(b) - new Date(a))
-.forEach(key=>{
+    // background
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0,0,width,height);
 
-let g = grup[key];
+    // top header
+    ctx.fillStyle = "#1e3a8a";
+    ctx.fillRect(0,0,width,120);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 42px Segoe UI, Arial";
+    ctx.fillText(data.judul, 40, 55);
+    ctx.font = "bold 24px Segoe UI, Arial";
+    ctx.fillText("Laporan Jajan", 40, 92);
 
-let terjual = (g.masukIkhwan + g.masukAkhwat) - (g.sisaIkhwan + g.sisaAkhwat);
-if(terjual < 0) terjual = 0;
+    // date generated
+    ctx.textAlign = "right";
+    ctx.font = "20px Segoe UI, Arial";
+    ctx.fillText("Dibuat: " + new Date().toLocaleString("id-ID"), width - 40, 70);
+    ctx.textAlign = "left";
 
-let div=document.createElement("div");
-div.className="laporan-card";
+    // table card
+    let tableX = 30;
+    let tableY = 145;
+    let tableW = width - 60;
+    let cols = [260, 140, 145, 140, 145, 120, 190];
+    let headers = ["Tanggal", "Masuk Ikhwan", "Masuk Akhwat", "Sisa Ikhwan", "Sisa Akhwat", "Terjual", "Total Uang"];
 
-div.innerHTML=`
-<label class="delete-check-wrap" id="checkWrap-${d.key}">
-  <input type="checkbox" class="hapus-check" data-key="${d.key}" onchange="togglePilihHapus('${d.key}', this.checked)">
-  Pilih untuk dihapus
-</label>
-<div class="laporan-header">Rekap</div>
-<div class="laporan-tanggal">${g.label}</div>
+    ctx.fillStyle = "white";
+    canvasRoundRect(ctx, tableX, tableY, tableW, rowH + rowCount*rowH + totalH, 18);
+    ctx.fill();
 
-<div class="laporan-items">
-Masuk Ikhwan: ${g.masukIkhwan}<br>
-Masuk Akhwat: ${g.masukAkhwat}<br>
-Sisa Ikhwan: ${g.sisaIkhwan}<br>
-Sisa Akhwat: ${g.sisaAkhwat}<br><br>
+    // table header
+    ctx.fillStyle = "#1e3a8a";
+    canvasRoundRect(ctx, tableX, tableY, tableW, rowH, 18);
+    ctx.fill();
+    ctx.fillRect(tableX, tableY + 25, tableW, rowH - 25);
 
-<b>Terjual: ${terjual}</b><br>
-<b>Total: Rp ${g.totalUang.toLocaleString("id-ID")}</b>
-</div>
-`;
+    let x = tableX;
+    ctx.font = "bold 18px Segoe UI, Arial";
+    ctx.fillStyle = "white";
+    headers.forEach((h, idx)=>{
+      ctx.textAlign = idx === 0 ? "left" : "center";
+      let tx = idx === 0 ? x + 16 : x + cols[idx]/2;
+      ctx.fillText(h, tx, tableY + 34);
+      x += cols[idx];
+    });
 
-container.appendChild(div);
+    // rows
+    let y = tableY + rowH;
+    ctx.font = "bold 18px Segoe UI, Arial";
+    ctx.textBaseline = "middle";
 
-});
+    if(!keys.length){
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "center";
+      ctx.fillText("Tidak ada data pada bulan ini", width/2, y + rowH/2);
+      y += rowH;
+    }else{
+      keys.forEach((key, rowIdx)=>{
+        let g = data.grup[key];
+        let terjual = hitungTerjual(g);
+        let vals = [g.label, g.masukIkhwan, g.masukAkhwat, g.sisaIkhwan, g.sisaAkhwat, terjual, "Rp " + g.totalUang.toLocaleString("id-ID")];
 
-});
+        ctx.fillStyle = rowIdx % 2 === 0 ? "#ffffff" : "#f1f5f9";
+        ctx.fillRect(tableX, y, tableW, rowH);
 
-});
+        let cx = tableX;
+        vals.forEach((v, idx)=>{
+          ctx.fillStyle = idx === 0 ? "#1e3a8a" : "#0f172a";
+          ctx.textAlign = idx === 0 ? "left" : "center";
+          let tx = idx === 0 ? cx + 16 : cx + cols[idx]/2;
+          ctx.fillText(String(v), tx, y + rowH/2);
+          cx += cols[idx];
+        });
+
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.beginPath();
+        ctx.moveTo(tableX, y + rowH);
+        ctx.lineTo(tableX + tableW, y + rowH);
+        ctx.stroke();
+        y += rowH;
+      });
+    }
+
+    // total row
+    let t = data.total || {};
+    let totalVals = ["TOTAL", t.masukIkhwan||0, t.masukAkhwat||0, t.sisaIkhwan||0, t.sisaAkhwat||0, data.totalTerjual||0, "Rp " + Number(t.totalUang||0).toLocaleString("id-ID")];
+    ctx.fillStyle = "#dbeafe";
+    ctx.fillRect(tableX, y, tableW, totalH);
+    ctx.font = "bold 20px Segoe UI, Arial";
+    let cx = tableX;
+    totalVals.forEach((v, idx)=>{
+      ctx.fillStyle = idx === 0 ? "#1e3a8a" : "#0f172a";
+      ctx.textAlign = idx === 0 ? "left" : "center";
+      let tx = idx === 0 ? cx + 16 : cx + cols[idx]/2;
+      ctx.fillText(String(v), tx, y + totalH/2);
+      cx += cols[idx];
+    });
+
+    // summary boxes
+    y += totalH + 28;
+    let boxW = (tableW - 20) / 2;
+    let boxH = 78;
+    [["Total Terjual", String(data.totalTerjual || 0)], ["Total Uang", "Rp " + Number((data.total||{}).totalUang || 0).toLocaleString("id-ID")]].forEach((item, idx)=>{
+      let bx = tableX + (idx * (boxW + 20));
+      ctx.fillStyle = "#eff6ff";
+      canvasRoundRect(ctx, bx, y, boxW, boxH, 16);
+      ctx.fill();
+      ctx.strokeStyle = "#bfdbfe";
+      ctx.stroke();
+      ctx.fillStyle = "#1e3a8a";
+      ctx.textAlign = "left";
+      ctx.font = "bold 18px Segoe UI, Arial";
+      ctx.fillText(item[0], bx + 22, y + 27);
+      ctx.font = "bold 30px Segoe UI, Arial";
+      ctx.fillText(item[1], bx + 22, y + 58);
+    });
+
+    // footer
+    ctx.fillStyle = "#64748b";
+    ctx.font = "16px Segoe UI, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Gambar ini dibuat otomatis dari aplikasi Laporan Jajan", width/2, height - 24);
+
+    canvas.toBlob(blob=>{
+      if(!blob){
+        reject(new Error("Gagal membuat gambar."));
+        return;
+      }
+      resolve(blob);
+    }, "image/png", 0.95);
+  });
 }
 
+async function kirimGambarRekapBulanan(){
+  let btn = document.querySelector(".share-bulanan-btn");
+  let oldText = btn ? btn.innerText : "";
+  try{
+    if(btn){
+      btn.disabled = true;
+      btn.innerText = "⏳ Membuat gambar...";
+    }
+
+    let data = window.__rekapBulananLast;
+    if(!data){
+      alert("Data bulanan belum siap. Coba buka tab Bulanan lagi.");
+      return;
+    }
+
+    let blob = await gambarRekapBulananBlob();
+    let filename = buatNamaFileAman(data.judul);
+    let file = new File([blob], filename, {type:"image/png"});
+    let pesan = data.judul + "\nTotal Terjual: " + (data.totalTerjual || 0) + "\nTotal Uang: Rp " + Number((data.total||{}).totalUang || 0).toLocaleString("id-ID");
+
+    // Cara terbaik di HP: Web Share API bisa membuka WhatsApp dengan gambar terlampir.
+    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      await navigator.share({
+        title: data.judul,
+        text: pesan,
+        files: [file]
+      });
+      return;
+    }
+
+    // Fallback: download gambar dulu, lalu buka WhatsApp berisi pesan.
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+
+    let waUrl = "https://wa.me/?text=" + encodeURIComponent(pesan + "\n\nGambar rekap sudah ter-download. Lampirkan gambar PNG tersebut di WhatsApp.");
+    window.open(waUrl, "_blank");
+  }catch(err){
+    alert("Gagal kirim gambar: " + err.message);
+  }finally{
+    if(btn){
+      btn.disabled = false;
+      btn.innerText = oldText || "📷 Kirim Gambar Bulanan ke WA";
+    }
+  }
+}
 
 // =================== MENU HAPUS ===================
 function toggleModeHapus(){
@@ -576,6 +1250,7 @@ function hapusYangDipilih(){
 
     loadLaporan();
     loadRekap();
+    loadRekapBulanan();
   }).catch(err=>{
     alert("Gagal menghapus: " + err.message);
   });
@@ -584,6 +1259,7 @@ function hapusYangDipilih(){
 // =================== INIT ===================
 loadLaporan();
 loadRekap();
+loadRekapBulanan();
 
 db.ref("config").once("value",snap=>{
 let c=snap.val();
@@ -879,6 +1555,7 @@ db.ref("jajan/"+key+"/riwayatEdit").push(historyData).then(()=>{
   alert("Berhasil diupdate");
   loadLaporan();
   loadRekap();
+  loadRekapBulanan();
 });
 
 });
