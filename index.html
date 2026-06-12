@@ -85,6 +85,7 @@ textarea{
   gap:8px;
 }
 .row input[type="number"]{width:82px;margin-bottom:0}
+.row select{flex:1;margin-bottom:0}
 .drag-handle{
   font-size:20px;
   cursor:grab;
@@ -237,15 +238,7 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
       <div class="info">Contoh: Tahu, Batagor, dan item dari database Firebase. Item ini akan tersimpan ke laporan Firebase.</div>
       <div id="dynamicItems"></div>
 
-      <div class="row">
-        <select id="slot1"><option value="">-- Pilih item Firebase --</option></select>
-        <input type="number" id="slot1_jumlah" placeholder="0">
-      </div>
-
-      <div class="row">
-        <select id="slot2"><option value="">-- Pilih item Firebase --</option></select>
-        <input type="number" id="slot2_jumlah" placeholder="0">
-      </div>
+      <button class="gray" type="button" onclick="tambahBarisItem()">+ Tambah Item</button>
 
       <h3>Item Tambahan WA</h3>
       <span class="badge">Hanya WhatsApp, tidak masuk Firebase</span>
@@ -290,6 +283,7 @@ const db=firebase.database();
 let cropper = null;
 let fotoBase64Final = "";
 let laporanText = "";
+let daftarItemFirebase = [];
 
 let defaultWAOnlyItems = [
   "Es Teh",
@@ -359,36 +353,56 @@ function pakaiHasilCrop(){
 }
 
 function loadItems(){
-  let container=document.getElementById("dynamicItems");
-  container.innerHTML="Loading item Firebase...";
+  let container = document.getElementById("dynamicItems");
+  container.innerHTML = "Loading item Firebase...";
 
-  db.ref("items").once("value",snap=>{
-    let dataItems = [];
-    snap.forEach(c=>{
+  db.ref("items").once("value", snap => {
+    daftarItemFirebase = [];
+
+    snap.forEach(c => {
       let data = c.val();
       let nama = data.nama || data;
       let urutan = data.urutan || 9999;
-      dataItems.push({key:c.key,nama:nama,urutan:urutan});
+      daftarItemFirebase.push({key:c.key, nama:nama, urutan:urutan});
     });
 
-    dataItems.sort((a,b)=>a.urutan-b.urutan);
-    container.innerHTML="";
+    daftarItemFirebase.sort((a,b) => a.urutan - b.urutan);
 
-    dataItems.forEach(item=>{
-      let div=document.createElement("div");
-      div.className="row";
-      div.setAttribute("data-key", item.key);
-      div.setAttribute("data-nama", item.nama);
-      div.innerHTML=`
-        <span class="drag-handle">☰</span>
-        <span class="item-name">${item.nama}</span>
-        <input type="number" data-nama="${item.nama}" placeholder="0">
-      `;
-      container.appendChild(div);
+    container.innerHTML = "";
+
+    // Tampilan awal otomatis urut sesuai urutan Firebase:
+    // misalnya Tahu, Batagor, Cilok, dan seterusnya.
+    daftarItemFirebase.forEach(item => {
+      tambahBarisItem(item.nama);
     });
-
-    aktifkanGeserItem();
   });
+}
+
+function buatOptionsItem(selectedNama = ""){
+  let html = `<option value="">-- Pilih item --</option>`;
+
+  daftarItemFirebase.forEach(item => {
+    let selected = item.nama === selectedNama ? "selected" : "";
+    html += `<option value="${item.nama}" ${selected}>${item.nama}</option>`;
+  });
+
+  return html;
+}
+
+function tambahBarisItem(selectedNama = ""){
+  let container = document.getElementById("dynamicItems");
+
+  let div = document.createElement("div");
+  div.className = "row item-row";
+
+  div.innerHTML = `
+    <select class="pilihItemFirebase">
+      ${buatOptionsItem(selectedNama)}
+    </select>
+    <input type="number" class="jumlahItemFirebase" min="0" placeholder="0">
+  `;
+
+  container.appendChild(div);
 }
 
 function aktifkanGeserItem(){
@@ -539,25 +553,20 @@ function resetItemWAOnly(){
 }
 
 function ambilItemsFirebase(){
-  let items=[];
+  let items = [];
 
-  document.querySelectorAll("#dynamicItems input").forEach(input=>{
-    let val=input.value;
-    if(val && Number(val) !== 0){
-      items.push({barang:input.dataset.nama,jumlah:Number(val)});
+  document.querySelectorAll("#dynamicItems .item-row").forEach(row => {
+    let barang = row.querySelector(".pilihItemFirebase").value;
+    let jumlah = row.querySelector(".jumlahItemFirebase").value;
+
+    if(barang && jumlah && Number(jumlah) !== 0){
+      items.push({
+        barang: barang,
+        jumlah: Number(jumlah)
+      });
     }
   });
 
-  function tambahSlot(idBarang,idJumlah){
-    let barang=document.getElementById(idBarang).value;
-    let jumlah=document.getElementById(idJumlah).value;
-    if(barang && jumlah && Number(jumlah) !== 0){
-      items.push({barang:barang,jumlah:Number(jumlah)});
-    }
-  }
-
-  tambahSlot("slot1","slot1_jumlah");
-  tambahSlot("slot2","slot2_jumlah");
   return items;
 }
 
@@ -702,7 +711,6 @@ function showTab(tab,event){
 window.onload=function(){
   setTanggalHariIni();
   loadItems();
-  loadDropdownItems();
   renderWAOnlyItems();
   renderSettingWAOnly();
 };
