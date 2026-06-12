@@ -245,10 +245,94 @@ font-weight:700;
 line-height:1.4;
 margin:5px 0 8px;
 }
-.item-khusus-total{
-background:#f8fafc;
-font-weight:900;
+
+.khusus-group-card{
+background:#ffffff;
+border:1px solid #dbeafe;
+border-radius:16px;
+padding:12px;
+margin-top:14px;
+box-shadow:0 3px 10px rgba(30,58,138,0.08);
 }
+.khusus-group-head{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:10px;
+margin-bottom:8px;
+}
+.khusus-group-title{
+font-size:16px;
+font-weight:900;
+color:#1e3a8a;
+line-height:1.25;
+}
+.khusus-share-btn{
+width:auto;
+min-width:105px;
+margin:0;
+padding:9px 10px;
+border:none;
+border-radius:10px;
+background:#16a34a;
+color:white;
+font-size:12px;
+font-weight:900;
+cursor:pointer;
+}
+.khusus-summary{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:7px;
+margin:8px 0 10px;
+}
+.khusus-summary div{
+background:#eff6ff;
+border:1px solid #bfdbfe;
+border-radius:10px;
+padding:8px;
+font-size:12px;
+font-weight:900;
+color:#1e3a8a;
+}
+.khusus-table-wrap{
+overflow-x:auto;
+border:1px solid #e2e8f0;
+border-radius:12px;
+background:white;
+}
+.khusus-table{
+width:100%;
+border-collapse:separate;
+border-spacing:0;
+font-size:12px;
+min-width:720px;
+}
+.khusus-table th{
+background:#1e3a8a;
+color:white;
+padding:9px 6px;
+text-align:center;
+white-space:nowrap;
+}
+.khusus-table th:first-child{border-top-left-radius:12px;}
+.khusus-table th:last-child{border-top-right-radius:12px;}
+.khusus-table td{
+border-bottom:1px solid #e2e8f0;
+padding:8px 6px;
+text-align:center;
+font-weight:800;
+white-space:nowrap;
+}
+.khusus-table td:first-child,
+.khusus-table td:nth-child(2){
+text-align:left;
+color:#1e3a8a;
+}
+.khusus-table tbody tr:nth-child(even):not(.item-khusus-total):not(.khusus-grand-total){background:#f8fafc;}
+.item-khusus-total{background:#ecfeff;font-weight:900;}
+.khusus-grand-total{background:#dbeafe;font-weight:900;}
+
 
 img{
 width:100%;
@@ -596,7 +680,7 @@ function kategoriLaporanKhusus(i){
   return "Item Khusus Lain";
 }
 
-function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
+function susunDataRekapKhusus(dataBulan, hargaMap){
   let laporan = {};
 
   dataBulan.forEach(d=>{
@@ -615,17 +699,15 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
       if(!nama) return;
 
       let grupNama = kategoriLaporanKhusus(i);
-      if(!laporan[grupNama]) laporan[grupNama] = {baris:{}, totalPerItem:{}, totalSemua:{masuk:0,sisa:0,totalUang:0}};
+      if(!laporan[grupNama]) laporan[grupNama] = {baris:{}, totalPerItem:{}, total:{masuk:0,sisa:0,terjual:0,totalUang:0}};
 
       let masuk = 0;
       let sisa = 0;
 
-      // Format baru: {barang, masuk, retur}. Ini aman untuk data baru.
       if(i.masuk !== undefined || i.retur !== undefined){
         masuk = angka(i.masuk);
         sisa = angka(i.retur);
       }else{
-        // Format lama tetap dibaca: transaksi punya jenis Masuk/Sisa dan item punya jumlah.
         let jumlah = angka(i.jumlah);
         if(jenis.includes("masuk")) masuk = jumlah;
         if(jenis.includes("sisa") || jenis.includes("retur")) sisa = jumlah;
@@ -650,8 +732,34 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
     });
   });
 
+  Object.keys(laporan).forEach(grupNama=>{
+    let g = laporan[grupNama];
+    Object.values(g.baris).forEach(x=>{
+      let terjual = Math.max(x.masuk - x.sisa, 0);
+      let total = terjual * Number(x.harga || 0);
+      g.total.masuk += x.masuk;
+      g.total.sisa += x.sisa;
+      g.total.terjual += terjual;
+      g.total.totalUang += total;
+    });
+  });
+
+  return laporan;
+}
+
+function safeIdKelompok(nama){
+  return String(nama || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/(^-|-$)/g,"");
+}
+
+function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
+  let laporan = susunDataRekapKhusus(dataBulan, hargaMap);
   let urutanGrup = ["Mie Ayam", "Bakso & Terang Bulan", "Es, Snack & Jajanan 3000", "Item Khusus Lain"];
   let adaIsi = urutanGrup.some(nama => laporan[nama] && Object.keys(laporan[nama].baris).length);
+
+  window.__rekapKhususLast = laporan;
 
   if(!adaIsi){
     return `
@@ -660,10 +768,9 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
   }
 
   let html = `
-    <div class="detail-khusus-title">Laporan Produk Terpisah</div>
+    <div class="detail-khusus-title">Laporan Produk Terpisah Per Pemilik</div>
     <div class="detail-note">
-      Laporan ini dipisah per pemilik/kelompok produk. Hitungan: Masuk - Sisa = Terjual, lalu Terjual × Harga = Total.
-      Bagian Cilok/Tahu/Batagor tetap memakai rekap lama dan tidak dicampur dengan kelompok ini.
+      Tiap kelompok dipisah karena pemilik produknya berbeda. Hitungan: Masuk - Sisa = Terjual, lalu Terjual × Harga = Total. Cilok/Tahu/Batagor tetap memakai rekap lama.
     </div>`;
 
   urutanGrup.forEach(grupNama=>{
@@ -675,21 +782,10 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
       return A.tanggalObj - B.tanggalObj || A.nama.localeCompare(B.nama);
     });
 
-    let totalMasuk = 0;
-    let totalSisa = 0;
-    let totalTerjualSemua = 0;
-    let totalUangSemua = 0;
-
     let rows = keys.map(key=>{
       let x = g.baris[key];
       let terjual = Math.max(x.masuk - x.sisa, 0);
       let total = terjual * Number(x.harga || 0);
-
-      totalMasuk += x.masuk;
-      totalSisa += x.sisa;
-      totalTerjualSemua += terjual;
-      totalUangSemua += total;
-
       return `
         <tr>
           <td>${x.tanggalLabel}</td>
@@ -717,10 +813,22 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
     }).join("");
 
     html += `
-      <div style="margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px">
-        <div style="font-size:15px;font-weight:900;color:#1e3a8a;margin-bottom:7px">${grupNama}</div>
-        <div class="rekap-table-wrap">
-          <table class="rekap-table">
+      <div class="khusus-group-card" id="kelompok-${safeIdKelompok(grupNama)}">
+        <div class="khusus-group-head">
+          <div>
+            <div class="khusus-group-title">${grupNama}</div>
+            <div class="detail-note">Laporan khusus kelompok ini saja, tidak digabung dengan kelompok lain.</div>
+          </div>
+          <button class="khusus-share-btn" onclick="kirimGambarKelompok('${escText(grupNama)}', this)">📷 Kirim</button>
+        </div>
+
+        <div class="khusus-summary">
+          <div>Terjual<br><span style="font-size:17px">${g.total.terjual}</span></div>
+          <div>Total Uang<br><span style="font-size:17px">Rp ${g.total.totalUang.toLocaleString("id-ID")}</span></div>
+        </div>
+
+        <div class="khusus-table-wrap">
+          <table class="khusus-table">
             <thead>
               <tr>
                 <th>Tanggal</th>
@@ -735,13 +843,13 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
             <tbody>
               ${rows}
               ${totalRows}
-              <tr style="background:#dbeafe;font-weight:900">
+              <tr class="khusus-grand-total">
                 <td colspan="2">TOTAL LAPORAN ${grupNama}</td>
-                <td>${totalMasuk}</td>
-                <td>${totalSisa}</td>
-                <td>${totalTerjualSemua}</td>
+                <td>${g.total.masuk}</td>
+                <td>${g.total.sisa}</td>
+                <td>${g.total.terjual}</td>
                 <td>-</td>
-                <td>Rp ${totalUangSemua.toLocaleString("id-ID")}</td>
+                <td>Rp ${g.total.totalUang.toLocaleString("id-ID")}</td>
               </tr>
             </tbody>
           </table>
@@ -1258,6 +1366,173 @@ function gambarRekapBulananBlob(){
       resolve(blob);
     }, "image/png", 0.95);
   });
+}
+
+
+function gambarRekapKelompokBlob(grupNama){
+  return new Promise((resolve, reject)=>{
+    let laporan = window.__rekapKhususLast || {};
+    let g = laporan[grupNama];
+    let dataBulanan = window.__rekapBulananLast || {};
+
+    if(!g || !Object.keys(g.baris || {}).length){
+      reject(new Error("Data kelompok belum siap."));
+      return;
+    }
+
+    let keys = Object.keys(g.baris).sort((a,b)=>{
+      let A = g.baris[a], B = g.baris[b];
+      return A.tanggalObj - B.tanggalObj || A.nama.localeCompare(B.nama);
+    });
+
+    let width = 1200;
+    let headerH = 138;
+    let rowH = 50;
+    let totalItemCount = Object.keys(g.totalPerItem || {}).length;
+    let height = headerH + 54 + (keys.length * rowH) + (totalItemCount * rowH) + 66 + 115;
+
+    let canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0,0,width,height);
+
+    ctx.fillStyle = "#1e3a8a";
+    ctx.fillRect(0,0,width,118);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 39px Segoe UI, Arial";
+    ctx.fillText("Laporan " + grupNama, 38, 52);
+    ctx.font = "bold 23px Segoe UI, Arial";
+    ctx.fillText(dataBulanan.judul || "Rekap Bulanan", 38, 88);
+    ctx.textAlign = "right";
+    ctx.font = "19px Segoe UI, Arial";
+    ctx.fillText("Dibuat: " + new Date().toLocaleString("id-ID"), width - 38, 72);
+    ctx.textAlign = "left";
+
+    let tableX = 28, tableY = 138, tableW = width - 56;
+    let cols = [255, 230, 105, 105, 115, 155, 180];
+    let headers = ["Tanggal", "Item", "Masuk", "Sisa", "Terjual", "Harga", "Total"];
+
+    ctx.fillStyle = "white";
+    canvasRoundRect(ctx, tableX, tableY, tableW, height - tableY - 100, 18);
+    ctx.fill();
+
+    ctx.fillStyle = "#1e3a8a";
+    canvasRoundRect(ctx, tableX, tableY, tableW, 54, 18);
+    ctx.fill();
+    ctx.fillRect(tableX, tableY+26, tableW, 28);
+
+    let x = tableX;
+    ctx.fillStyle = "white";
+    ctx.font = "bold 18px Segoe UI, Arial";
+    ctx.textBaseline = "middle";
+    headers.forEach((h, idx)=>{
+      ctx.textAlign = idx < 2 ? "left" : "center";
+      ctx.fillText(h, idx < 2 ? x + 14 : x + cols[idx]/2, tableY + 28);
+      x += cols[idx];
+    });
+
+    let y = tableY + 54;
+    ctx.font = "bold 18px Segoe UI, Arial";
+    keys.forEach((key, rowIdx)=>{
+      let r = g.baris[key];
+      let terjual = Math.max(r.masuk - r.sisa, 0);
+      let total = terjual * Number(r.harga || 0);
+      let vals = [r.tanggalLabel, r.nama, r.masuk, r.sisa, terjual, "Rp " + Number(r.harga||0).toLocaleString("id-ID"), "Rp " + total.toLocaleString("id-ID")];
+      ctx.fillStyle = rowIdx % 2 === 0 ? "#ffffff" : "#f1f5f9";
+      ctx.fillRect(tableX, y, tableW, rowH);
+      let cx = tableX;
+      vals.forEach((v, idx)=>{
+        ctx.fillStyle = idx < 2 ? "#1e3a8a" : "#0f172a";
+        ctx.textAlign = idx < 2 ? "left" : "center";
+        ctx.fillText(String(v), idx < 2 ? cx + 14 : cx + cols[idx]/2, y + rowH/2);
+        cx += cols[idx];
+      });
+      y += rowH;
+    });
+
+    Object.values(g.totalPerItem).sort((a,b)=>a.nama.localeCompare(b.nama)).forEach(item=>{
+      let terjual = Math.max(item.masuk - item.sisa, 0);
+      let total = terjual * Number(item.harga || 0);
+      let vals = ["TOTAL", item.nama, item.masuk, item.sisa, terjual, "Rp " + Number(item.harga||0).toLocaleString("id-ID"), "Rp " + total.toLocaleString("id-ID")];
+      ctx.fillStyle = "#ecfeff";
+      ctx.fillRect(tableX, y, tableW, rowH);
+      let cx = tableX;
+      vals.forEach((v, idx)=>{
+        ctx.fillStyle = idx < 2 ? "#155e75" : "#0f172a";
+        ctx.textAlign = idx < 2 ? "left" : "center";
+        ctx.fillText(String(v), idx < 2 ? cx + 14 : cx + cols[idx]/2, y + rowH/2);
+        cx += cols[idx];
+      });
+      y += rowH;
+    });
+
+    let totalVals = ["TOTAL LAPORAN", grupNama, g.total.masuk, g.total.sisa, g.total.terjual, "-", "Rp " + g.total.totalUang.toLocaleString("id-ID")];
+    ctx.fillStyle = "#dbeafe";
+    ctx.fillRect(tableX, y, tableW, 66);
+    ctx.font = "bold 20px Segoe UI, Arial";
+    let cx = tableX;
+    totalVals.forEach((v, idx)=>{
+      ctx.fillStyle = idx < 2 ? "#1e3a8a" : "#0f172a";
+      ctx.textAlign = idx < 2 ? "left" : "center";
+      ctx.fillText(String(v), idx < 2 ? cx + 14 : cx + cols[idx]/2, y + 33);
+      cx += cols[idx];
+    });
+
+    y += 92;
+    ctx.fillStyle = "#1e3a8a";
+    ctx.font = "bold 26px Segoe UI, Arial";
+    ctx.textAlign = "left";
+    ctx.fillText("Total Terjual: " + g.total.terjual, 42, y);
+    ctx.fillText("Total Uang: Rp " + g.total.totalUang.toLocaleString("id-ID"), 420, y);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "16px Segoe UI, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Laporan otomatis MAQSHOF - kelompok produk dipisah per pemilik", width/2, height - 28);
+
+    canvas.toBlob(blob=>{
+      if(!blob){ reject(new Error("Gagal membuat gambar.")); return; }
+      resolve(blob);
+    }, "image/png", 0.95);
+  });
+}
+
+async function kirimGambarKelompok(grupNama, btn){
+  let oldText = btn ? btn.innerText : "";
+  try{
+    if(btn){ btn.disabled = true; btn.innerText = "⏳ Buat..."; }
+
+    let data = window.__rekapKhususLast && window.__rekapKhususLast[grupNama];
+    if(!data){ alert("Data kelompok belum siap."); return; }
+
+    let blob = await gambarRekapKelompokBlob(grupNama);
+    let judul = (window.__rekapBulananLast?.judul || "Rekap Bulanan") + " - " + grupNama;
+    let file = new File([blob], buatNamaFileAman(judul), {type:"image/png"});
+    let pesan = judul + "\nTotal Terjual: " + data.total.terjual + "\nTotal Uang: Rp " + data.total.totalUang.toLocaleString("id-ID");
+
+    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      await navigator.share({title:judul, text:pesan, files:[file]});
+      return;
+    }
+
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = buatNamaFileAman(judul);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+
+    window.open("https://wa.me/?text=" + encodeURIComponent(pesan + "\n\nGambar sudah ter-download. Lampirkan PNG tersebut di WhatsApp."), "_blank");
+  }catch(err){
+    alert("Gagal kirim gambar kelompok: " + err.message);
+  }finally{
+    if(btn){ btn.disabled = false; btn.innerText = oldText || "📷 Kirim"; }
+  }
 }
 
 async function kirimGambarRekapBulanan(){
