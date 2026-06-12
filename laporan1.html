@@ -812,6 +812,19 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
         </tr>`;
     }).join("");
 
+    // Ringkasan kelompok dibuat per item, karena harga tiap item bisa berbeda.
+    // Jadi tidak ada lagi tulisan "Total Terjual" gabungan yang bisa membingungkan.
+    let ringkasanItem = Object.values(g.totalPerItem).sort((a,b)=>a.nama.localeCompare(b.nama)).map(x=>{
+      let terjual = Math.max(x.masuk - x.sisa, 0);
+      let total = terjual * Number(x.harga || 0);
+      return `
+        <div>
+          ${escText(x.nama)}<br>
+          <span style="font-size:17px">${terjual} pcs</span><br>
+          <small>Rp ${total.toLocaleString("id-ID")}</small>
+        </div>`;
+    }).join("");
+
     html += `
       <div class="khusus-group-card" id="kelompok-${safeIdKelompok(grupNama)}">
         <div class="khusus-group-head">
@@ -823,8 +836,8 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
         </div>
 
         <div class="khusus-summary">
-          <div>Terjual<br><span style="font-size:17px">${g.total.terjual}</span></div>
-          <div>Total Uang<br><span style="font-size:17px">Rp ${g.total.totalUang.toLocaleString("id-ID")}</span></div>
+          ${ringkasanItem}
+          <div>Total Kelompok<br><span style="font-size:17px">Rp ${g.total.totalUang.toLocaleString("id-ID")}</span></div>
         </div>
 
         <div class="khusus-table-wrap">
@@ -844,10 +857,10 @@ function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
               ${rows}
               ${totalRows}
               <tr class="khusus-grand-total">
-                <td colspan="2">TOTAL LAPORAN ${grupNama}</td>
+                <td colspan="2">TOTAL KELOMPOK ${grupNama}</td>
                 <td>${g.total.masuk}</td>
                 <td>${g.total.sisa}</td>
-                <td>${g.total.terjual}</td>
+                <td>-</td>
                 <td>-</td>
                 <td>Rp ${g.total.totalUang.toLocaleString("id-ID")}</td>
               </tr>
@@ -1469,7 +1482,9 @@ function gambarRekapKelompokBlob(grupNama){
       y += rowH;
     });
 
-    let totalVals = ["TOTAL LAPORAN", grupNama, g.total.masuk, g.total.sisa, g.total.terjual, "-", "Rp " + g.total.totalUang.toLocaleString("id-ID")];
+    // Kolom terjual pada total kelompok tidak dijumlahkan, karena harga item bisa berbeda.
+    // Rincian terjual tetap ditampilkan pada masing-masing item di atas.
+    let totalVals = ["TOTAL KELOMPOK", grupNama, g.total.masuk, g.total.sisa, "-", "-", "Rp " + g.total.totalUang.toLocaleString("id-ID")];
     ctx.fillStyle = "#dbeafe";
     ctx.fillRect(tableX, y, tableW, 66);
     ctx.font = "bold 20px Segoe UI, Arial";
@@ -1483,10 +1498,18 @@ function gambarRekapKelompokBlob(grupNama){
 
     y += 92;
     ctx.fillStyle = "#1e3a8a";
-    ctx.font = "bold 26px Segoe UI, Arial";
+    ctx.font = "bold 23px Segoe UI, Arial";
     ctx.textAlign = "left";
-    ctx.fillText("Total Terjual: " + g.total.terjual, 42, y);
-    ctx.fillText("Total Uang: Rp " + g.total.totalUang.toLocaleString("id-ID"), 420, y);
+
+    let ringkasanCanvas = Object.values(g.totalPerItem || {}).sort((a,b)=>a.nama.localeCompare(b.nama));
+    let ringkasanText = ringkasanCanvas.map(item=>{
+      let terjual = Math.max(item.masuk - item.sisa, 0);
+      return item.nama + ": " + terjual + " pcs";
+    }).join("  |  ");
+
+    ctx.fillText(ringkasanText || "Rincian item tidak ada", 42, y);
+    ctx.font = "bold 26px Segoe UI, Arial";
+    ctx.fillText("Total Kelompok: Rp " + g.total.totalUang.toLocaleString("id-ID"), 42, y + 38);
 
     ctx.fillStyle = "#64748b";
     ctx.font = "16px Segoe UI, Arial";
@@ -1511,7 +1534,16 @@ async function kirimGambarKelompok(grupNama, btn){
     let blob = await gambarRekapKelompokBlob(grupNama);
     let judul = (window.__rekapBulananLast?.judul || "Rekap Bulanan") + " - " + grupNama;
     let file = new File([blob], buatNamaFileAman(judul), {type:"image/png"});
-    let pesan = judul + "\nTotal Terjual: " + data.total.terjual + "\nTotal Uang: Rp " + data.total.totalUang.toLocaleString("id-ID");
+
+    let rincianPesan = Object.values(data.totalPerItem || {}).sort((a,b)=>a.nama.localeCompare(b.nama)).map(x=>{
+      let terjual = Math.max(x.masuk - x.sisa, 0);
+      let total = terjual * Number(x.harga || 0);
+      return x.nama + ": " + terjual + " pcs = Rp " + total.toLocaleString("id-ID");
+    }).join("\n");
+
+    let pesan = judul +
+      "\n\n" + rincianPesan +
+      "\n\nTotal Kelompok: Rp " + data.total.totalUang.toLocaleString("id-ID");
 
     if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
       await navigator.share({title:judul, text:pesan, files:[file]});
