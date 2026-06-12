@@ -232,19 +232,22 @@ margin-top:7px;
 line-height:1.4;
 }
 
-.kategori-section{
-background:#f8fafc;
-border:1px solid #e2e8f0;
-border-radius:10px;
-padding:8px;
-margin:8px 0;
-}
-
-.kategori-title{
-color:#1e3a8a;
+.detail-khusus-title{
+margin-top:16px;
 font-weight:900;
-font-size:13px;
-margin-bottom:5px;
+color:#1e3a8a;
+font-size:15px;
+}
+.detail-note{
+font-size:12px;
+color:#64748b;
+font-weight:700;
+line-height:1.4;
+margin:5px 0 8px;
+}
+.item-khusus-total{
+background:#f8fafc;
+font-weight:900;
 }
 
 img{
@@ -378,45 +381,6 @@ let tanggal = date.toLocaleDateString("id-ID",{day:"numeric", month:"long", year
 return `${hari}, ${tanggal}`;
 }
 
-
-// =================== KATEGORI AMAN ===================
-function safeHTML(v){
-  return String(v ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-function namaKategoriItem(i){
-  // Data lama tidak punya kategori. Jangan diubah, cukup dibaca sebagai kelompok lama.
-  return (i && i.kategori) ? String(i.kategori).trim() : "Cilok & Jajanan";
-}
-
-function formatItemLine(i){
-  if(i.masuk !== undefined || i.retur !== undefined){
-    return `• ${safeHTML(i.barang)} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`;
-  }
-  return `• ${safeHTML(i.barang)} (${Number(i.jumlah||0)})`;
-}
-
-function itemsGroupedHTML(items){
-  let grup = {};
-  (items || []).forEach(i=>{
-    let kategori = namaKategoriItem(i);
-    if(!grup[kategori]) grup[kategori] = [];
-    grup[kategori].push(i);
-  });
-
-  return Object.keys(grup).map(kategori=>`
-    <div class="kategori-section">
-      <div class="kategori-title">${safeHTML(kategori)}</div>
-      ${grup[kategori].map(formatItemLine).join("<br>")}
-    </div>
-  `).join("");
-}
-
 // =================== LAPORAN ===================
 function loadLaporan(){
 
@@ -445,7 +409,14 @@ arr.reverse();
 
 arr.forEach(d=>{
 
-let items = itemsGroupedHTML(d.items || []);
+let items = (d.items || [])
+.map(i=>{
+  if(i.masuk !== undefined || i.retur !== undefined){
+    return `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`;
+  }
+  return `• ${i.barang} (${Number(i.jumlah||0)})`;
+})
+.join("<br>");
 
 let div=document.createElement("div");
 div.className="laporan-card";
@@ -519,6 +490,9 @@ function tambahKeGrup(grup, d, hargaMap){
   let tempat = (d.tempat || "").toLowerCase();
 
   (d.items || []).forEach(i=>{
+    // Item khusus punya rincian bulanan sendiri, supaya tidak tercampur dengan rekap Cilok/Tahu/Batagor lama.
+    if(isItemKhusus(i)) return;
+
     let nama = (i.barang || "").toLowerCase().trim();
     let harga = hargaMap[nama] || 0;
 
@@ -567,72 +541,167 @@ function hitungTerjual(g){
 }
 
 
-function kosongGrup(label, tanggalObj){
-  return {label, tanggalObj, masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
+// =================== ITEM KHUSUS BULANAN ===================
+// Bagian ini hanya untuk item khusus seperti Es Teh, Terang Bulan, Mie Ayam, Bakso, Aneka Snack, Jajanan 3000.
+// Cilok/Tahu/Batagor dan item lama tetap dihitung seperti sebelumnya.
+const NAMA_ITEM_KHUSUS = [
+  "mie ayam",
+  "bakso",
+  "terang bulan",
+  "es teh",
+  "es jeruk",
+  "es blewah",
+  "es coklat",
+  "jus alpukat",
+  "es sari kedelai",
+  "aneka snack",
+  "jajanan 3000"
+];
+
+const KATEGORI_ITEM_KHUSUS = [
+  "mie ayam",
+  "bakso & terang bulan",
+  "bakso terang bulan",
+  "es & snack",
+  "es snack",
+  "es, snack & jajanan 3000",
+  "es snack jajanan 3000"
+];
+
+function normalText(v){
+  return String(v || "").toLowerCase().trim();
 }
 
-function tambahKeGrupKategori(grupKategori, d, hargaMap){
-  if(!d.waktu) return;
-  let dateObj = new Date(d.waktu);
-  if(isNaN(dateObj)) return;
+function isItemKhusus(i){
+  let nama = normalText(i.barang);
+  let kategori = normalText(i.kategori);
 
-  let key = dateObj.toLocaleDateString("id-ID", {year:"numeric", month:"2-digit", day:"2-digit"});
-  let label = formatTanggalHari(dateObj);
-  let jenis = (d.jenis || "").toLowerCase();
-  let tempat = (d.tempat || "").toLowerCase();
+  if(kategori && KATEGORI_ITEM_KHUSUS.some(k => kategori.includes(k))) return true;
+  return NAMA_ITEM_KHUSUS.some(n => nama === n || nama.includes(n));
+}
 
-  (d.items || []).forEach(i=>{
-    let kategori = namaKategoriItem(i);
-    if(!grupKategori[kategori]) grupKategori[kategori] = {};
-    if(!grupKategori[kategori][key]) grupKategori[kategori][key] = kosongGrup(label, dateObj);
+function ambilHargaItem(i, hargaMap){
+  let nama = normalText(i.barang);
+  return Number(i.harga || hargaMap[nama] || 0);
+}
 
-    let g = grupKategori[kategori][key];
-    let nama = (i.barang || "").toLowerCase().trim();
-    let harga = hargaMap[nama] || 0;
+function buatHTMLRekapBulananKhusus(dataBulan, hargaMap){
+  let grup = {};
+  let totalPerItem = {};
 
-    if(i.masuk !== undefined || i.retur !== undefined){
-      let masuk = angka(i.masuk);
-      let retur = angka(i.retur);
-      if(tempat.includes("ikhwan")){
-        g.masukIkhwan += masuk;
-        g.sisaIkhwan += retur;
+  dataBulan.forEach(d=>{
+    if(!d.waktu) return;
+    let dateObj = new Date(d.waktu);
+    if(isNaN(dateObj)) return;
+
+    let tanggalKey = dateObj.toLocaleDateString("id-ID", {year:"numeric", month:"2-digit", day:"2-digit"});
+    let tanggalLabel = formatTanggalHari(dateObj);
+    let jenis = normalText(d.jenis);
+
+    (d.items || []).forEach(i=>{
+      if(!isItemKhusus(i)) return;
+
+      let nama = String(i.barang || "").trim();
+      if(!nama) return;
+
+      let masuk = 0;
+      let sisa = 0;
+
+      // Mendukung format baru: {barang, masuk, retur}
+      if(i.masuk !== undefined || i.retur !== undefined){
+        masuk = angka(i.masuk);
+        sisa = angka(i.retur);
       }else{
-        g.masukAkhwat += masuk;
-        g.sisaAkhwat += retur;
+        // Mendukung format lama: transaksi punya jenis Masuk / Sisa, item punya jumlah
+        let jumlah = angka(i.jumlah);
+        if(jenis.includes("masuk")) masuk = jumlah;
+        if(jenis.includes("sisa") || jenis.includes("retur")) sisa = jumlah;
       }
-      g.totalUang += Math.max(masuk - retur, 0) * harga;
-      return;
-    }
 
-    let jumlah = angka(i.jumlah);
-    if(jenis.includes("masuk") && tempat.includes("ikhwan")){
-      g.masukIkhwan += jumlah;
-      g.totalUang += jumlah * harga;
-    }else if(jenis.includes("masuk")){
-      g.masukAkhwat += jumlah;
-      g.totalUang += jumlah * harga;
-    }else if((jenis.includes("sisa") || jenis.includes("retur")) && tempat.includes("ikhwan")){
-      g.sisaIkhwan += jumlah;
-    }else if(jenis.includes("sisa") || jenis.includes("retur")){
-      g.sisaAkhwat += jumlah;
-    }
-  });
-}
+      let harga = ambilHargaItem(i, hargaMap);
+      let key = tanggalKey + "||" + nama;
 
-function gabungGrupKategori(grupKategori){
-  let hasil = {};
-  Object.values(grupKategori || {}).forEach(grupTanggal=>{
-    Object.keys(grupTanggal).forEach(key=>{
-      let g = grupTanggal[key];
-      if(!hasil[key]) hasil[key] = kosongGrup(g.label, g.tanggalObj);
-      hasil[key].masukIkhwan += g.masukIkhwan;
-      hasil[key].masukAkhwat += g.masukAkhwat;
-      hasil[key].sisaIkhwan += g.sisaIkhwan;
-      hasil[key].sisaAkhwat += g.sisaAkhwat;
-      hasil[key].totalUang += g.totalUang;
+      if(!grup[key]){
+        grup[key] = {tanggalKey, tanggalLabel, tanggalObj:dateObj, nama, masuk:0, sisa:0, harga: harga};
+      }
+
+      grup[key].masuk += masuk;
+      grup[key].sisa += sisa;
+      if(harga) grup[key].harga = harga;
+
+      if(!totalPerItem[nama]) totalPerItem[nama] = {nama, masuk:0, sisa:0, harga:harga};
+      totalPerItem[nama].masuk += masuk;
+      totalPerItem[nama].sisa += sisa;
+      if(harga) totalPerItem[nama].harga = harga;
     });
   });
-  return hasil;
+
+  let keys = Object.keys(grup).sort((a,b)=>{
+    let A = grup[a], B = grup[b];
+    return A.tanggalObj - B.tanggalObj || A.nama.localeCompare(B.nama);
+  });
+
+  if(!keys.length){
+    return `
+      <div class="detail-khusus-title">Rincian Bulanan Item Khusus</div>
+      <div class="detail-note">Belum ada data item khusus pada bulan ini.</div>`;
+  }
+
+  let rows = keys.map(key=>{
+    let g = grup[key];
+    let terjual = Math.max(g.masuk - g.sisa, 0);
+    let total = terjual * Number(g.harga || 0);
+    return `
+      <tr>
+        <td>${g.tanggalLabel}</td>
+        <td>${escText(g.nama)}</td>
+        <td>${g.masuk}</td>
+        <td>${g.sisa}</td>
+        <td>${terjual}</td>
+        <td>Rp ${Number(g.harga||0).toLocaleString("id-ID")}</td>
+        <td>Rp ${total.toLocaleString("id-ID")}</td>
+      </tr>`;
+  }).join("");
+
+  let totalRows = Object.values(totalPerItem).sort((a,b)=>a.nama.localeCompare(b.nama)).map(g=>{
+    let terjual = Math.max(g.masuk - g.sisa, 0);
+    let total = terjual * Number(g.harga || 0);
+    return `
+      <tr class="item-khusus-total">
+        <td colspan="2">TOTAL ${escText(g.nama)}</td>
+        <td>${g.masuk}</td>
+        <td>${g.sisa}</td>
+        <td>${terjual}</td>
+        <td>Rp ${Number(g.harga||0).toLocaleString("id-ID")}</td>
+        <td>Rp ${total.toLocaleString("id-ID")}</td>
+      </tr>`;
+  }).join("");
+
+  return `
+    <div class="detail-khusus-title">Rincian Bulanan Item Khusus</div>
+    <div class="detail-note">
+      Hitungan per tanggal: Masuk - Sisa = Terjual, lalu Terjual × Harga = Total.
+      Contoh: Es Teh masuk 10, sisa 1, harga 3.700 → 9 × 3.700 = 33.300.
+    </div>
+    <div class="rekap-table-wrap">
+      <table class="rekap-table">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Item</th>
+            <th>Masuk</th>
+            <th>Sisa</th>
+            <th>Terjual</th>
+            <th>Harga</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+          ${totalRows}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 function ambilHargaDanJajan(callback){
@@ -652,63 +721,137 @@ function ambilHargaDanJajan(callback){
   });
 }
 
-// =================== REKAP (DIPISAH KATEGORI, AMAN UNTUK DATA LAMA) ===================
+// =================== REKAP (FINAL FIX) ===================
 function loadRekap(){
-  let container=document.getElementById("rekapHarian");
-  container.innerHTML="Loading...";
 
-  ambilHargaDanJajan((hargaMap, snap)=>{
-    if(!snap.exists()){
-      container.innerHTML="Belum ada data";
-      return;
-    }
+let container=document.getElementById("rekapHarian");
+container.innerHTML="Loading...";
 
-    let data = Object.values(snap.val());
-    let grupKategori = {};
-    data.forEach(d=> tambahKeGrupKategori(grupKategori, d, hargaMap));
+// ambil harga item
+db.ref("items").once("value",snapItem=>{
 
-    container.innerHTML = "";
+let hargaMap = {};
 
-    let kategoriList = Object.keys(grupKategori).sort((a,b)=>{
-      if(a === "Cilok & Jajanan") return -1;
-      if(b === "Cilok & Jajanan") return 1;
-      return a.localeCompare(b);
-    });
-
-    if(!kategoriList.length){
-      container.innerHTML="Belum ada data";
-      return;
-    }
-
-    kategoriList.forEach(kategori=>{
-      let grup = grupKategori[kategori];
-      let keys = Object.keys(grup).sort((a,b)=> grup[b].tanggalObj - grup[a].tanggalObj);
-
-      let header = document.createElement("div");
-      header.className = "laporan-card";
-      header.innerHTML = `<div class="laporan-header">Rekap: ${safeHTML(kategori)}</div>`;
-      container.appendChild(header);
-
-      keys.forEach(key=>{
-        let g = grup[key];
-        let terjual = hitungTerjual(g);
-        let div=document.createElement("div");
-        div.className="laporan-card";
-        div.innerHTML=`
-          <div class="laporan-tanggal">${g.label}</div>
-          <div class="laporan-items">
-            Masuk Ikhwan: ${g.masukIkhwan}<br>
-            Masuk Akhwat: ${g.masukAkhwat}<br>
-            Sisa Ikhwan: ${g.sisaIkhwan}<br>
-            Sisa Akhwat: ${g.sisaAkhwat}<br><br>
-            <b>Terjual: ${terjual}</b><br>
-            <b>Total: Rp ${g.totalUang.toLocaleString("id-ID")}</b>
-          </div>`;
-        container.appendChild(div);
-      });
-    });
-  });
+if(snapItem.exists()){
+snapItem.forEach(c=>{
+let d = c.val();
+let nama = (d.nama || "").toLowerCase().trim();
+hargaMap[nama] = Number(d.harga || 0);
+});
 }
+
+// ambil data jajan
+db.ref("jajan").once("value",snap=>{
+
+if(!snap.exists()){
+container.innerHTML="Belum ada data";
+return;
+}
+
+let data=Object.values(snap.val());
+let grup={};
+
+data.forEach(d=>{
+
+if(!d.waktu) return;
+
+let dateObj = new Date(d.waktu);
+if(isNaN(dateObj)) return;
+
+let key = dateObj.toLocaleDateString("id-ID", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+});
+
+let label = formatTanggalHari(dateObj);
+
+if(!grup[key]){
+grup[key]={
+label: label,
+masukIkhwan:0,
+masukAkhwat:0,
+sisaIkhwan:0,
+sisaAkhwat:0,
+totalUang:0
+};
+}
+
+let jenis = (d.jenis || "").toLowerCase();
+let tempat = (d.tempat || "").toLowerCase();
+
+// loop item
+(d.items || []).forEach(i=>{
+
+let nama = (i.barang || "").toLowerCase().trim();
+let jumlah = Number(i.jumlah || 0);
+let harga = hargaMap[nama] || 0;
+
+let subtotal = jumlah * harga;
+
+// masuk
+if(jenis.includes("masuk") && tempat.includes("ikhwan")){
+  grup[key].masukIkhwan += jumlah;
+  grup[key].totalUang += subtotal;
+}
+
+if(jenis.includes("masuk") && tempat.includes("akhwat")){
+  grup[key].masukAkhwat += jumlah;
+  grup[key].totalUang += subtotal;
+}
+
+// sisa
+if(jenis.includes("sisa") && tempat.includes("ikhwan")){
+  grup[key].sisaIkhwan += jumlah;
+}
+
+if(jenis.includes("sisa") && tempat.includes("akhwat")){
+  grup[key].sisaAkhwat += jumlah;
+}
+
+});
+
+});
+
+// render
+container.innerHTML="";
+
+Object.keys(grup)
+.sort((a,b)=> new Date(b) - new Date(a))
+.forEach(key=>{
+
+let g = grup[key];
+
+let terjual = (g.masukIkhwan + g.masukAkhwat) - (g.sisaIkhwan + g.sisaAkhwat);
+if(terjual < 0) terjual = 0;
+
+let div=document.createElement("div");
+div.className="laporan-card";
+
+div.innerHTML=`
+<div class="laporan-header">Rekap</div>
+<div class="laporan-tanggal">${g.label}</div>
+
+<div class="laporan-items">
+Masuk Ikhwan: ${g.masukIkhwan}<br>
+Masuk Akhwat: ${g.masukAkhwat}<br>
+Sisa Ikhwan: ${g.sisaIkhwan}<br>
+Sisa Akhwat: ${g.sisaAkhwat}<br><br>
+
+<b>Terjual: ${terjual}</b><br>
+<b>Total: Rp ${g.totalUang.toLocaleString("id-ID")}</b>
+</div>
+`;
+
+container.appendChild(div);
+
+});
+
+});
+
+});
+}
+
 
 
 // =================== REKAP BULANAN TABEL ===================
@@ -763,55 +906,66 @@ function renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif){
     return String(x.getMonth()+1).padStart(2,"0") === bulanAktif && String(x.getFullYear()) === tahunAktif;
   });
 
-  let grupKategori = {};
-  dataBulan.forEach(d=> tambahKeGrupKategori(grupKategori, d, hargaMap));
-  let grupGabungan = gabungGrupKategori(grupKategori);
+  let grup = {};
+  dataBulan.forEach(d=> tambahKeGrup(grup, d, hargaMap));
 
   let total = {masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
 
-  let kategoriList = Object.keys(grupKategori).sort((a,b)=>{
-    if(a === "Cilok & Jajanan") return -1;
-    if(b === "Cilok & Jajanan") return 1;
-    return a.localeCompare(b);
-  });
+  let rows = Object.keys(grup).sort((a,b)=> grup[a].tanggalObj - grup[b].tanggalObj).map(key=>{
+    let g = grup[key];
+    let terjual = hitungTerjual(g);
+    total.masukIkhwan += g.masukIkhwan;
+    total.masukAkhwat += g.masukAkhwat;
+    total.sisaIkhwan += g.sisaIkhwan;
+    total.sisaAkhwat += g.sisaAkhwat;
+    total.totalUang += g.totalUang;
 
-  let tablesHTML = "";
+    return `
+      <tr>
+        <td>${g.label}</td>
+        <td>${g.masukIkhwan}</td>
+        <td>${g.masukAkhwat}</td>
+        <td>${g.sisaIkhwan}</td>
+        <td>${g.sisaAkhwat}</td>
+        <td>${terjual}</td>
+        <td>Rp ${g.totalUang.toLocaleString("id-ID")}</td>
+      </tr>`;
+  }).join("");
 
-  kategoriList.forEach(kategori=>{
-    let grup = grupKategori[kategori];
-    let subtotal = {masukIkhwan:0, masukAkhwat:0, sisaIkhwan:0, sisaAkhwat:0, totalUang:0};
+  let totalTerjual = Math.max((total.masukIkhwan + total.masukAkhwat) - (total.sisaIkhwan + total.sisaAkhwat), 0);
 
-    let rows = Object.keys(grup).sort((a,b)=> grup[a].tanggalObj - grup[b].tanggalObj).map(key=>{
-      let g = grup[key];
-      let terjual = hitungTerjual(g);
-      subtotal.masukIkhwan += g.masukIkhwan;
-      subtotal.masukAkhwat += g.masukAkhwat;
-      subtotal.sisaIkhwan += g.sisaIkhwan;
-      subtotal.sisaAkhwat += g.sisaAkhwat;
-      subtotal.totalUang += g.totalUang;
+  if(!rows){
+    rows = `<tr><td colspan="7" style="text-align:center;color:#64748b;background:white">Tidak ada data pada bulan ini</td></tr>`;
+  }
 
-      total.masukIkhwan += g.masukIkhwan;
-      total.masukAkhwat += g.masukAkhwat;
-      total.sisaIkhwan += g.sisaIkhwan;
-      total.sisaAkhwat += g.sisaAkhwat;
-      total.totalUang += g.totalUang;
+  window.__rekapBulananLast = {
+    semuaData,
+    hargaMap,
+    bulanAktif,
+    tahunAktif,
+    judul: `Rekap Bulanan ${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}`,
+    grup,
+    total,
+    totalTerjual
+  };
 
-      return `
-        <tr>
-          <td>${g.label}</td>
-          <td>${g.masukIkhwan}</td>
-          <td>${g.masukAkhwat}</td>
-          <td>${g.sisaIkhwan}</td>
-          <td>${g.sisaAkhwat}</td>
-          <td>${terjual}</td>
-          <td>Rp ${g.totalUang.toLocaleString("id-ID")}</td>
-        </tr>`;
-    }).join("");
+  container.innerHTML = `
+    <div class="laporan-card">
+      <div class="laporan-header">Rekap Bulanan</div>
+      <div class="laporan-tanggal">${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}</div>
 
-    let subtotalTerjual = hitungTerjual(subtotal);
+      <button class="share-bulanan-btn" onclick="kirimGambarRekapBulanan()">📷 Kirim Gambar Bulanan ke WA</button>
+      <div class="share-note">Di HP, gambar bisa langsung dibagikan ke WhatsApp. Kalau browser tidak mendukung, gambar akan di-download dulu.</div>
 
-    tablesHTML += `
-      <div class="laporan-header" style="margin-top:16px">${safeHTML(kategori)}</div>
+      <div class="rekap-filter">
+        <select id="bulanRekap" onchange="renderRekapBulananCache()">
+          ${namaBulan.map((b,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${String(i+1).padStart(2,"0")===bulanAktif ? "selected" : ""}>${b}</option>`).join("")}
+        </select>
+        <select id="tahunRekap" onchange="renderRekapBulananCache()">
+          ${tahunList.map(t=>`<option value="${t}" ${t===tahunAktif ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </div>
+
       <div class="rekap-table-wrap">
         <table class="rekap-table">
           <thead>
@@ -828,60 +982,24 @@ function renderRekapBulanan(semuaData, hargaMap, bulanAktif, tahunAktif){
           <tbody>
             ${rows}
             <tr style="background:#eff6ff">
-              <td><b>SUBTOTAL</b></td>
-              <td>${subtotal.masukIkhwan}</td>
-              <td>${subtotal.masukAkhwat}</td>
-              <td>${subtotal.sisaIkhwan}</td>
-              <td>${subtotal.sisaAkhwat}</td>
-              <td>${subtotalTerjual}</td>
-              <td>Rp ${subtotal.totalUang.toLocaleString("id-ID")}</td>
+              <td><b>TOTAL</b></td>
+              <td>${total.masukIkhwan}</td>
+              <td>${total.masukAkhwat}</td>
+              <td>${total.sisaIkhwan}</td>
+              <td>${total.sisaAkhwat}</td>
+              <td>${totalTerjual}</td>
+              <td>Rp ${total.totalUang.toLocaleString("id-ID")}</td>
             </tr>
           </tbody>
         </table>
-      </div>`;
-  });
-
-  let totalTerjual = hitungTerjual(total);
-
-  if(!tablesHTML){
-    tablesHTML = `<div style="text-align:center;color:#64748b;background:white;padding:14px;border-radius:10px">Tidak ada data pada bulan ini</div>`;
-  }
-
-  window.__rekapBulananLast = {
-    semuaData,
-    hargaMap,
-    bulanAktif,
-    tahunAktif,
-    judul: `Rekap Bulanan ${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}`,
-    grup: grupGabungan,
-    grupKategori,
-    total,
-    totalTerjual
-  };
-
-  container.innerHTML = `
-    <div class="laporan-card">
-      <div class="laporan-header">Rekap Bulanan</div>
-      <div class="laporan-tanggal">${namaBulan[Number(bulanAktif)-1]} ${tahunAktif}</div>
-
-      <button class="share-bulanan-btn" onclick="kirimGambarRekapBulanan()">📷 Kirim Gambar Bulanan ke WA</button>
-      <div class="share-note">Rekap di layar sudah dipisah kategori. Gambar WA tetap menampilkan total gabungan agar ringkas.</div>
-
-      <div class="rekap-filter">
-        <select id="bulanRekap" onchange="renderRekapBulananCache()">
-          ${namaBulan.map((b,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${String(i+1).padStart(2,"0")===bulanAktif ? "selected" : ""}>${b}</option>`).join("")}
-        </select>
-        <select id="tahunRekap" onchange="renderRekapBulananCache()">
-          ${tahunList.map(t=>`<option value="${t}" ${t===tahunAktif ? "selected" : ""}>${t}</option>`).join("")}
-        </select>
       </div>
-
-      ${tablesHTML}
 
       <div class="rekap-summary">
-        <div>Total Terjual Semua<br><span style="font-size:18px">${totalTerjual}</span></div>
-        <div>Total Uang Semua<br><span style="font-size:18px">Rp ${total.totalUang.toLocaleString("id-ID")}</span></div>
+        <div>Total Terjual<br><span style="font-size:18px">${totalTerjual}</span></div>
+        <div>Total Uang<br><span style="font-size:18px">Rp ${total.totalUang.toLocaleString("id-ID")}</span></div>
       </div>
+
+      ${buatHTMLRekapBulananKhusus(dataBulan, hargaMap)}
     </div>`;
 
   window.__rekapBulananCache = {semuaData, hargaMap};
