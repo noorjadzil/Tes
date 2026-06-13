@@ -333,6 +333,37 @@ let itemKhususFirebase = {
   esSnack:["Es Teh", "Es Jeruk", "Es Blewah", "Es Coklat", "Jus Alpukat", "Es Sari Kedelai", "Aneka Snack", "Jajanan 3000"]
 };
 
+let masterItemMap = {};
+
+function normalNama(v){
+  return String(v || "").toLowerCase().trim();
+}
+
+function kelompokDariNama(nama, kelompokTersimpan=""){
+  let n = normalNama(nama);
+
+  // Nama-nama ini dipaksa masuk kelompok khusus agar tidak jatuh ke Cilok walaupun setting lama pernah salah.
+  if(["mie ayam"].includes(n)) return "Mie Ayam";
+  if(["bakso", "terang bulan"].includes(n)) return "Bakso & Terang Bulan";
+  if(["es teh", "es jeruk", "es blewah", "es coklat", "jus alpukat", "es sari kedelai", "aneka snack", "jajanan 3000"].includes(n)){
+    return "Es, Snack & Jajanan 3000";
+  }
+
+  let k = String(kelompokTersimpan || "").trim();
+  if(k === "Cilok & Jajanan") return ""; // kelompok lama dianggap item biasa
+  return k;
+}
+
+function getNamaItemMaster(data){
+  if(typeof data === "string") return data;
+  return data.nama || data.barang || data.name || "";
+}
+
+function getKelompokItemMaster(data, nama){
+  if(typeof data !== "object" || data === null) return kelompokDariNama(nama, "");
+  return kelompokDariNama(nama, data.kelompokLaporan || data.kategori || "");
+}
+
 function setTanggalHariIni(){
   let d = new Date();
   let yyyy = d.getFullYear();
@@ -395,11 +426,22 @@ function loadItems(){
 
   db.ref("items").once("value",snap=>{
     let dataItems = [];
+    masterItemMap = {};
+
     snap.forEach(c=>{
       let data = c.val();
-      let nama = data.nama || data;
-      let urutan = data.urutan || 9999;
-      dataItems.push({key:c.key,nama:nama,urutan:urutan});
+      let nama = getNamaItemMaster(data);
+      let urutan = (typeof data === "object" && data !== null) ? Number(data.urutan || 9999) : 9999;
+      let kelompok = getKelompokItemMaster(data, nama);
+
+      masterItemMap[normalNama(nama)] = {key:c.key, nama:nama, urutan:urutan, kelompok:kelompok};
+
+      // Bagian lama hanya untuk Cilok/Tahu/Batagor/dll.
+      // Item khusus seperti Mie Ayam, Bakso, Terang Bulan, Es, Snack tidak ditampilkan di sini.
+      // Ini mencegah Mie Ayam masuk kelompok Cilok.
+      if(!kelompok){
+        dataItems.push({key:c.key,nama:nama,urutan:urutan});
+      }
     });
 
     dataItems.sort((a,b)=>a.urutan-b.urutan);
@@ -419,6 +461,8 @@ function loadItems(){
     });
 
     aktifkanGeserItem();
+    renderItemKhususFirebase();
+    loadDropdownItems();
   });
 }
 
@@ -444,22 +488,15 @@ function loadDropdownItems(){
   slot1.innerHTML='<option value="">-- Pilih item Firebase --</option>';
   slot2.innerHTML='<option value="">-- Pilih item Firebase --</option>';
 
-  db.ref("items").once("value",snap=>{
-    let dataItems = [];
-    snap.forEach(c=>{
-      let data = c.val();
-      let nama = data.nama || data;
-      let urutan = data.urutan || 9999;
-      dataItems.push({nama:nama,urutan:urutan});
-    });
-    dataItems.sort((a,b)=>a.urutan-b.urutan);
-    dataItems.forEach(item=>{
-      let opt=document.createElement("option");
-      opt.value=item.nama;
-      opt.textContent=item.nama;
-      slot1.appendChild(opt.cloneNode(true));
-      slot2.appendChild(opt.cloneNode(true));
-    });
+  let dataItems = Object.values(masterItemMap).filter(item => !item.kelompok);
+  dataItems.sort((a,b)=>a.urutan-b.urutan);
+
+  dataItems.forEach(item=>{
+    let opt=document.createElement("option");
+    opt.value=item.nama;
+    opt.textContent=item.nama;
+    slot1.appendChild(opt.cloneNode(true));
+    slot2.appendChild(opt.cloneNode(true));
   });
 }
 
@@ -487,9 +524,24 @@ function ambilNilaiWAOnlySekarang(){
 }
 
 function renderItemKhususFirebase(){
-  renderKelompokKhusus("kategoriMieAyam", itemKhususFirebase.mieAyam, "Mie Ayam");
-  renderKelompokKhusus("kategoriBaksoTerangBulan", itemKhususFirebase.baksoTerangBulan, "Bakso & Terang Bulan");
-  renderKelompokKhusus("kategoriEsSnack", itemKhususFirebase.esSnack, "Es, Snack & Jajanan 3000");
+  let grup = {
+    "Mie Ayam":[],
+    "Bakso & Terang Bulan":[],
+    "Es, Snack & Jajanan 3000":[]
+  };
+
+  Object.values(masterItemMap).forEach(item=>{
+    if(grup[item.kelompok]) grup[item.kelompok].push(item.nama);
+  });
+
+  // Fallback supaya form tetap muncul walaupun item belum ada di master setting.
+  itemKhususFirebase.mieAyam.forEach(n=>{ if(!grup["Mie Ayam"].some(x=>normalNama(x)===normalNama(n))) grup["Mie Ayam"].push(n); });
+  itemKhususFirebase.baksoTerangBulan.forEach(n=>{ if(!grup["Bakso & Terang Bulan"].some(x=>normalNama(x)===normalNama(n))) grup["Bakso & Terang Bulan"].push(n); });
+  itemKhususFirebase.esSnack.forEach(n=>{ if(!grup["Es, Snack & Jajanan 3000"].some(x=>normalNama(x)===normalNama(n))) grup["Es, Snack & Jajanan 3000"].push(n); });
+
+  renderKelompokKhusus("kategoriMieAyam", grup["Mie Ayam"], "Mie Ayam");
+  renderKelompokKhusus("kategoriBaksoTerangBulan", grup["Bakso & Terang Bulan"], "Bakso & Terang Bulan");
+  renderKelompokKhusus("kategoriEsSnack", grup["Es, Snack & Jajanan 3000"], "Es, Snack & Jajanan 3000");
 }
 
 function renderKelompokKhusus(targetId, items, kategori){
@@ -776,8 +828,6 @@ function showTab(tab,event){
 window.onload=function(){
   setTanggalHariIni();
   loadItems();
-  loadDropdownItems();
-  renderItemKhususFirebase();
   renderWAOnlyItems();
   renderSettingWAOnly();
 };
