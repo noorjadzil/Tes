@@ -281,7 +281,7 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
 
       <h3>Item Tambahan WA</h3>
       <span class="badge">Hanya WhatsApp, tidak masuk Firebase</span>
-      <div class="info">Item yang tidak termasuk Item Firebase dan Item Khusus Firebase bisa ditulis di sini. Bagian ini hanya masuk teks laporan WA, tidak masuk Firebase.</div>
+      <div class="info">Bagian ini hanya untuk item luar yang tidak masuk Firebase/kelompok. Jika item sudah ada di Firebase seperti Mie Ayam, Terang Bulan, Es Teh, Bakso, dll, otomatis tidak ditampilkan di sini agar tidak dobel.</div>
       <div id="waOnlyItemsBox"></div>
 
       <button class="gray" type="button" onclick="toggleSettingWAOnly()">⚙️ Setting Item Tambahan WA</button>
@@ -463,6 +463,10 @@ function loadItems(){
     aktifkanGeserItem();
     renderItemKhususFirebase();
     loadDropdownItems();
+
+    // Setelah master Firebase terbaca, bersihkan WA-only dari item yang sudah masuk Firebase/kelompok.
+    renderWAOnlyItems();
+    renderSettingWAOnly();
   });
 }
 
@@ -500,17 +504,54 @@ function loadDropdownItems(){
   });
 }
 
+function itemSudahMasukFirebaseAtauKelompok(nama){
+  let n = normalNama(nama);
+
+  // Kalau nama ini ada di master Firebase, jangan tampil di WA-only.
+  // Termasuk Mie Ayam, Bakso, Terang Bulan, Es Teh, dll yang sudah masuk kelompok.
+  if(masterItemMap[n]) return true;
+
+  // Pengaman jika item khusus belum terbaca dari master tapi namanya termasuk kelompok khusus.
+  let kelompok = kelompokDariNama(nama, "");
+  return !!kelompok;
+}
+
+function bersihkanWAOnlyDariItemFirebase(items){
+  let hasil = [];
+  let sudah = new Set();
+
+  (items || []).forEach(item=>{
+    let nama = String(item || "").trim();
+    if(!nama) return;
+    let key = normalNama(nama);
+    if(sudah.has(key)) return;
+
+    // Jangan tampilkan item yang sudah masuk Firebase/kelompok agar tidak dobel di WA.
+    if(itemSudahMasukFirebaseAtauKelompok(nama)) return;
+
+    sudah.add(key);
+    hasil.push(nama);
+  });
+
+  if(hasil.length === 0) hasil = [...defaultWAOnlyItems];
+  return hasil;
+}
+
 function getWAOnlyItems(){
+  let items = defaultWAOnlyItems;
   let data = localStorage.getItem("items_lapor_maqshof_wa_only");
+
   if(data){
-    try{return JSON.parse(data)}catch(e){}
+    try{ items = JSON.parse(data); }catch(e){ items = defaultWAOnlyItems; }
   }
-  localStorage.setItem("items_lapor_maqshof_wa_only", JSON.stringify(defaultWAOnlyItems));
-  return defaultWAOnlyItems;
+
+  items = bersihkanWAOnlyDariItemFirebase(items);
+  localStorage.setItem("items_lapor_maqshof_wa_only", JSON.stringify(items));
+  return items;
 }
 
 function saveWAOnlyItems(items){
-  localStorage.setItem("items_lapor_maqshof_wa_only", JSON.stringify(items));
+  localStorage.setItem("items_lapor_maqshof_wa_only", JSON.stringify(bersihkanWAOnlyDariItemFirebase(items)));
 }
 
 function ambilNilaiWAOnlySekarang(){
@@ -628,6 +669,10 @@ function tambahItemWAOnly(){
   let input = document.getElementById("itemWAOnlyBaru");
   let nama = input.value.trim();
   if(!nama){alert("Isi nama item dulu");return}
+  if(itemSudahMasukFirebaseAtauKelompok(nama)){
+    alert("Item ini sudah masuk Firebase/kelompok, jadi tidak perlu dimasukkan ke WA-only agar tidak dobel.");
+    return;
+  }
   let items = getWAOnlyItems();
   items.push(nama);
   saveWAOnlyItems(items);
