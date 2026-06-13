@@ -85,7 +85,6 @@ textarea{
   gap:8px;
 }
 .row input[type="number"]{width:82px;margin-bottom:0}
-.row select{flex:1;margin-bottom:0}
 .drag-handle{
   font-size:20px;
   cursor:grab;
@@ -188,6 +187,19 @@ img{
   line-height:1.6;
   font-size:14px;
 }
+.kategori-box{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+  padding:10px;
+  margin:10px 0 12px;
+}
+.kategori-title{
+  font-weight:800;
+  color:#1e3a8a;
+  margin-bottom:6px;
+}
+.kategori-box .row:last-child{border-bottom:none}
 hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
 </style>
 </head>
@@ -238,11 +250,38 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
       <div class="info">Contoh: Tahu, Batagor, dan item dari database Firebase. Item ini akan tersimpan ke laporan Firebase.</div>
       <div id="dynamicItems"></div>
 
-      <button class="gray" type="button" onclick="tambahBarisItem()">+ Tambah Item</button>
+      <div class="row">
+        <select id="slot1"><option value="">-- Pilih item Firebase --</option></select>
+        <input type="number" id="slot1_jumlah" placeholder="0">
+      </div>
+
+      <div class="row">
+        <select id="slot2"><option value="">-- Pilih item Firebase --</option></select>
+        <input type="number" id="slot2_jumlah" placeholder="0">
+      </div>
+
+      <h3>Item Khusus Firebase</h3>
+      <span class="badge">Masuk Firebase, tetapi laporan dipisah</span>
+      <div class="info">Bagian ini tambahan saja. Input Cilok/Tahu/Batagor di atas tetap seperti sebelumnya dan tidak diubah.</div>
+
+      <div class="kategori-box" data-kategori="Mie Ayam">
+        <div class="kategori-title">Mie Ayam</div>
+        <div id="kategoriMieAyam"></div>
+      </div>
+
+      <div class="kategori-box" data-kategori="Bakso & Terang Bulan">
+        <div class="kategori-title">Bakso & Terang Bulan</div>
+        <div id="kategoriBaksoTerangBulan"></div>
+      </div>
+
+      <div class="kategori-box" data-kategori="Es, Snack & Jajanan 3000">
+        <div class="kategori-title">Es, Snack & Jajanan 3000</div>
+        <div id="kategoriEsSnack"></div>
+      </div>
 
       <h3>Item Tambahan WA</h3>
       <span class="badge">Hanya WhatsApp, tidak masuk Firebase</span>
-      <div class="info">Contoh: Es Teh, Es Jeruk, Es Blewah, Es Coklat. Isi jumlahnya di sini kalau hanya ingin masuk teks laporan WA.</div>
+      <div class="info">Item yang tidak termasuk Item Firebase dan Item Khusus Firebase bisa ditulis di sini. Bagian ini hanya masuk teks laporan WA, tidak masuk Firebase.</div>
       <div id="waOnlyItemsBox"></div>
 
       <button class="gray" type="button" onclick="toggleSettingWAOnly()">⚙️ Setting Item Tambahan WA</button>
@@ -283,18 +322,47 @@ const db=firebase.database();
 let cropper = null;
 let fotoBase64Final = "";
 let laporanText = "";
-let daftarItemFirebase = [];
 
 let defaultWAOnlyItems = [
-  "Es Teh",
-  "Es Jeruk",
-  "Es Blewah",
-  "Es Coklat",
-  "Jus Alpukat",
-  "Es Sari Kedelai",
-  "Aneka Snack",
-  "Terang Bulan"
+  "Item Lainnya"
 ];
+
+let itemKhususFirebase = {
+  mieAyam:["Mie Ayam"],
+  baksoTerangBulan:["Bakso", "Terang Bulan"],
+  esSnack:["Es Teh", "Es Jeruk", "Es Blewah", "Es Coklat", "Jus Alpukat", "Es Sari Kedelai", "Aneka Snack", "Jajanan 3000"]
+};
+
+let masterItemMap = {};
+
+function normalNama(v){
+  return String(v || "").toLowerCase().trim();
+}
+
+function kelompokDariNama(nama, kelompokTersimpan=""){
+  let n = normalNama(nama);
+
+  // Nama-nama ini dipaksa masuk kelompok khusus agar tidak jatuh ke Cilok walaupun setting lama pernah salah.
+  if(["mie ayam"].includes(n)) return "Mie Ayam";
+  if(["bakso", "terang bulan"].includes(n)) return "Bakso & Terang Bulan";
+  if(["es teh", "es jeruk", "es blewah", "es coklat", "jus alpukat", "es sari kedelai", "aneka snack", "jajanan 3000"].includes(n)){
+    return "Es, Snack & Jajanan 3000";
+  }
+
+  let k = String(kelompokTersimpan || "").trim();
+  if(k === "Cilok & Jajanan") return ""; // kelompok lama dianggap item biasa
+  return k;
+}
+
+function getNamaItemMaster(data){
+  if(typeof data === "string") return data;
+  return data.nama || data.barang || data.name || "";
+}
+
+function getKelompokItemMaster(data, nama){
+  if(typeof data !== "object" || data === null) return kelompokDariNama(nama, "");
+  return kelompokDariNama(nama, data.kelompokLaporan || data.kategori || "");
+}
 
 function setTanggalHariIni(){
   let d = new Date();
@@ -353,56 +421,49 @@ function pakaiHasilCrop(){
 }
 
 function loadItems(){
-  let container = document.getElementById("dynamicItems");
-  container.innerHTML = "Loading item Firebase...";
+  let container=document.getElementById("dynamicItems");
+  container.innerHTML="Loading item Firebase...";
 
-  db.ref("items").once("value", snap => {
-    daftarItemFirebase = [];
+  db.ref("items").once("value",snap=>{
+    let dataItems = [];
+    masterItemMap = {};
 
-    snap.forEach(c => {
+    snap.forEach(c=>{
       let data = c.val();
-      let nama = data.nama || data;
-      let urutan = data.urutan || 9999;
-      daftarItemFirebase.push({key:c.key, nama:nama, urutan:urutan});
+      let nama = getNamaItemMaster(data);
+      let urutan = (typeof data === "object" && data !== null) ? Number(data.urutan || 9999) : 9999;
+      let kelompok = getKelompokItemMaster(data, nama);
+
+      masterItemMap[normalNama(nama)] = {key:c.key, nama:nama, urutan:urutan, kelompok:kelompok};
+
+      // Bagian lama hanya untuk Cilok/Tahu/Batagor/dll.
+      // Item khusus seperti Mie Ayam, Bakso, Terang Bulan, Es, Snack tidak ditampilkan di sini.
+      // Ini mencegah Mie Ayam masuk kelompok Cilok.
+      if(!kelompok){
+        dataItems.push({key:c.key,nama:nama,urutan:urutan});
+      }
     });
 
-    daftarItemFirebase.sort((a,b) => a.urutan - b.urutan);
+    dataItems.sort((a,b)=>a.urutan-b.urutan);
+    container.innerHTML="";
 
-    container.innerHTML = "";
-
-    // Tampilan awal otomatis urut sesuai urutan Firebase:
-    // misalnya Tahu, Batagor, Cilok, dan seterusnya.
-    daftarItemFirebase.forEach(item => {
-      tambahBarisItem(item.nama);
+    dataItems.forEach(item=>{
+      let div=document.createElement("div");
+      div.className="row";
+      div.setAttribute("data-key", item.key);
+      div.setAttribute("data-nama", item.nama);
+      div.innerHTML=`
+        <span class="drag-handle">☰</span>
+        <span class="item-name">${item.nama}</span>
+        <input type="number" data-nama="${item.nama}" placeholder="0">
+      `;
+      container.appendChild(div);
     });
+
+    aktifkanGeserItem();
+    renderItemKhususFirebase();
+    loadDropdownItems();
   });
-}
-
-function buatOptionsItem(selectedNama = ""){
-  let html = `<option value="">-- Pilih item --</option>`;
-
-  daftarItemFirebase.forEach(item => {
-    let selected = item.nama === selectedNama ? "selected" : "";
-    html += `<option value="${item.nama}" ${selected}>${item.nama}</option>`;
-  });
-
-  return html;
-}
-
-function tambahBarisItem(selectedNama = ""){
-  let container = document.getElementById("dynamicItems");
-
-  let div = document.createElement("div");
-  div.className = "row item-row";
-
-  div.innerHTML = `
-    <select class="pilihItemFirebase">
-      ${buatOptionsItem(selectedNama)}
-    </select>
-    <input type="number" class="jumlahItemFirebase" min="0" placeholder="0">
-  `;
-
-  container.appendChild(div);
 }
 
 function aktifkanGeserItem(){
@@ -427,22 +488,15 @@ function loadDropdownItems(){
   slot1.innerHTML='<option value="">-- Pilih item Firebase --</option>';
   slot2.innerHTML='<option value="">-- Pilih item Firebase --</option>';
 
-  db.ref("items").once("value",snap=>{
-    let dataItems = [];
-    snap.forEach(c=>{
-      let data = c.val();
-      let nama = data.nama || data;
-      let urutan = data.urutan || 9999;
-      dataItems.push({nama:nama,urutan:urutan});
-    });
-    dataItems.sort((a,b)=>a.urutan-b.urutan);
-    dataItems.forEach(item=>{
-      let opt=document.createElement("option");
-      opt.value=item.nama;
-      opt.textContent=item.nama;
-      slot1.appendChild(opt.cloneNode(true));
-      slot2.appendChild(opt.cloneNode(true));
-    });
+  let dataItems = Object.values(masterItemMap).filter(item => !item.kelompok);
+  dataItems.sort((a,b)=>a.urutan-b.urutan);
+
+  dataItems.forEach(item=>{
+    let opt=document.createElement("option");
+    opt.value=item.nama;
+    opt.textContent=item.nama;
+    slot1.appendChild(opt.cloneNode(true));
+    slot2.appendChild(opt.cloneNode(true));
   });
 }
 
@@ -467,6 +521,59 @@ function ambilNilaiWAOnlySekarang(){
   });
 
   return data;
+}
+
+function renderItemKhususFirebase(){
+  let grup = {
+    "Mie Ayam":[],
+    "Bakso & Terang Bulan":[],
+    "Es, Snack & Jajanan 3000":[]
+  };
+
+  Object.values(masterItemMap).forEach(item=>{
+    if(grup[item.kelompok]) grup[item.kelompok].push(item.nama);
+  });
+
+  // Fallback supaya form tetap muncul walaupun item belum ada di master setting.
+  itemKhususFirebase.mieAyam.forEach(n=>{ if(!grup["Mie Ayam"].some(x=>normalNama(x)===normalNama(n))) grup["Mie Ayam"].push(n); });
+  itemKhususFirebase.baksoTerangBulan.forEach(n=>{ if(!grup["Bakso & Terang Bulan"].some(x=>normalNama(x)===normalNama(n))) grup["Bakso & Terang Bulan"].push(n); });
+  itemKhususFirebase.esSnack.forEach(n=>{ if(!grup["Es, Snack & Jajanan 3000"].some(x=>normalNama(x)===normalNama(n))) grup["Es, Snack & Jajanan 3000"].push(n); });
+
+  renderKelompokKhusus("kategoriMieAyam", grup["Mie Ayam"], "Mie Ayam");
+  renderKelompokKhusus("kategoriBaksoTerangBulan", grup["Bakso & Terang Bulan"], "Bakso & Terang Bulan");
+  renderKelompokKhusus("kategoriEsSnack", grup["Es, Snack & Jajanan 3000"], "Es, Snack & Jajanan 3000");
+}
+
+function renderKelompokKhusus(targetId, items, kategori){
+  let box = document.getElementById(targetId);
+  box.innerHTML = "";
+
+  items.forEach(nama=>{
+    let div = document.createElement("div");
+    div.className = "row";
+    div.innerHTML = `
+      <span class="item-name">${nama}</span>
+      <input type="number" min="0" placeholder="0" class="jumlahKhususFirebase" data-nama="${nama}" data-kategori="${kategori}">
+    `;
+    box.appendChild(div);
+  });
+}
+
+function ambilItemsKhususFirebase(){
+  let items=[];
+
+  document.querySelectorAll(".jumlahKhususFirebase").forEach(input=>{
+    let jumlah = input.value;
+    if(jumlah && Number(jumlah) !== 0){
+      items.push({
+        barang:input.dataset.nama,
+        jumlah:Number(jumlah),
+        kategori:input.dataset.kategori
+      });
+    }
+  });
+
+  return items;
 }
 
 function renderWAOnlyItems(){
@@ -553,20 +660,25 @@ function resetItemWAOnly(){
 }
 
 function ambilItemsFirebase(){
-  let items = [];
+  let items=[];
 
-  document.querySelectorAll("#dynamicItems .item-row").forEach(row => {
-    let barang = row.querySelector(".pilihItemFirebase").value;
-    let jumlah = row.querySelector(".jumlahItemFirebase").value;
-
-    if(barang && jumlah && Number(jumlah) !== 0){
-      items.push({
-        barang: barang,
-        jumlah: Number(jumlah)
-      });
+  document.querySelectorAll("#dynamicItems input").forEach(input=>{
+    let val=input.value;
+    if(val && Number(val) !== 0){
+      items.push({barang:input.dataset.nama,jumlah:Number(val)});
     }
   });
 
+  function tambahSlot(idBarang,idJumlah){
+    let barang=document.getElementById(idBarang).value;
+    let jumlah=document.getElementById(idJumlah).value;
+    if(barang && jumlah && Number(jumlah) !== 0){
+      items.push({barang:barang,jumlah:Number(jumlah)});
+    }
+  }
+
+  tambahSlot("slot1","slot1_jumlah");
+  tambahSlot("slot2","slot2_jumlah");
   return items;
 }
 
@@ -594,7 +706,12 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
   teks += formatTanggal(tanggal) + " - " + waktu + "\n\n";
   teks += jenis + " :\n\n";
 
+  let kategoriAktif = "";
   itemsFirebase.forEach(i=>{
+    if(i.kategori && i.kategori !== kategoriAktif){
+      kategoriAktif = i.kategori;
+      teks += `\n${kategoriAktif}:\n`;
+    }
     teks += `${i.barang} ${i.jumlah}\n`;
   });
 
@@ -611,14 +728,14 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
 }
 
 function buatPreviewWA(){
-  let itemsFirebase = ambilItemsFirebase();
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
   laporanText = buatTeksWA(itemsFirebase, itemsWAOnly);
   document.getElementById("previewWA").innerText = laporanText;
 }
 
 async function kirim(){
-  let itemsFirebase = ambilItemsFirebase();
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
 
   if(itemsFirebase.length === 0 && itemsWAOnly.length === 0){
