@@ -48,6 +48,28 @@ body{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:20px;
+    align-items:stretch;
+}
+
+.box{
+    border:1px solid #ddd;
+    border-radius:12px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+}
+
+.box table{
+    flex:1;
+}
+
+.omzet{
+    margin-top:auto;
+    padding:12px;
+    font-weight:bold;
+    text-align:center;
+    background:#fafafa;
+    border-top:1px solid #ddd;
 }
 
 .box{
@@ -226,6 +248,11 @@ button{
             <tr><td>03 Juni 2025</td><td>10</td></tr>
             <tr><td>04 Juni 2025</td><td>12</td></tr>
             <tr><td>05 Juni 2025</td><td>13</td></tr>
+
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
 
             <tr class="total-row">
                 <td>Total Akhwat</td>
