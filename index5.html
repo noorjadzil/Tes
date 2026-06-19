@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rekap Terang Bulan Juni 2025</title>
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#f4f6f9;
+    font-family:Arial,Helvetica,sans-serif;
+    padding:20px;
+}
+
+#laporan{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.header h1{
+    color:#0d6efd;
+    margin-bottom:5px;
+}
+
+.header p{
+    color:#666;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0d6efd;
+    color:white;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:10px;
+}
+
+td:nth-child(2),
+td:nth-child(3){
+    text-align:center;
+}
+
+.total-row{
+    background:#f8f9fa;
+    font-weight:bold;
+}
+
+.summary{
+    margin-top:20px;
+    border:2px solid #0d6efd;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.summary-title{
+    background:#0d6efd;
+    color:white;
+    text-align:center;
+    padding:12px;
+    font-weight:bold;
+}
+
+.summary table td:last-child{
+    text-align:right;
+    font-weight:bold;
+}
+
+.grand-total{
+    font-size:18px;
+    background:#f8f9fa;
+}
+
+.actions{
+    text-align:center;
+    margin-top:20px;
+}
+
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    color:white;
+    margin:5px;
+}
+
+.download{
+    background:#198754;
+}
+
+.whatsapp{
+    background:#25D366;
+}
+</style>
+</head>
+<body>
+
+<div id="laporan">
+
+<div class="header">
+    <h1>REKAP PENGIRIMAN TERANG BULAN</h1>
+    <p>Periode Juni 2025</p>
+</div>
+
+<table>
+<tr>
+    <th>Tanggal</th>
+    <th>Ikhwan</th>
+    <th>Akhwat</th>
+</tr>
+
+<tr><td>02 Juni 2025</td><td>34</td><td>-</td></tr>
+<tr><td>04 Juni 2025</td><td>32</td><td>30</td></tr>
+<tr><td>05 Juni 2025</td><td>35</td><td>32</td></tr>
+<tr><td>07 Juni 2025</td><td>23</td><td>-</td></tr>
+<tr><td>08 Juni 2025</td><td>40</td><td>-</td></tr>
+<tr><td>09 Juni 2025</td><td>36</td><td>20</td></tr>
+<tr><td>11 Juni 2025</td><td>40</td><td>-</td></tr>
+<tr><td>12 Juni 2025</td><td>41</td><td>-</td></tr>
+<tr><td>13 Juni 2025</td><td>36</td><td>-</td></tr>
+<tr><td>14 Juni 2025</td><td>-</td><td>28</td></tr>
+<tr><td>15 Juni 2025</td><td>30</td><td>21</td></tr>
+<tr><td>16 Juni 2025</td><td>35</td><td>45</td></tr>
+<tr><td>17 Juni 2025</td><td>41</td><td>-</td></tr>
+
+<tr class="total-row">
+    <td>TOTAL</td>
+    <td>423</td>
+    <td>176</td>
+</tr>
+</table>
+
+<div class="summary">
+
+<div class="summary-title">
+RINGKASAN
+</div>
+
+<table>
+
+<tr>
+    <td>Total Ikhwan</td>
+    <td>423 pcs</td>
+</tr>
+
+<tr>
+    <td>Omzet Ikhwan</td>
+    <td>Rp3.595.500</td>
+</tr>
+
+<tr>
+    <td>Total Akhwat</td>
+    <td>176 pcs</td>
+</tr>
+
+<tr>
+    <td>Omzet Akhwat</td>
+    <td>Rp1.496.000</td>
+</tr>
+
+<tr>
+    <td>Harga per pcs</td>
+    <td>Rp8.500</td>
+</tr>
+
+<tr>
+    <td>Total Kirim</td>
+    <td>599 pcs</td>
+</tr>
+
+<tr class="grand-total">
+    <td>Total Omzet</td>
+    <td>Rp5.091.500</td>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<button class="download" onclick="downloadPNG()">
+Download PNG
+</button>
+
+<button class="whatsapp" onclick="kirimWA()">
+Kirim WhatsApp
+</button>
+
+</div>
+
+<script>
+function downloadPNG(){
+    html2canvas(document.querySelector("#laporan"),{
+        scale:2
+    }).then(canvas=>{
+        const link=document.createElement("a");
+        link.download="rekap-terang-bulan-juni-2025.png";
+        link.href=canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+
+function kirimWA(){
+
+const pesan =
+`*REKAP PENGIRIMAN TERANG BULAN*
+Periode Juni 2025
+
+Total Ikhwan : 423 pcs
+Omzet Ikhwan : Rp3.595.500
+
+Total Akhwat : 176 pcs
+Omzet Akhwat : Rp1.496.000
+
+Total Kirim : 599 pcs
+Harga : Rp8.500
+
+Total Omzet : Rp5.091.500`;
+
+window.open(
+`https://wa.me/?text=${encodeURIComponent(pesan)}`,
+'_blank'
+);
+}
+</script>
+
+</body>
+</html>
