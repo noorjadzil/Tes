@@ -1,51 +1,260 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Kirim WA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laporan Khusus</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<style>
+body{
+font-family:Segoe UI,Arial,sans-serif;
+background:#f1f5f9;
+margin:0;
+padding:15px;
+}
+.card{
+background:#fff;
+padding:15px;
+border-radius:14px;
+margin-bottom:15px;
+box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+h2,h3{
+margin:0 0 10px;
+color:#1e3a8a;
+}
+textarea{
+width:100%;
+min-height:160px;
+padding:10px;
+border-radius:10px;
+border:1px solid #ddd;
+}
+button{
+padding:10px 14px;
+border:none;
+border-radius:10px;
+background:#1e3a8a;
+color:#fff;
+font-weight:bold;
+margin:4px;
+cursor:pointer;
+}
+input[type=date]{
+width:100%;
+padding:10px;
+border-radius:10px;
+border:1px solid #ccc;
+}
+</style>
+
 </head>
 <body>
 
-<button onclick="kirimSemua()">
-📤 Kirim Semua
-</button>
+<div class="card">
+<h2>Laporan Khusus</h2>
+
+<label>Tanggal</label> <input type="date" id="tgl">
+
+<button onclick="loadData()">Tampilkan</button> <button onclick="location.href='index.html'">Kembali</button>
+
+</div>
+
+<div id="hasil"></div>
 
 <script>
-function kirimSemua(){
 
-  const pesan1 =
-`📊 LAPORAN IKHWAN
+firebase.initializeApp({
+databaseURL:"https://maqshof-d5772-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
 
-Cimol : 20
-Cilok : 15
+const db=firebase.database();
 
-Total : 35`;
+function formatTanggal(tgl){
+let d=new Date(tgl+"T00:00:00");
 
-  const pesan2 =
-`📊 REKAP HARIAN
+let hari=[
+"Ahad",
+"Senin",
+"Selasa",
+"Rabu",
+"Kamis",
+"Jumat",
+"Sabtu"
+];
 
-Ikhwan : 35
-Akhwat : 28
+let bulan=[
+"Januari","Februari","Maret","April",
+"Mei","Juni","Juli","Agustus",
+"September","Oktober","November","Desember"
+];
 
-Total : 63`;
+return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+}
 
-  window.open(
-    "https://wa.me/6285733162871?text=" +
-    encodeURIComponent(pesan1),
-    "_blank"
-  );
+function kategoriItem(nama){
 
-  setTimeout(() => {
-    window.open(
-      "https://wa.me/6285156319949?text=" +
-      encodeURIComponent(pesan2),
-      "_blank"
-    );
-  },1000);
+nama=(nama||"").toLowerCase();
+
+if(
+["mie ayam"].includes(nama)
+) return "Mie Ayam";
+
+if(
+["bakso","terang bulan"].includes(nama)
+) return "Bakso & Terang Bulan";
+
+if(
+[
+"es teh",
+"es jeruk",
+"es blewah",
+"es coklat",
+"jus alpukat",
+"es sari kedelai",
+"aneka snack",
+"jajanan 3000"
+].includes(nama)
+) return "Minuman";
+
+if(
+[
+"maklor",
+"brownies kukus",
+"corndog",
+"dimsum"
+].includes(nama)
+) return "Maklor";
+
+return "Cilok & Jajanan";
+}
+
+function copyText(id){
+navigator.clipboard.writeText(
+document.getElementById(id).value
+);
+alert("Disalin");
+}
+
+function kirimWA(id){
+let txt=document.getElementById(id).value;
+window.open(
+"https://wa.me/?text="+encodeURIComponent(txt),
+"_blank"
+);
+}
+
+async function loadData(){
+
+let tgl=document.getElementById("tgl").value;
+
+if(!tgl){
+alert("Pilih tanggal");
+return;
+}
+
+let hasil=document.getElementById("hasil");
+hasil.innerHTML="Loading...";
+
+let kategori={
+"Minuman":[],
+"Mie Ayam":[],
+"Bakso & Terang Bulan":[],
+"Maklor":[],
+"Cilok & Jajanan":[]
+};
+
+let laporanLengkap=[];
+
+let snap=await db.ref("jajan").once("value");
+
+snap.forEach(r=>{
+
+let d=r.val();
+
+if(d.tanggal!==tgl) return;
+
+let header=
+`${d.tempat}\n${formatTanggal(d.tanggal)}\n\n${d.jenis} :\n`;
+
+let isi="";
+
+(d.items||[]).forEach(i=>{
+
+let kat=i.kategori || kategoriItem(i.barang);
+
+kategori[kat].push(
+`${i.barang} ${i.jumlah}`
+);
+
+isi+=`${i.barang} ${i.jumlah}\n`;
+
+});
+
+laporanLengkap.push(
+header+"\n"+isi
+);
+
+});
+
+hasil.innerHTML="";
+
+Object.keys(kategori).forEach((k,index)=>{
+
+let text=kategori[k].join("\n");
+
+hasil.innerHTML+=`
+<div class="card">
+<h3>${k}</h3>
+
+<textarea id="kat${index}">${text}</textarea>
+
+<button onclick="copyText('kat${index}')">
+Copy
+</button>
+
+<button onclick="kirimWA('kat${index}')">
+WA
+</button>
+</div>
+`;
+
+});
+
+hasil.innerHTML+=`
+
+<div class="card">
+<h3>Laporan Lengkap</h3>
+
+<textarea id="lengkap">
+${laporanLengkap.join("\n===================\n")}
+</textarea>
+
+<button onclick="copyText('lengkap')">
+Copy
+</button>
+
+<button onclick="kirimWA('lengkap')">
+WA
+</button>
+</div>
+`;
 
 }
-</script>
+
+window.onload=()=>{
+let d=new Date();
+
+document.getElementById("tgl").value=
+d.toISOString().split("T")[0];
+
+loadData();
+} </script>
 
 </body>
 </html>
