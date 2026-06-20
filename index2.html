@@ -297,10 +297,7 @@ padding:8px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bot
 <div id="maklor" class="tab-pane">
 <h3>Maklor</h3>
 <div class="kategori-box">
-<div class="row"><span class="item-name">Maklor</span><input type="number" placeholder="0"></div>
-<div class="row"><span class="item-name">Brownies Kukus</span><input type="number" placeholder="0"></div>
-<div class="row"><span class="item-name">Corndog</span><input type="number" placeholder="0"></div>
-<div class="row"><span class="item-name">Dimsum</span><input type="number" placeholder="0"></div>
+<div id="dynamicMaklor"></div>
 </div>
 </div>
 <div id="mie" class="tab-pane"><h3>Makanan</h3>
@@ -318,8 +315,7 @@ padding:8px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bot
       </div>
 
       </div><div id="snack" class="tab-pane"><div class="kategori-box"><div class="kategori-title">🧃 Minuman</div><div id="kategoriEsSnack"></div></div><div class="kategori-box"><div class="kategori-title">🍪 Snack</div><div class="info">Aneka Snack & Jajanan 3000</div></div>
-        <div class="kategori-title">Es, Snack & Jajanan 3000</div>
-        <div id="kategoriEsSnack"></div>
+        
       </div>
 
       </div>
@@ -498,7 +494,8 @@ function loadItems(){
       // Bagian lama hanya untuk Cilok/Tahu/Batagor/dll.
       // Item khusus seperti Mie Ayam, Bakso, Terang Bulan, Es, Snack tidak ditampilkan di sini.
       // Ini mencegah Mie Ayam masuk kelompok Cilok.
-      if(!kelompok){
+      const itemMaklor=["maklor","brownies kukus","corndog","dimsum"];
+      if(!kelompok && !itemMaklor.includes(normalNama(nama))){
         dataItems.push({key:c.key,nama:nama,urutan:urutan});
       }
     });
@@ -520,13 +517,27 @@ function loadItems(){
     });
 
     aktifkanGeserItem();
-    renderItemKhususFirebase();
+    renderItemKhususFirebase(); renderMaklorItems();
     loadDropdownItems();
 
     // Setelah master Firebase terbaca, bersihkan WA-only dari item yang sudah masuk Firebase/kelompok.
     renderWAOnlyItems();
     renderSettingWAOnly();
   });
+}
+
+
+function renderMaklorItems(){
+ let box=document.getElementById("dynamicMaklor");
+ if(!box) return;
+ box.innerHTML="";
+ ["Maklor","Brownies Kukus","Corndog","Dimsum"].forEach(n=>{
+   let div=document.createElement("div");
+   div.className="row";
+   div.innerHTML=`<span class="item-name">${n}</span>
+   <input type="number" class="jumlahMaklor" data-nama="${n}" placeholder="0">`;
+   box.appendChild(div);
+ });
 }
 
 function aktifkanGeserItem(){
@@ -787,6 +798,18 @@ function ambilItemsFirebase(){
   return items;
 }
 
+
+function ambilItemsMaklor(){
+  let items=[];
+  document.querySelectorAll('.jumlahMaklor').forEach(input=>{
+    let jumlah=input.value;
+    if(jumlah && Number(jumlah)!==0){
+      items.push({barang:input.dataset.nama,jumlah:Number(jumlah)});
+    }
+  });
+  return items;
+}
+
 function ambilItemsWAOnly(){
   let items=[];
   document.querySelectorAll(".jumlahWAOnly").forEach(input=>{
@@ -827,14 +850,14 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
 }
 
 function buatPreviewWA(){
-  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsMaklor()).concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
   laporanText = buatTeksWA(itemsFirebase, itemsWAOnly);
   document.getElementById("previewWA").innerText = laporanText;
 }
 
 async function kirim(){
-  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsMaklor()).concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
 
   if(itemsFirebase.length === 0 && itemsWAOnly.length === 0){
