@@ -205,10 +205,9 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
 
 .subtabs{
 display:grid;
-grid-template-columns:repeat(4,1fr);
+grid-template-columns:repeat(5,1fr);
 gap:4px;
 margin:12px 0;
-position:-webkit-sticky;
 position:sticky;
 top:0;
 align-self:start;
@@ -271,11 +270,21 @@ padding:8px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bot
       
 <div class="subtabs">
 <button type="button" class="subtab active" onclick="showSection('firebase',this)">Cilok</button>
+<button type="button" class="subtab" onclick="showSection('maklor',this)">Maklor</button>
 <button type="button" class="subtab" onclick="showSection('wa',this)">WA</button>
 <button type="button" class="subtab" onclick="showSection('snack',this)">Minum</button>
 <button type="button" class="subtab" onclick="showSection('mie',this)">Makan</button>
 </div>
 <div id="firebase" class="tab-pane active">
+<h3>Maklor</h3>
+<div class="kategori-box">
+<div class="row"><span class="item-name">Maklor</span><input type="number" placeholder="0"></div>
+<div class="row"><span class="item-name">Brownis</span><input type="number" placeholder="0"></div>
+<div class="row"><span class="item-name">Corndog</span><input type="number" placeholder="0"></div>
+<div class="row"><span class="item-name">Dimsum</span><input type="number" placeholder="0"></div>
+</div>
+</div>
+
 <h3>Item Firebase</h3>
       <span class="badge">Masuk Firebase + WhatsApp</span>
       <div class="info">Contoh: Tahu, Batagor, dan item dari database Firebase. Item ini akan tersimpan ke laporan Firebase.</div>
@@ -286,12 +295,19 @@ padding:8px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bot
         <input type="number" id="slot1_jumlah" placeholder="0">
       </div>
 
-      <div class="row">
-        <select id="slot2"><option value="">-- Pilih item Firebase --</option></select>
-        <input type="number" id="slot2_jumlah" placeholder="0">
+
       </div>
 
-      </div><div id="mie" class="tab-pane"><h3>Makanan</h3>
+<div id="maklor" class="tab-pane">
+<h3>Maklor</h3>
+<div class="kategori-box">
+<div class="row"><span class="item-name">Maklor</span><input type="number" placeholder="0"></div>
+<div class="row"><span class="item-name">Brownis</span><input type="number" placeholder="0"></div>
+<div class="row"><span class="item-name">Corndog</span><input type="number" placeholder="0"></div>
+<div class="row"><span class="item-name">Dimsum</span><input type="number" placeholder="0"></div>
+</div>
+</div>
+<div id="mie" class="tab-pane"><h3>Makanan</h3>
       <span class="badge">Masuk Firebase, tetapi laporan dipisah</span>
       <div class="info">Bagian ini tambahan saja. Input Cilok/Tahu/Batagor di atas tetap seperti sebelumnya dan tidak diubah.</div>
 
@@ -308,7 +324,10 @@ padding:8px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bot
       </div><div id="snack" class="tab-pane"><div class="kategori-box"><div class="kategori-title">🧃 Minuman</div><div id="kategoriEsSnack"></div></div><div class="kategori-box"><div class="kategori-title">🍪 Snack</div><div class="info">Aneka Snack & Jajanan 3000</div></div>
         <div class="kategori-title">Es, Snack & Jajanan 3000</div>
         <div id="kategoriEsSnack"></div>
-      </div><div id="wa" class="tab-pane"><h3>Item Tambahan WA</h3>
+      </div>
+
+      </div>
+<div id="wa" class="tab-pane"><h3>Item Tambahan WA</h3>
       <span class="badge">Hanya WhatsApp, tidak masuk Firebase</span>
       <div class="info">Bagian ini hanya untuk item luar yang tidak masuk Firebase/kelompok. Jika item sudah ada di Firebase seperti Mie Ayam, Terang Bulan, Es Teh, Bakso, dll, otomatis tidak ditampilkan di sini agar tidak dobel.</div>
       <div id="waOnlyItemsBox"></div>
