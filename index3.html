@@ -1,349 +1,149 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rekap Penjualan Mie Ayam</title>
-
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kirim Semua Laporan WA</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    background:#f4f6f9;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:Arial,sans-serif;
+    max-width:700px;
+    margin:30px auto;
     padding:20px;
 }
-
-#laporan{
-    max-width:1100px;
-    margin:auto;
-    background:#fff;
-    border-radius:15px;
-    padding:25px;
-    box-shadow:0 2px 10px rgba(0,0,0,.1);
-}
-
-.header{
-    text-align:center;
-    margin-bottom:25px;
-}
-
-.header h1{
-    font-size:30px;
-    margin-bottom:8px;
-}
-
-.header p{
-    color:#666;
-    font-size:15px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-    align-items:stretch;
-}
-
-.box{
+.card{
     border:1px solid #ddd;
     border-radius:12px;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
+    padding:20px;
 }
-
-.box table{
-    flex:1;
-}
-
-.omzet{
-    margin-top:auto;
-    padding:12px;
-    font-weight:bold;
-    text-align:center;
-    background:#fafafa;
-    border-top:1px solid #ddd;
-}
-
-.box{
-    border:1px solid #ddd;
-    border-radius:12px;
-    overflow:hidden;
-}
-
-.box h2{
-    background:#0d6efd;
-    color:white;
-    text-align:center;
-    padding:12px;
-    font-size:22px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th{
-    background:#f2f2f2;
-}
-
-th,td{
-    border:1px solid #ddd;
-    padding:8px;
-    font-size:14px;
-}
-
-td:last-child,
-th:last-child{
-    text-align:right;
-}
-
-.total-row{
-    font-weight:bold;
-    background:#f9f9f9;
-}
-
-.omzet{
-    padding:12px;
-    font-weight:bold;
-    text-align:center;
-    background:#fafafa;
-}
-
-.summary{
-    margin-top:25px;
-    border:2px solid #0d6efd;
-    border-radius:12px;
-    overflow:hidden;
-}
-
-.summary h2{
-    background:#0d6efd;
-    color:white;
-    text-align:center;
-    padding:12px;
-}
-
-.summary table td{
-    padding:12px;
-    font-size:16px;
-}
-
-.grand-total{
-    font-weight:bold;
-    font-size:20px;
-    background:#f8f9fa;
-}
-
-.actions{
-    text-align:center;
-    margin-top:20px;
-}
-
 button{
-    padding:12px 20px;
+    width:100%;
+    padding:15px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     cursor:pointer;
-    font-size:15px;
-    margin:5px;
+    font-size:18px;
 }
-
-.download{
-    background:#198754;
-    color:white;
-}
-
-.whatsapp{
+.primary{
     background:#25D366;
-    color:white;
+    color:#fff;
 }
-
-@media(max-width:768px){
-    .grid{
-        grid-template-columns:1fr;
-    }
+textarea{
+    width:100%;
+    min-height:120px;
+    margin-top:10px;
 }
 </style>
+
 </head>
 <body>
 
-<div id="laporan">
+<div class="card">
 
-<div class="header">
-    <h1>REKAP PENJUALAN MIE AYAM</h1>
-    <p>Periode 17 Mei 2025 - 05 Juni 2025</p>
-</div>
+<h2>📊 Kirim Semua Laporan</h2>
 
-<div class="grid">
+<p>Tekan tombol di bawah untuk membuka 3 chat WhatsApp sekaligus.</p>
 
-    <!-- IKHWAN -->
-    <div class="box">
-        <h2>IKHWAN</h2>
+<button class="primary" onclick="kirimSemua()">
+📤 Kirim Semua Laporan
+</button>
 
-        <table>
-            <tr>
-                <th>Tanggal</th>
-                <th>Terjual</th>
-            </tr>
-
-            <tr><td>17 Mei 2025</td><td>36</td></tr>
-            <tr><td>18 Mei 2025</td><td>36</td></tr>
-            <tr><td>19 Mei 2025</td><td>36</td></tr>
-            <tr><td>20 Mei 2025</td><td>36</td></tr>
-            <tr><td>21 Mei 2025</td><td>36</td></tr>
-            <tr><td>22 Mei 2025</td><td>36</td></tr>
-            <tr><td>23 Mei 2025</td><td>51</td></tr>
-            <tr><td>24 Mei 2025</td><td>34</td></tr>
-            <tr><td>29 Mei 2025</td><td>36</td></tr>
-            <tr><td>30 Mei 2025</td><td>36</td></tr>
-            <tr><td>31 Mei 2025</td><td>36</td></tr>
-            <tr><td>01 Juni 2025</td><td>36</td></tr>
-            <tr><td>02 Juni 2025</td><td>42</td></tr>
-            <tr><td>03 Juni 2025</td><td>29</td></tr>
-            <tr><td>04 Juni 2025</td><td>36</td></tr>
-            <tr><td>05 Juni 2025</td><td>28</td></tr>
-
-            <tr class="total-row">
-                <td>Total Ikhwan</td>
-                <td>580</td>
-            </tr>
-        </table>
-
-        <div class="omzet">
-            Omzet Ikhwan : Rp4.350.000
-        </div>
-    </div>
-
-    <!-- AKHWAT -->
-    <div class="box">
-        <h2>AKHWAT</h2>
-
-        <table>
-            <tr>
-                <th>Tanggal</th>
-                <th>Terjual</th>
-            </tr>
-
-            <tr><td>17 Mei 2025</td><td>24</td></tr>
-            <tr><td>18 Mei 2025</td><td>6</td></tr>
-            <tr><td>19 Mei 2025</td><td>22</td></tr>
-            <tr><td>20 Mei 2025</td><td>24</td></tr>
-            <tr><td>21 Mei 2025</td><td>12</td></tr>
-            <tr><td>22 Mei 2025</td><td>24</td></tr>
-            <tr><td>23 Mei 2025</td><td>9</td></tr>
-            <tr><td>24 Mei 2025</td><td>20</td></tr>
-            <tr><td>29 Mei 2025</td><td>24</td></tr>
-            <tr><td>30 Mei 2025</td><td>12</td></tr>
-            <tr><td>31 Mei 2025</td><td>19</td></tr>
-            <tr><td>01 Juni 2025</td><td>9</td></tr>
-            <tr><td>03 Juni 2025</td><td>10</td></tr>
-            <tr><td>04 Juni 2025</td><td>12</td></tr>
-            <tr><td>05 Juni 2025</td><td>13</td></tr>
-
-            <tr>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-
-            <tr class="total-row">
-                <td>Total Akhwat</td>
-                <td>240</td>
-            </tr>
-        </table>
-
-        <div class="omzet">
-            Omzet Akhwat : Rp1.800.000
-        </div>
-    </div>
-
-</div>
-
-<div class="summary">
-    <h2>RINGKASAN KESELURUHAN</h2>
-
-    <table>
-        <tr>
-            <td>Total Penjualan Ikhwan</td>
-            <td align="right">580 Porsi</td>
-        </tr>
-
-        <tr>
-            <td>Total Penjualan Akhwat</td>
-            <td align="right">240 Porsi</td>
-        </tr>
-
-        <tr>
-            <td>Total Porsi Terjual</td>
-            <td align="right">820 Porsi</td>
-        </tr>
-
-        <tr>
-            <td>Harga per Porsi</td>
-            <td align="right">Rp7.500</td>
-        </tr>
-
-        <tr class="grand-total">
-            <td>Total Omzet</td>
-            <td align="right">Rp6.150.000</td>
-        </tr>
-    </table>
-</div>
-
-</div>
-
-<div class="actions">
-    <button class="download" onclick="downloadPNG()">
-        Download PNG
-    </button>
-
-    <button class="whatsapp" onclick="kirimWA()">
-        Kirim WhatsApp
-    </button>
 </div>
 
 <script>
-function downloadPNG(){
-    html2canvas(document.querySelector("#laporan"),{
-        scale:2
-    }).then(canvas=>{
-        const link=document.createElement("a");
-        link.download="rekap-mie-ayam.png";
-        link.href=canvas.toDataURL("image/png");
-        link.click();
-    });
+
+function kirimSemua(){
+
+    // ===== DATA CONTOH =====
+    const ikhwan = {
+        cimol:20,
+        cilok:15,
+        dimsum:10
+    };
+
+    const akhwat = {
+        cimol:18,
+        cilok:12,
+        dimsum:8
+    };
+
+    const totalIkhwan =
+        ikhwan.cimol +
+        ikhwan.cilok +
+        ikhwan.dimsum;
+
+    const totalAkhwat =
+        akhwat.cimol +
+        akhwat.cilok +
+        akhwat.dimsum;
+
+    // ===== LAPORAN IKHWAN =====
+    const laporanIkhwan =
+
+`📊 LAPORAN IKHWAN
+
+Cimol : ${ikhwan.cimol}
+Cilok : ${ikhwan.cilok}
+Dimsum : ${ikhwan.dimsum}
+
+Total Terjual : ${totalIkhwan}
+`;
+
+    // ===== LAPORAN AKHWAT =====
+    const laporanAkhwat =
+
+`📊 LAPORAN AKHWAT
+
+Cimol : ${akhwat.cimol}
+Cilok : ${akhwat.cilok}
+Dimsum : ${akhwat.dimsum}
+
+Total Terjual : ${totalAkhwat}
+`;
+
+    // ===== REKAP =====
+    const laporanRekap =
+
+`📊 REKAP HARIAN
+
+Total Ikhwan : ${totalIkhwan}
+Total Akhwat : ${totalAkhwat}
+
+Grand Total :
+${totalIkhwan + totalAkhwat}
+`;
+
+    // ===== GANTI NOMOR =====
+    const nomorIkhwan = "628111111111";
+    const nomorAkhwat = "628222222222";
+    const nomorRekap  = "628333333333";
+
+    // ===== BUKA CHAT 1 =====
+    window.open(
+      `https://wa.me/${nomorIkhwan}?text=${encodeURIComponent(laporanIkhwan)}`,
+      "_blank"
+    );
+
+    // ===== BUKA CHAT 2 =====
+    setTimeout(() => {
+      window.open(
+        `https://wa.me/${nomorAkhwat}?text=${encodeURIComponent(laporanAkhwat)}`,
+        "_blank"
+      );
+    },1000);
+
+    // ===== BUKA CHAT 3 =====
+    setTimeout(() => {
+      window.open(
+        `https://wa.me/${nomorRekap}?text=${encodeURIComponent(laporanRekap)}`,
+        "_blank"
+      );
+    },2000);
+
 }
 
-function kirimWA(){
-
-const pesan =
-`*REKAP PENJUALAN MIE AYAM*
-
-Periode 17 Mei 2025 - 05 Juni 2025
-
-Ikhwan : 580 Porsi
-Omzet : Rp4.350.000
-
-Akhwat : 240 Porsi
-Omzet : Rp1.800.000
-
-Total Porsi : 820
-Total Omzet : Rp6.150.000`;
-
-window.open(
-`https://wa.me/?text=${encodeURIComponent(pesan)}`,
-'_blank'
-);
-
-}
 </script>
 
 </body>
