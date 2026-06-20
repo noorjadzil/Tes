@@ -1,149 +1,50 @@
 <!DOCTYPE html>
 
-<html lang="id">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kirim Semua Laporan WA</title>
-
-<style>
-body{
-    font-family:Arial,sans-serif;
-    max-width:700px;
-    margin:30px auto;
-    padding:20px;
-}
-.card{
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:20px;
-}
-button{
-    width:100%;
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    font-size:18px;
-}
-.primary{
-    background:#25D366;
-    color:#fff;
-}
-textarea{
-    width:100%;
-    min-height:120px;
-    margin-top:10px;
-}
-</style>
-
+<title>Kirim WA</title>
 </head>
 <body>
 
-<div class="card">
-
-<h2>📊 Kirim Semua Laporan</h2>
-
-<p>Tekan tombol di bawah untuk membuka 3 chat WhatsApp sekaligus.</p>
-
-<button class="primary" onclick="kirimSemua()">
-📤 Kirim Semua Laporan
+<button onclick="kirimSemua()">
+📤 Kirim Semua
 </button>
 
-</div>
-
 <script>
-
 function kirimSemua(){
 
-    // ===== DATA CONTOH =====
-    const ikhwan = {
-        cimol:20,
-        cilok:15,
-        dimsum:10
-    };
-
-    const akhwat = {
-        cimol:18,
-        cilok:12,
-        dimsum:8
-    };
-
-    const totalIkhwan =
-        ikhwan.cimol +
-        ikhwan.cilok +
-        ikhwan.dimsum;
-
-    const totalAkhwat =
-        akhwat.cimol +
-        akhwat.cilok +
-        akhwat.dimsum;
-
-    // ===== LAPORAN IKHWAN =====
-    const laporanIkhwan =
-
+  const pesan1 =
 `📊 LAPORAN IKHWAN
 
-Cimol : ${ikhwan.cimol}
-Cilok : ${ikhwan.cilok}
-Dimsum : ${ikhwan.dimsum}
+Cimol : 20
+Cilok : 15
 
-Total Terjual : ${totalIkhwan}
-`;
+Total : 35`;
 
-    // ===== LAPORAN AKHWAT =====
-    const laporanAkhwat =
-
-`📊 LAPORAN AKHWAT
-
-Cimol : ${akhwat.cimol}
-Cilok : ${akhwat.cilok}
-Dimsum : ${akhwat.dimsum}
-
-Total Terjual : ${totalAkhwat}
-`;
-
-    // ===== REKAP =====
-    const laporanRekap =
-
+  const pesan2 =
 `📊 REKAP HARIAN
 
-Total Ikhwan : ${totalIkhwan}
-Total Akhwat : ${totalAkhwat}
+Ikhwan : 35
+Akhwat : 28
 
-Grand Total :
-${totalIkhwan + totalAkhwat}
-`;
+Total : 63`;
 
-    // ===== GANTI NOMOR =====
-    const nomorIkhwan = "628111111111";
-    const nomorAkhwat = "628222222222";
-    const nomorRekap  = "628333333333";
+  window.open(
+    "https://wa.me/6285733162871?text=" +
+    encodeURIComponent(pesan1),
+    "_blank"
+  );
 
-    // ===== BUKA CHAT 1 =====
+  setTimeout(() => {
     window.open(
-      `https://wa.me/${nomorIkhwan}?text=${encodeURIComponent(laporanIkhwan)}`,
+      "https://wa.me/6285156319949?text=" +
+      encodeURIComponent(pesan2),
       "_blank"
     );
-
-    // ===== BUKA CHAT 2 =====
-    setTimeout(() => {
-      window.open(
-        `https://wa.me/${nomorAkhwat}?text=${encodeURIComponent(laporanAkhwat)}`,
-        "_blank"
-      );
-    },1000);
-
-    // ===== BUKA CHAT 3 =====
-    setTimeout(() => {
-      window.open(
-        `https://wa.me/${nomorRekap}?text=${encodeURIComponent(laporanRekap)}`,
-        "_blank"
-      );
-    },2000);
+  },1000);
 
 }
-
 </script>
 
 </body>
