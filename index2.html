@@ -202,7 +202,16 @@ img{
 .kategori-box .row:last-child{border-bottom:none}
 hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
 
-.subtabs{display:flex;overflow-x:auto;gap:6px;margin:12px 0}
+.subtabs{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:4px;
+margin:12px 0;
+}
+.subtab{
+padding:8px 2px!important;
+font-size:12px!important;
+}
 .subtab{flex:none;padding:10px 14px;border:none;border-radius:10px;background:#e2e8f0;color:#0f172a;font-weight:700}
 .subtab.active{background:#1e3a8a;color:#fff}
 .tab-pane{display:none}
@@ -255,10 +264,10 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
 
       
 <div class="subtabs">
-<button type="button" class="subtab active" onclick="showSection('firebase',this)">Firebase</button>
-<button type="button" class="subtab" onclick="showSection('mie',this)">Mie Ayam</button>
-<button type="button" class="subtab" onclick="showSection('bakso',this)">Bakso</button>
-<button type="button" class="subtab" onclick="showSection('snack',this)">Snack</button>
+<button type="button" class="subtab active" onclick="showSection('firebase',this)">Cilok</button>
+<button type="button" class="subtab" onclick="showSection('mie',this)">Mie</button>
+<button type="button" class="subtab" onclick="showSection('bakso',this)">Es</button>
+<button type="button" class="subtab" onclick="showSection('snack',this)">Mie+</button>
 <button type="button" class="subtab" onclick="showSection('wa',this)">WA</button>
 </div>
 
