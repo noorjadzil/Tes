@@ -16,7 +16,7 @@ body{
   min-height:100vh;
 }
 .container{
-  max-width:450px;
+  max-width:520px;
   margin:auto;
   padding:10px;
 }
@@ -24,6 +24,7 @@ body{
   background:white;
   border-radius:16px;
   padding:15px;
+  padding-bottom:100px;
   box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
 .tabs{
@@ -121,7 +122,7 @@ img{
   margin:8px 0 12px;
 }
 .jenis-box button{
-  margin-top:0;
+  margin-top:8px;
   background:#e5e7eb;
   color:#1e293b;
 }
@@ -174,7 +175,7 @@ img{
 .setting-row input{flex:1;margin-bottom:0}
 .setting-row button{
   width:45px;
-  margin-top:0;
+  margin-top:8px;
   padding:10px;
 }
 .preview{
@@ -201,6 +202,25 @@ img{
 }
 .kategori-box .row:last-child{border-bottom:none}
 hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
+
+.subtabs{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:4px;
+margin:12px 0;
+position:sticky;
+top:0;
+align-self:start;
+background:#fff;
+z-index:99999;
+padding:8px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bottom:1px solid #e5e7eb;
+}
+.subtab{padding:10px 2px;border:none;border-radius:10px;background:#e2e8f0;color:#0f172a;font-weight:700;font-size:12px;line-height:1.1}
+.subtab.active{background:#1e3a8a;color:#fff}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.action-bar{position:fixed;left:0;right:0;bottom:0;background:#fff;padding:10px;border-top:1px solid #ddd;z-index:9999;max-width:520px;margin:auto}
+
 </style>
 </head>
 
@@ -227,10 +247,11 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
       <input type="date" id="tanggal">
 
       <label>Waktu Laporan WA</label>
-      <select id="waktuLaporan">
-        <option>Pagi</option>
-        <option>Malam</option>
-      </select>
+<div class="jenis-box">
+<button type="button" id="btnPagi" class="active" onclick="setWaktu('Pagi')">Pagi</button>
+<button type="button" id="btnMalam" onclick="setWaktu('Malam')">Malam</button>
+</div>
+<input type="hidden" id="waktuLaporan" value="Pagi">
 
       <label>Jenis</label>
       <div class="jenis-box">
@@ -240,12 +261,22 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
       <input type="hidden" id="jenis" value="Masuk">
 
       <label>Tempat</label>
-      <select id="tempat">
-        <option>Ikhwan</option>
-        <option>Akhwat</option>
-      </select>
+<div class="jenis-box">
+<button type="button" id="btnIkhwan" class="active" onclick="setTempat('Ikhwan')">Ikhwan</button>
+<button type="button" id="btnAkhwat" onclick="setTempat('Akhwat')">Akhwat</button>
+</div>
+<input type="hidden" id="tempat" value="Ikhwan">
 
-      <h3>Item Firebase</h3>
+      
+<div class="subtabs">
+<button type="button" class="subtab active" onclick="showSection('firebase',this)">Cilok</button>
+<button type="button" class="subtab" onclick="showSection('maklor',this)">Maklor</button>
+<button type="button" class="subtab" onclick="showSection('wa',this)">WA</button>
+<button type="button" class="subtab" onclick="showSection('snack',this)">Minum</button>
+<button type="button" class="subtab" onclick="showSection('mie',this)">Makan</button>
+</div>
+<div id="firebase" class="tab-pane active">
+<h3>Item Firebase</h3>
       <span class="badge">Masuk Firebase + WhatsApp</span>
       <div class="info">Contoh: Tahu, Batagor, dan item dari database Firebase. Item ini akan tersimpan ke laporan Firebase.</div>
       <div id="dynamicItems"></div>
@@ -260,7 +291,16 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
         <input type="number" id="slot2_jumlah" placeholder="0">
       </div>
 
-      <h3>Item Khusus Firebase</h3>
+
+      </div>
+
+<div id="maklor" class="tab-pane">
+<h3>Maklor</h3>
+<div class="kategori-box">
+<div id="dynamicMaklor"></div>
+</div>
+</div>
+<div id="mie" class="tab-pane"><h3>Makanan</h3>
       <span class="badge">Masuk Firebase, tetapi laporan dipisah</span>
       <div class="info">Bagian ini tambahan saja. Input Cilok/Tahu/Batagor di atas tetap seperti sebelumnya dan tidak diubah.</div>
 
@@ -270,16 +310,16 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
       </div>
 
       <div class="kategori-box" data-kategori="Bakso & Terang Bulan">
-        <div class="kategori-title">Bakso & Terang Bulan</div>
+        <div class="kategori-title">Bakso & Terang Bulan (Kelompok Makan)</div>
         <div id="kategoriBaksoTerangBulan"></div>
       </div>
 
-      <div class="kategori-box" data-kategori="Es, Snack & Jajanan 3000">
-        <div class="kategori-title">Es, Snack & Jajanan 3000</div>
-        <div id="kategoriEsSnack"></div>
+      </div><div id="snack" class="tab-pane"><div class="kategori-box"><div class="kategori-title">🧃 Minuman</div><div id="kategoriEsSnack"></div></div><div class="kategori-box"><div class="kategori-title">🍪 Snack</div><div class="info">Aneka Snack & Jajanan 3000</div></div>
+        
       </div>
 
-      <h3>Item Tambahan WA</h3>
+      </div>
+<div id="wa" class="tab-pane"><h3>Item Tambahan WA</h3>
       <span class="badge">Hanya WhatsApp, tidak masuk Firebase</span>
       <div class="info">Bagian ini hanya untuk item luar yang tidak masuk Firebase/kelompok. Jika item sudah ada di Firebase seperti Mie Ayam, Terang Bulan, Es Teh, Bakso, dll, otomatis tidak ditampilkan di sini agar tidak dobel.</div>
       <div id="waOnlyItemsBox"></div>
@@ -295,15 +335,18 @@ hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
         <button class="red" type="button" onclick="resetItemWAOnly()">Reset Item Tambahan</button>
       </div>
 
-      <label>Catatan</label>
+      </div><label>Catatan</label>
       <textarea id="catatan"></textarea>
 
-      <button class="green" type="button" onclick="buatPreviewWA()">📝 Preview Laporan WA</button>
       <div class="preview" id="previewWA">Hasil laporan WA akan muncul di sini...</div>
 
-      <button onclick="kirim()">💾 Simpan Firebase + Kirim WA</button>
-      <button onclick="location.href='laporan.html'">📊 Lihat Laporan</button>
-      <button onclick="location.href='setting.html'">⚙️ Setting</button>
+      <button class="green" type="button" onclick="buatPreviewWA()">📝 Preview Laporan WA</button>
+<div class="action-bar">
+<button onclick="kirim()">💾 Simpan Firebase + Kirim WA</button>
+</div>
+      <button onclick="location.href='laporan.html'">📊 Laporan</button>
+<button onclick="location.href='laporankhusus.html'">📑 Khusus</button>
+<button onclick="location.href='setting.html'">⚙️ Setting</button>
     </div>
   </div>
 </div>
@@ -379,6 +422,18 @@ function formatTanggal(tgl){
   return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+
+function setWaktu(v){
+document.getElementById('waktuLaporan').value=v;
+btnPagi.classList.remove('active');btnMalam.classList.remove('active');
+(v==='Pagi'?btnPagi:btnMalam).classList.add('active');
+}
+function setTempat(v){
+document.getElementById('tempat').value=v;
+btnIkhwan.classList.remove('active');btnAkhwat.classList.remove('active');
+(v==='Ikhwan'?btnIkhwan:btnAkhwat).classList.add('active');
+}
+
 function setJenis(jenis){
   document.getElementById("jenis").value = jenis;
   document.getElementById("btnMasuk").classList.remove("active");
@@ -439,7 +494,8 @@ function loadItems(){
       // Bagian lama hanya untuk Cilok/Tahu/Batagor/dll.
       // Item khusus seperti Mie Ayam, Bakso, Terang Bulan, Es, Snack tidak ditampilkan di sini.
       // Ini mencegah Mie Ayam masuk kelompok Cilok.
-      if(!kelompok){
+      const itemMaklor=["maklor","brownies kukus","corndog","dimsum"];
+      if(!kelompok && !itemMaklor.includes(normalNama(nama))){
         dataItems.push({key:c.key,nama:nama,urutan:urutan});
       }
     });
@@ -461,13 +517,27 @@ function loadItems(){
     });
 
     aktifkanGeserItem();
-    renderItemKhususFirebase();
+    renderItemKhususFirebase(); renderMaklorItems();
     loadDropdownItems();
 
     // Setelah master Firebase terbaca, bersihkan WA-only dari item yang sudah masuk Firebase/kelompok.
     renderWAOnlyItems();
     renderSettingWAOnly();
   });
+}
+
+
+function renderMaklorItems(){
+ let box=document.getElementById("dynamicMaklor");
+ if(!box) return;
+ box.innerHTML="";
+ ["Maklor","Brownies Kukus","Corndog","Dimsum"].forEach(n=>{
+   let div=document.createElement("div");
+   div.className="row";
+   div.innerHTML=`<span class="item-name">${n}</span>
+   <input type="number" class="jumlahMaklor" data-nama="${n}" placeholder="0">`;
+   box.appendChild(div);
+ });
 }
 
 function aktifkanGeserItem(){
@@ -489,6 +559,7 @@ function simpanUrutanItem(){
 function loadDropdownItems(){
   let slot1=document.getElementById("slot1");
   let slot2=document.getElementById("slot2");
+  if(!slot1 || !slot2) return;
   slot1.innerHTML='<option value="">-- Pilih item Firebase --</option>';
   slot2.innerHTML='<option value="">-- Pilih item Firebase --</option>';
 
@@ -727,6 +798,18 @@ function ambilItemsFirebase(){
   return items;
 }
 
+
+function ambilItemsMaklor(){
+  let items=[];
+  document.querySelectorAll('.jumlahMaklor').forEach(input=>{
+    let jumlah=input.value;
+    if(jumlah && Number(jumlah)!==0){
+      items.push({barang:input.dataset.nama,jumlah:Number(jumlah)});
+    }
+  });
+  return items;
+}
+
 function ambilItemsWAOnly(){
   let items=[];
   document.querySelectorAll(".jumlahWAOnly").forEach(input=>{
@@ -751,12 +834,7 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
   teks += formatTanggal(tanggal) + " - " + waktu + "\n\n";
   teks += jenis + " :\n\n";
 
-  let kategoriAktif = "";
   itemsFirebase.forEach(i=>{
-    if(i.kategori && i.kategori !== kategoriAktif){
-      kategoriAktif = i.kategori;
-      teks += `\n${kategoriAktif}:\n`;
-    }
     teks += `${i.barang} ${i.jumlah}\n`;
   });
 
@@ -768,19 +846,18 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
     teks += `\nCatatan: ${catatan}\n`;
   }
 
-  teks += "\n— MAQSHOF —";
   return teks;
 }
 
 function buatPreviewWA(){
-  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsMaklor()).concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
   laporanText = buatTeksWA(itemsFirebase, itemsWAOnly);
   document.getElementById("previewWA").innerText = laporanText;
 }
 
 async function kirim(){
-  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsMaklor()).concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
 
   if(itemsFirebase.length === 0 && itemsWAOnly.length === 0){
@@ -868,6 +945,14 @@ function dataURLtoFile(dataurl, filename) {
 function showTab(tab,event){
   document.querySelectorAll(".tab-btn").forEach(btn=>btn.classList.remove("active"));
   event.target.classList.add("active");
+}
+
+
+function showSection(id,el){
+ document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));
+ el.classList.add('active');
 }
 
 window.onload=function(){
