@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Laporan Kelompok Maqshof - Modern v2</title>
+<title>Maqshof Ikhwa - Modern v2</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1e3a8a">
@@ -383,7 +383,7 @@ img{
 <div class="container">
 <div class="card">
 
-<h2>Laporan Kelompok Maqshof</h2>
+<h2>Maqshof Ikhwa</h2>
 
 <button onclick="kembali()" style="
 width:100%;
@@ -421,6 +421,7 @@ box-shadow:0 8px 18px rgba(15,23,42,.14);
 
 <div id="tabLaporan">
   <div id="listLaporan">Loading...</div>
+  <div id="laporanKelompok"></div>
 </div>
 
 </div>
@@ -1106,5 +1107,29 @@ function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+enco
 function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
 
 </script>
+
+<script>
+const KELOMPOK_MAQSHOF = {
+ "Cilok • Batagor • Maklor":["Cilok","Batagor","Maklor"],
+ "Es Teh • Es Blewah":["Es Teh","Es Blewah"],
+ "Mie Ayam":["Mie Ayam"],
+ "Bakso • Terang Bulan":["Bakso","Terang Bulan"]
+};
+</script>
+
+
+<script>
+function renderKelompokPlaceholder(){
+ const el=document.getElementById('laporanKelompok');
+ if(!el) return;
+ el.innerHTML=`
+ <div class="khusus-group-card"><div class="khusus-group-title">Cilok • Batagor • Maklor</div></div>
+ <div class="khusus-group-card"><div class="khusus-group-title">Es Teh • Es Blewah</div></div>
+ <div class="khusus-group-card"><div class="khusus-group-title">Mie Ayam</div></div>
+ <div class="khusus-group-card"><div class="khusus-group-title">Bakso • Terang Bulan</div></div>`;
+}
+setTimeout(renderKelompokPlaceholder,1000);
+</script>
+
 </body>
 </html>
