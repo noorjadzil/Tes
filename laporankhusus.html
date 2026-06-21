@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Laporan Jajan</title>
+<title>Laporan Kelompok Maqshof - Modern</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1e3a8a">
@@ -383,7 +383,7 @@ img{
 <div class="container">
 <div class="card">
 
-<h2>Laporan Jajan</h2>
+<h2>Laporan Kelompok Maqshof</h2>
 
 <button onclick="kembali()" style="
 width:100%;
@@ -440,8 +440,8 @@ function pesanLengkap(d){
  let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
  return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
 }
-function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
-function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Berhasil disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Berhasil disalin');}
 function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
 function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
 
@@ -460,8 +460,8 @@ function pesanLengkap(d){
  let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
  return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
 }
-function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
-function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Berhasil disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Berhasil disalin');}
 function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
 function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
 
@@ -1075,8 +1075,8 @@ function pesanLengkap(d){
  let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
  return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
 }
-function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
-function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Berhasil disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Berhasil disalin');}
 function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
 function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
 
@@ -1100,8 +1100,8 @@ function pesanLengkap(d){
  let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
  return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
 }
-function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
-function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Berhasil disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Berhasil disalin');}
 function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
 function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
 
