@@ -426,8 +426,46 @@ box-shadow:0 8px 18px rgba(15,23,42,.14);
 </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+function namaHariIndonesia(t){
+ const h=['Ahad','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+ return h[new Date(t).getDay()];
+}
+function pesanSimple(d){
+ return (d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+}
+function pesanLengkap(d){
+ let hari=namaHariIndonesia(d.waktu);
+ let tgl=new Date(d.waktu).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+ let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+ return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
+}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
+function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js">
+function namaHariIndonesia(t){
+ const h=['Ahad','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+ return h[new Date(t).getDay()];
+}
+function pesanSimple(d){
+ return (d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+}
+function pesanLengkap(d){
+ let hari=namaHariIndonesia(d.waktu);
+ let tgl=new Date(d.waktu).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+ let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+ return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
+}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
+function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
+
+</script>
 
 <script>
 // =================== NAV ===================
@@ -497,6 +535,7 @@ snap.forEach(c=>{
 arr.reverse();
 
 arr.forEach(d=>{
+window.dataLaporan=window.dataLaporan||{}; window.dataLaporan[d.key]=d;
 
 let items = (d.items || [])
 .map(i=>{
@@ -525,6 +564,13 @@ ${d.riwayatEdit ? '<span style="color:red;font-size:12px"> (edited)</span>' : ''
 
 <div class="laporan-tanggal" id="tgl-${d.key}">
 ${formatTanggal(d.waktu)}
+</div>
+
+<div style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap">
+<button onclick="copySimple('${d.key}')" style="padding:6px 10px">📋 Salin</button>
+<button onclick="sendWA('${d.key}')" style="padding:6px 10px">📱 WA</button>
+<button onclick="copyFull('${d.key}')" style="padding:6px 10px">📄 Salin Lengkap</button>
+<button onclick="sendWAFull('${d.key}')" style="padding:6px 10px">🟢 WA Lengkap</button>
 </div>
 
 <div class="laporan-items" id="items-${d.key}">
@@ -1015,12 +1061,50 @@ box.style.display="block";
 });
 }
 
+
+function namaHariIndonesia(t){
+ const h=['Ahad','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+ return h[new Date(t).getDay()];
+}
+function pesanSimple(d){
+ return (d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+}
+function pesanLengkap(d){
+ let hari=namaHariIndonesia(d.waktu);
+ let tgl=new Date(d.waktu).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+ let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+ return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
+}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
+function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
+
 </script>
 
 
 <!-- MODIF LAPORAN KHUSUS -->
 <script>
 console.log('Laporan Khusus aktif');
+
+function namaHariIndonesia(t){
+ const h=['Ahad','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+ return h[new Date(t).getDay()];
+}
+function pesanSimple(d){
+ return (d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+}
+function pesanLengkap(d){
+ let hari=namaHariIndonesia(d.waktu);
+ let tgl=new Date(d.waktu).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+ let isi=(d.items||[]).map(i=>`${i.barang} ${Number(i.jumlah||i.masuk||0)}`).join("\n");
+ return `${d.tempat}\n\n${hari}, ${tgl}\n\nMasuk:\n\n${isi}`;
+}
+function copySimple(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanSimple(d)); alert('Disalin');}
+function copyFull(k){let d=dataLaporan[k]; navigator.clipboard.writeText(pesanLengkap(d)); alert('Disalin');}
+function sendWA(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanSimple(d)),'_blank');}
+function sendWAFull(k){let d=dataLaporan[k]; window.open('https://wa.me/?text='+encodeURIComponent(pesanLengkap(d)),'_blank');}
+
 </script>
 </body>
 </html>
