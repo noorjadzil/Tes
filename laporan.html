@@ -989,6 +989,9 @@ let tempat = (d.tempat || "").toLowerCase();
 // loop item
 (d.items || []).forEach(i=>{
 
+// Jangan hitung item khusus pada rekap harian
+if(isItemKhusus(i)) return;
+
 let nama = (i.barang || "").toLowerCase().trim();
 let jumlah = Number(i.jumlah || 0);
 let harga = hargaMap[nama] || 0;
