@@ -8,142 +8,219 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
 <style>
-:root{
-  --primary:#1e3a8a;
-  --primary-2:#2563eb;
-  --bg-1:#0f172a;
-  --bg-2:#1e3a8a;
-  --text:#0f172a;
-  --muted:#64748b;
-  --line:#e2e8f0;
-  --soft:#f8fafc;
-  --white:#fff;
-  --green:#16a34a;
-  --red:#dc2626;
-  --shadow:0 20px 45px rgba(15,23,42,.22);
-}
 *{box-sizing:border-box}
 body{
   font-family:'Segoe UI',Arial,sans-serif;
   margin:0;
-  color:var(--text);
-  background:
-    radial-gradient(circle at top left,rgba(59,130,246,.28),transparent 32%),
-    linear-gradient(135deg,var(--bg-1),var(--bg-2));
+  background:linear-gradient(135deg,#0f172a,#1e3a8a);
   min-height:100vh;
 }
-.container{max-width:520px;margin:auto;padding:14px 10px 28px}
+.container{
+  max-width:520px;
+  margin:auto;
+  padding:10px;
+}
 .card{
-  background:rgba(255,255,255,.97);
-  border:1px solid rgba(255,255,255,.7);
-  border-radius:24px;
-  padding:16px;
-  box-shadow:var(--shadow);
-  backdrop-filter:blur(10px);
+  background:white;
+  border-radius:16px;
+  padding:15px;
+  padding-bottom:100px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
-.tabs{display:none}
-.header-app{
-  background:linear-gradient(135deg,#1e3a8a,#2563eb);
-  color:white;
-  border-radius:22px;
-  padding:18px 16px;
-  margin-bottom:14px;
-  box-shadow:0 14px 30px rgba(30,58,138,.25);
-}
-.header-app h2{color:white;text-align:left;margin:0;font-size:24px;letter-spacing:.2px}
-.header-app p{margin:6px 0 0;color:#dbeafe;font-size:13px;line-height:1.45}
-.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
-.section{
-  background:var(--soft);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:12px;
-  margin:12px 0;
-}
-.section-title{
+.tabs{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
+  background:#1e3a8a;
+  border-radius:12px 12px 0 0;
+  overflow:hidden;
   margin-bottom:10px;
 }
-h3{color:var(--primary);margin:0;font-size:16px;border:0;padding:0}
-label{font-weight:800;font-size:12px;margin:8px 0 6px;display:block;color:#334155}
-select,input[type="number"],input[type="date"],textarea,input[type="text"],input[type="file"]{
-  width:100%;
+.tab-btn{
+  flex:1;
   padding:12px;
-  border-radius:14px;
-  border:1px solid #cbd5e1;
-  background:white;
+  border:none;
+  background:transparent;
+  color:white;
+  font-weight:700;
+}
+.tab-btn.active{background:#3b82f6}
+h2{
+  text-align:center;
+  color:#1e3a8a;
+  margin:10px 0 14px;
+}
+h3{
+  color:#1e3a8a;
+  margin:18px 0 8px;
+  border-top:1px solid #e5e7eb;
+  padding-top:14px;
+}
+label{
+  font-weight:700;
+  font-size:13px;
+  margin-top:8px;
+  display:block;
+}
+select,input[type="number"],input[type="date"],textarea,input[type="text"]{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #cbd5f5;
   margin-bottom:10px;
-  font-weight:650;
+  font-weight:600;
   font-size:15px;
-  outline:none;
-  transition:.18s;
 }
-select:focus,input:focus,textarea:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
-input[type="number"]{text-align:center;font-size:16px}
-textarea{resize:none;min-height:76px}
+input[type="number"]{
+  text-align:center;
+  font-size:16px;
+}
+textarea{
+  resize:none;
+  min-height:70px;
+}
 .row{
-  display:grid;
-  grid-template-columns:auto 1fr 92px;
+  display:flex;
+  justify-content:space-between;
   align-items:center;
+  border-bottom:1px solid #eee;
+  padding:8px 0;
   gap:8px;
-  background:white;
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:9px;
-  margin-bottom:8px;
 }
-.row select{margin:0;grid-column:1/3}.row input[type="number"]{width:100%;margin:0}.row .item-name{font-weight:800;line-height:1.25}
-.drag-handle{font-size:20px;cursor:grab;color:#94a3b8;padding:4px}
+.row input[type="number"]{width:82px;margin-bottom:0}
+.drag-handle{
+  font-size:20px;
+  cursor:grab;
+  color:#64748b;
+  padding:4px;
+}
+.item-name{
+  flex:1;
+  font-weight:700;
+}
 button{
   width:100%;
   padding:14px;
   border:none;
-  border-radius:15px;
-  background:var(--primary);
+  border-radius:12px;
+  background:#1e3a8a;
   color:white;
-  font-weight:800;
+  font-weight:700;
   margin-top:10px;
   font-size:15px;
-  cursor:pointer;
-  box-shadow:0 10px 18px rgba(30,58,138,.18);
 }
-button:active{transform:scale(.99)}
-button.green{background:var(--green)}
-button.red{background:var(--red)}
+button.green{background:#16a34a}
+button.red{background:#dc2626}
 button.gray{background:#475569}
-button.small-btn{background:var(--green)}
-.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.action-grid button{margin-top:0}
-img{width:100%;border-radius:14px;margin-top:8px}
-.jenis-box{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}
-.jenis-box button{margin-top:0;background:#e2e8f0;color:#1e293b;box-shadow:none}
-.jenis-box button.active{background:var(--primary);color:white;box-shadow:0 10px 18px rgba(30,58,138,.18)}
-.crop-area{display:none;margin-top:10px}.crop-area img{max-height:350px;object-fit:contain}
-.info{font-size:12px;color:var(--muted);margin:4px 0 8px;line-height:1.45}
-.badge{display:inline-flex;align-items:center;background:#dbeafe;color:var(--primary);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900;white-space:nowrap}
-.wa-item{background:white;border:1px solid var(--line);border-radius:15px;padding:10px;margin-top:8px}
-.wa-item-row{display:grid;grid-template-columns:1fr 92px;gap:8px;align-items:center}.wa-item-row b{font-size:14px}.wa-item-row input{width:100%;margin-bottom:0}
-.setting-row{display:grid;grid-template-columns:1fr 48px;gap:8px;margin-top:8px}.setting-row input{margin-bottom:0}.setting-row button{width:48px;margin-top:0;padding:10px}
-.preview{background:#020617;color:white;padding:14px;border-radius:16px;margin-top:12px;white-space:pre-wrap;line-height:1.65;font-size:14px;border:1px solid #1e293b}
-.kategori-box{background:white;border:1px solid var(--line);border-radius:16px;padding:10px;margin:10px 0 12px}
-.kategori-title{font-weight:900;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.kategori-title:before{content:"";width:8px;height:8px;border-radius:50%;background:#2563eb;display:inline-block}
-hr{border:none;border-top:1px solid var(--line);margin:18px 0}
-.sticky-save{
-  position:sticky;
-  bottom:10px;
-  z-index:5;
-  background:rgba(255,255,255,.84);
-  backdrop-filter:blur(10px);
-  padding:10px;
-  border:1px solid rgba(226,232,240,.85);
-  border-radius:18px;
-  box-shadow:0 14px 28px rgba(15,23,42,.14);
-  margin-top:14px;
+button.small-btn{background:#16a34a}
+img{
+  width:100%;
+  border-radius:10px;
+  margin-top:8px;
 }
-@media(max-width:420px){.container{padding:8px}.card{padding:12px;border-radius:20px}.quick-grid,.action-grid{grid-template-columns:1fr}.row{grid-template-columns:auto 1fr 82px}.header-app h2{font-size:21px}}
+.jenis-box{
+  display:flex;
+  gap:8px;
+  margin:8px 0 12px;
+}
+.jenis-box button{
+  margin-top:8px;
+  background:#e5e7eb;
+  color:#1e293b;
+}
+.jenis-box button.active{
+  background:#1e3a8a;
+  color:white;
+}
+.crop-area{
+  display:none;
+  margin-top:10px;
+}
+.crop-area img{
+  max-height:350px;
+  object-fit:contain;
+}
+.info{
+  font-size:12px;
+  color:#64748b;
+  margin:4px 0 8px;
+  line-height:1.4;
+}
+.badge{
+  display:inline-block;
+  background:#dbeafe;
+  color:#1e3a8a;
+  border-radius:999px;
+  padding:5px 9px;
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+.wa-item{
+  background:#f1f5f9;
+  border-radius:12px;
+  padding:10px;
+  margin-top:8px;
+}
+.wa-item-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.wa-item-row b{flex:1}
+.wa-item-row input{width:82px;margin-bottom:0}
+.setting-row{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+.setting-row input{flex:1;margin-bottom:0}
+.setting-row button{
+  width:45px;
+  margin-top:8px;
+  padding:10px;
+}
+.preview{
+  background:#020617;
+  color:white;
+  padding:12px;
+  border-radius:12px;
+  margin-top:12px;
+  white-space:pre-wrap;
+  line-height:1.6;
+  font-size:14px;
+}
+.kategori-box{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+  padding:10px;
+  margin:10px 0 12px;
+}
+.kategori-title{
+  font-weight:800;
+  color:#1e3a8a;
+  margin-bottom:6px;
+}
+.kategori-box .row:last-child{border-bottom:none}
+hr{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
+
+.subtabs{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:4px;
+margin:12px 0;
+position:sticky;
+top:0;
+align-self:start;
+background:#fff;
+z-index:99999;
+padding:8px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bottom:1px solid #e5e7eb;
+}
+.subtab{padding:10px 2px;border:none;border-radius:10px;background:#e2e8f0;color:#0f172a;font-weight:700;font-size:12px;line-height:1.1}
+.subtab.active{background:#1e3a8a;color:#fff}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.action-bar{position:fixed;left:0;right:0;bottom:0;background:#fff;padding:10px;border-top:1px solid #ddd;z-index:9999;max-width:520px;margin:auto}
+
 </style>
 </head>
 
@@ -155,13 +232,7 @@ hr{border:none;border-top:1px solid var(--line);margin:18px 0}
 
   <div class="card">
     <div id="inputTab">
-      <div class="header-app">
-        <h2>Input Jajan</h2>
-        <p>Form harian MAQSHOF dibuat lebih ringkas: isi tanggal, jenis laporan, jumlah item, lalu preview dan kirim.</p>
-      </div>
-
-      <div class="section">
-        <div class="section-title"><h3>Data Laporan</h3><span class="badge">Wajib</span></div>
+      <h2>Input Jajan</h2>
 
       <label>Foto</label>
       <input type="file" id="foto" accept="image/*" capture="environment">
@@ -176,10 +247,11 @@ hr{border:none;border-top:1px solid var(--line);margin:18px 0}
       <input type="date" id="tanggal">
 
       <label>Waktu Laporan WA</label>
-      <select id="waktuLaporan">
-        <option>Pagi</option>
-        <option>Malam</option>
-      </select>
+<div class="jenis-box">
+<button type="button" id="btnPagi" class="active" onclick="setWaktu('Pagi')">Pagi</button>
+<button type="button" id="btnMalam" onclick="setWaktu('Malam')">Malam</button>
+</div>
+<input type="hidden" id="waktuLaporan" value="Pagi">
 
       <label>Jenis</label>
       <div class="jenis-box">
@@ -189,16 +261,24 @@ hr{border:none;border-top:1px solid var(--line);margin:18px 0}
       <input type="hidden" id="jenis" value="Masuk">
 
       <label>Tempat</label>
-      <select id="tempat">
-        <option>Ikhwan</option>
-        <option>Akhwat</option>
-      </select>
+<div class="jenis-box">
+<button type="button" id="btnIkhwan" class="active" onclick="setTempat('Ikhwan')">Ikhwan</button>
+<button type="button" id="btnAkhwat" onclick="setTempat('Akhwat')">Akhwat</button>
+</div>
+<input type="hidden" id="tempat" value="Ikhwan">
 
-      </div>
-
-      <div class="section">
-      <div class="section-title"><h3>Item Firebase</h3><span class="badge">Firebase + WA</span></div>
-      <div class="info">Isi jumlah pada item yang ada. Kosongkan item yang tidak dipakai.</div>
+      
+<div class="subtabs">
+<button type="button" class="subtab active" onclick="showSection('firebase',this)">Cilok</button>
+<button type="button" class="subtab" onclick="showSection('maklor',this)">Maklor</button>
+<button type="button" class="subtab" onclick="showSection('wa',this)">WA</button>
+<button type="button" class="subtab" onclick="showSection('snack',this)">Minum</button>
+<button type="button" class="subtab" onclick="showSection('mie',this)">Makan</button>
+</div>
+<div id="firebase" class="tab-pane active">
+<h3>Item Firebase</h3>
+      <span class="badge">Masuk Firebase + WhatsApp</span>
+      <div class="info">Contoh: Tahu, Batagor, dan item dari database Firebase. Item ini akan tersimpan ke laporan Firebase.</div>
       <div id="dynamicItems"></div>
 
       <div class="row">
@@ -211,11 +291,18 @@ hr{border:none;border-top:1px solid var(--line);margin:18px 0}
         <input type="number" id="slot2_jumlah" placeholder="0">
       </div>
 
+
       </div>
 
-      <div class="section">
-      <div class="section-title"><h3>Item Khusus Firebase</h3><span class="badge">Kelompok</span></div>
-      <div class="info">Item khusus dipisahkan agar Mie Ayam, Bakso, Terang Bulan, Es/Snack tidak masuk kelompok yang salah.</div>
+<div id="maklor" class="tab-pane">
+<h3>Maklor</h3>
+<div class="kategori-box">
+<div id="dynamicMaklor"></div>
+</div>
+</div>
+<div id="mie" class="tab-pane"><h3>Makanan</h3>
+      <span class="badge">Masuk Firebase, tetapi laporan dipisah</span>
+      <div class="info">Bagian ini tambahan saja. Input Cilok/Tahu/Batagor di atas tetap seperti sebelumnya dan tidak diubah.</div>
 
       <div class="kategori-box" data-kategori="Mie Ayam">
         <div class="kategori-title">Mie Ayam</div>
@@ -223,20 +310,18 @@ hr{border:none;border-top:1px solid var(--line);margin:18px 0}
       </div>
 
       <div class="kategori-box" data-kategori="Bakso & Terang Bulan">
-        <div class="kategori-title">Bakso & Terang Bulan</div>
+        <div class="kategori-title">Bakso & Terang Bulan (Kelompok Makan)</div>
         <div id="kategoriBaksoTerangBulan"></div>
       </div>
 
-      <div class="kategori-box" data-kategori="Es, Snack & Jajanan 3000">
-        <div class="kategori-title">Es, Snack & Jajanan 3000</div>
-        <div id="kategoriEsSnack"></div>
+      </div><div id="snack" class="tab-pane"><div class="kategori-box"><div class="kategori-title">🧃 Minuman</div><div id="kategoriEsSnack"></div></div><div class="kategori-box"><div class="kategori-title">🍪 Snack</div><div class="info">Aneka Snack & Jajanan 3000</div></div>
+        
       </div>
 
       </div>
-
-      <div class="section">
-      <div class="section-title"><h3>Item Tambahan WA</h3><span class="badge">WA saja</span></div>
-      <div class="info">Khusus item luar yang hanya perlu muncul di laporan WhatsApp. Item yang sudah masuk Firebase otomatis disaring agar tidak dobel.</div>
+<div id="wa" class="tab-pane"><h3>Item Tambahan WA</h3>
+      <span class="badge">Hanya WhatsApp, tidak masuk Firebase</span>
+      <div class="info">Bagian ini hanya untuk item luar yang tidak masuk Firebase/kelompok. Jika item sudah ada di Firebase seperti Mie Ayam, Terang Bulan, Es Teh, Bakso, dll, otomatis tidak ditampilkan di sini agar tidak dobel.</div>
       <div id="waOnlyItemsBox"></div>
 
       <button class="gray" type="button" onclick="toggleSettingWAOnly()">⚙️ Setting Item Tambahan WA</button>
@@ -250,24 +335,18 @@ hr{border:none;border-top:1px solid var(--line);margin:18px 0}
         <button class="red" type="button" onclick="resetItemWAOnly()">Reset Item Tambahan</button>
       </div>
 
-      </div>
-
-      <div class="section">
-      <div class="section-title"><h3>Catatan & Preview</h3><span class="badge">Cek dulu</span></div>
-      <label>Catatan</label>
+      </div><label>Catatan</label>
       <textarea id="catatan"></textarea>
 
-      <button class="green" type="button" onclick="buatPreviewWA()">📝 Preview Laporan WA</button>
       <div class="preview" id="previewWA">Hasil laporan WA akan muncul di sini...</div>
-      </div>
 
-      <div class="sticky-save">
-        <button onclick="kirim()">💾 Simpan Firebase + Kirim WA</button>
-        <div class="action-grid">
-          <button class="gray" onclick="location.href='laporan.html'">📊 Laporan</button>
-          <button class="gray" onclick="location.href='setting.html'">⚙️ Setting</button>
-        </div>
-      </div>
+      <button class="green" type="button" onclick="buatPreviewWA()">📝 Preview Laporan WA</button>
+<div class="action-bar">
+<button onclick="kirim()">💾 Simpan Firebase + Kirim WA</button>
+</div>
+      <button onclick="location.href='laporan.html'">📊 Laporan</button>
+<button onclick="location.href='laporankhusus.html'">📑 Khusus</button>
+<button onclick="location.href='setting.html'">⚙️ Setting</button>
     </div>
   </div>
 </div>
@@ -343,6 +422,18 @@ function formatTanggal(tgl){
   return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+
+function setWaktu(v){
+document.getElementById('waktuLaporan').value=v;
+btnPagi.classList.remove('active');btnMalam.classList.remove('active');
+(v==='Pagi'?btnPagi:btnMalam).classList.add('active');
+}
+function setTempat(v){
+document.getElementById('tempat').value=v;
+btnIkhwan.classList.remove('active');btnAkhwat.classList.remove('active');
+(v==='Ikhwan'?btnIkhwan:btnAkhwat).classList.add('active');
+}
+
 function setJenis(jenis){
   document.getElementById("jenis").value = jenis;
   document.getElementById("btnMasuk").classList.remove("active");
@@ -403,7 +494,8 @@ function loadItems(){
       // Bagian lama hanya untuk Cilok/Tahu/Batagor/dll.
       // Item khusus seperti Mie Ayam, Bakso, Terang Bulan, Es, Snack tidak ditampilkan di sini.
       // Ini mencegah Mie Ayam masuk kelompok Cilok.
-      if(!kelompok){
+      const itemMaklor=["maklor","brownies kukus","corndog","dimsum"];
+      if(!kelompok && !itemMaklor.includes(normalNama(nama))){
         dataItems.push({key:c.key,nama:nama,urutan:urutan});
       }
     });
@@ -425,13 +517,27 @@ function loadItems(){
     });
 
     aktifkanGeserItem();
-    renderItemKhususFirebase();
+    renderItemKhususFirebase(); renderMaklorItems();
     loadDropdownItems();
 
     // Setelah master Firebase terbaca, bersihkan WA-only dari item yang sudah masuk Firebase/kelompok.
     renderWAOnlyItems();
     renderSettingWAOnly();
   });
+}
+
+
+function renderMaklorItems(){
+ let box=document.getElementById("dynamicMaklor");
+ if(!box) return;
+ box.innerHTML="";
+ ["Maklor","Brownies Kukus","Corndog","Dimsum"].forEach(n=>{
+   let div=document.createElement("div");
+   div.className="row";
+   div.innerHTML=`<span class="item-name">${n}</span>
+   <input type="number" class="jumlahMaklor" data-nama="${n}" placeholder="0">`;
+   box.appendChild(div);
+ });
 }
 
 function aktifkanGeserItem(){
@@ -453,6 +559,7 @@ function simpanUrutanItem(){
 function loadDropdownItems(){
   let slot1=document.getElementById("slot1");
   let slot2=document.getElementById("slot2");
+  if(!slot1 || !slot2) return;
   slot1.innerHTML='<option value="">-- Pilih item Firebase --</option>';
   slot2.innerHTML='<option value="">-- Pilih item Firebase --</option>';
 
@@ -691,6 +798,18 @@ function ambilItemsFirebase(){
   return items;
 }
 
+
+function ambilItemsMaklor(){
+  let items=[];
+  document.querySelectorAll('.jumlahMaklor').forEach(input=>{
+    let jumlah=input.value;
+    if(jumlah && Number(jumlah)!==0){
+      items.push({barang:input.dataset.nama,jumlah:Number(jumlah)});
+    }
+  });
+  return items;
+}
+
 function ambilItemsWAOnly(){
   let items=[];
   document.querySelectorAll(".jumlahWAOnly").forEach(input=>{
@@ -715,12 +834,7 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
   teks += formatTanggal(tanggal) + " - " + waktu + "\n\n";
   teks += jenis + " :\n\n";
 
-  let kategoriAktif = "";
   itemsFirebase.forEach(i=>{
-    if(i.kategori && i.kategori !== kategoriAktif){
-      kategoriAktif = i.kategori;
-      teks += `\n${kategoriAktif}:\n`;
-    }
     teks += `${i.barang} ${i.jumlah}\n`;
   });
 
@@ -732,19 +846,18 @@ function buatTeksWA(itemsFirebase, itemsWAOnly){
     teks += `\nCatatan: ${catatan}\n`;
   }
 
-  teks += "\n— MAQSHOF —";
   return teks;
 }
 
 function buatPreviewWA(){
-  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsMaklor()).concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
   laporanText = buatTeksWA(itemsFirebase, itemsWAOnly);
   document.getElementById("previewWA").innerText = laporanText;
 }
 
 async function kirim(){
-  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsKhususFirebase());
+  let itemsFirebase = ambilItemsFirebase().concat(ambilItemsMaklor()).concat(ambilItemsKhususFirebase());
   let itemsWAOnly = ambilItemsWAOnly();
 
   if(itemsFirebase.length === 0 && itemsWAOnly.length === 0){
@@ -832,6 +945,14 @@ function dataURLtoFile(dataurl, filename) {
 function showTab(tab,event){
   document.querySelectorAll(".tab-btn").forEach(btn=>btn.classList.remove("active"));
   event.target.classList.add("active");
+}
+
+
+function showSection(id,el){
+ document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));
+ el.classList.add('active');
 }
 
 window.onload=function(){
