@@ -530,14 +530,31 @@ arr.reverse();
 
 arr.forEach(d=>{
 
-let items = (d.items || [])
-.map(i=>{
-  if(i.masuk !== undefined || i.retur !== undefined){
-    return `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`;
-  }
-  return `• ${i.barang} (${Number(i.jumlah||0)})`;
-})
-.join("<br>");
+const vendorMap={
+'Vendor Cilok':['cilok','maklor','cimol','tahu batagor','dimsum','piscok'],
+'Vendor Es':['es teh','es jeruk','es blewah','es coklat','jus alpukat','es sari kedelai'],
+'Vendor Terang Bulan':['terang bulan'],
+'Vendor Mie Ayam':['mie ayam'],
+'Vendor Bakso':['bakso'],
+'Vendor Snack':['aneka snack','jajanan 3000']
+};
+let grup={};
+(d.items||[]).forEach(i=>{
+ let nama=String(i.barang||'').toLowerCase();
+ let vendor='Lainnya';
+ for(const [v,list] of Object.entries(vendorMap)){
+   if(list.some(x=>nama.includes(x))){vendor=v;break;}
+ }
+ let baris=(i.masuk!==undefined||i.retur!==undefined)?
+ `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`:
+ `• ${i.barang} (${Number(i.jumlah||0)})`;
+ (grup[vendor]??=[]).push(baris);
+});
+let items=Object.entries(grup).map(([v,arr])=>
+`<div style="margin:10px 0">
+<div style="background:#1e3a8a;color:#fff;padding:6px 10px;border-radius:8px;font-weight:900">${v}</div>
+<div style="padding:8px 10px">${arr.join('<br>')}</div>
+</div>`).join('');
 
 let div=document.createElement("div");
 div.className="laporan-card";
