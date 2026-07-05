@@ -423,6 +423,7 @@ box-shadow:0 8px 18px rgba(15,23,42,.14);
 
 <div id="tabLaporan">
   <div id="listLaporan">Loading...</div>
+<!-- Versi Vendor Cilok DLL -->
 </div>
 
 <div id="tabRekap" style="display:none;">
@@ -988,6 +989,9 @@ let tempat = (d.tempat || "").toLowerCase();
 
 // loop item
 (d.items || []).forEach(i=>{
+
+// Jangan hitung item khusus pada rekap harian
+if(isItemKhusus(i)) return;
 
 let nama = (i.barang || "").toLowerCase().trim();
 let jumlah = Number(i.jumlah || 0);
