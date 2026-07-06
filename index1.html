@@ -2,72 +2,96 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LiveCode Editor - Single File</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mini HTML Editor</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#1e1e1e;color:#fff}
-header{background:#111;padding:10px 15px;display:flex;gap:10px;align-items:center}
-button{padding:8px 14px;cursor:pointer}
-.container{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 52px)}
-.left{padding:10px;overflow:auto}
-.right{padding:10px;background:#2d2d2d}
-textarea{width:100%;height:28%;margin-bottom:10px;background:#0d1117;color:#7CFC00;
-border:1px solid #555;padding:10px;font-family:monospace;box-sizing:border-box}
-iframe{width:100%;height:95%;background:#fff;border:none}
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#202124;color:#fff}
+header{display:flex;gap:8px;align-items:center;padding:10px;background:#111;flex-wrap:wrap}
+input,button{padding:8px;border-radius:6px;border:1px solid #555}
+input{background:#222;color:#fff}
+button{cursor:pointer}
+#editor{width:100%;height:45vh;background:#0d1117;color:#7CFC00;border:none;
+padding:12px;font-family:Consolas,monospace;font-size:14px}
+iframe{width:100%;height:45vh;border:none;background:#fff}
 </style>
 </head>
 <body>
 
 <header>
-<h2 style="margin:0;flex:1;">💻 LiveCode Editor</h2>
-<button onclick="run()">▶ Run</button>
-<button onclick="save()">💾 Save</button>
+<b>📄 Project</b>
+<input id="project" placeholder="contoh: tes.1">
+<button onclick="saveProject()">💾 Save</button>
+<button onclick="openProject()">📂 Open</button>
+<button onclick="preview()">▶ Preview</button>
 </header>
 
-<div class="container">
-<div class="left">
-<h3>HTML</h3>
-<textarea id="html"><h1>Hello World</h1><p>Edit HTML di sini.</p></textarea>
+<textarea id="editor"><!DOCTYPE html>
+<html>
+<head>
+<title>Halo</title>
+<style>
+body{font-family:Arial;padding:20px}
+h1{color:royalblue}
+</style>
+</head>
+<body>
 
-<h3>CSS</h3>
-<textarea id="css">body{font-family:Arial;padding:20px;}h1{color:#1976d2;}</textarea>
-
-<h3>JavaScript</h3>
-<textarea id="js">console.log("Halo");</textarea>
-</div>
-
-<div class="right">
-<h3>Preview</h3>
-<iframe id="preview"></iframe>
-</div>
-</div>
+<h1>Hello World</h1>
+<p>Edit kode di sini.</p>
 
 <script>
-const html=document.getElementById("html");
-const css=document.getElementById("css");
-const js=document.getElementById("js");
-const frame=document.getElementById("preview");
+console.log("Halo");
+</script>
 
-function run(){
- const doc=frame.contentDocument||frame.contentWindow.document;
- doc.open();
- doc.write(`<!DOCTYPE html><html><head><style>${css.value}</style></head><body>${html.value}<script>${js.value}<\/script></body></html>`);
- doc.close();
+</body>
+</html></textarea>
+
+<iframe id="view"></iframe>
+
+<script>
+const ed=document.getElementById("editor");
+const view=document.getElementById("view");
+const nameBox=document.getElementById("project");
+
+function preview(){
+ const d=view.contentDocument||view.contentWindow.document;
+ d.open();
+ d.write(ed.value);
+ d.close();
 }
 
-function save(){
- localStorage.setItem("live_html",html.value);
- localStorage.setItem("live_css",css.value);
- localStorage.setItem("live_js",js.value);
- alert("Tersimpan di browser.");
+function saveProject(){
+ const name=nameBox.value.trim();
+ if(!name){alert("Masukkan nama project.");return;}
+ localStorage.setItem("project_"+name,ed.value);
+ localStorage.setItem("last_project",name);
+ alert("Project '"+name+"' berhasil disimpan.");
 }
 
-html.value=localStorage.getItem("live_html")||html.value;
-css.value=localStorage.getItem("live_css")||css.value;
-js.value=localStorage.getItem("live_js")||js.value;
+function openProject(){
+ let name=nameBox.value.trim();
+ if(!name){
+   name=prompt("Nama project:");
+   if(!name)return;
+   nameBox.value=name;
+ }
+ const data=localStorage.getItem("project_"+name);
+ if(!data){
+   alert("Project tidak ditemukan.");
+   return;
+ }
+ ed.value=data;
+ preview();
+}
 
-html.oninput=css.oninput=js.oninput=run;
-run();
+const last=localStorage.getItem("last_project");
+if(last){
+ nameBox.value=last;
+ const data=localStorage.getItem("project_"+last);
+ if(data) ed.value=data;
+}
+ed.addEventListener("input",preview);
+preview();
 </script>
 
 </body>
