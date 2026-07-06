@@ -1,102 +1,143 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mini HTML Studio Firebase</title>
+<title>One File Web Builder</title>
 <style>
-body{margin:0;font-family:Arial;background:#1e1e1e;color:#fff}
-header{display:flex;gap:8px;padding:10px;background:#111;flex-wrap:wrap}
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#1e1e1e;color:#fff}
+#editor{display:block}#viewer{display:none}
+header{background:#111;padding:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 input,button,select{padding:8px;border-radius:6px;border:1px solid #555;background:#222;color:#fff}
 button{cursor:pointer}
-#editor{width:100%;height:45vh;background:#0d1117;color:#7CFC00;border:none;padding:10px;font-family:Consolas,monospace}
+textarea{width:100%;height:46vh;background:#0d1117;color:#7CFC00;border:none;padding:10px;font-family:Consolas,monospace}
 iframe{width:100%;height:42vh;border:none;background:#fff}
+#link{width:100%}
 </style>
 </head>
 <body>
+
+<div id="editor">
 <header>
 <input id="name" placeholder="Nama project (misal: tes1)">
 <button onclick="saveProject()">💾 Save</button>
-<select id="list"></select>
-<button onclick="loadProject()">📂 Open</button>
+<select id="projects"></select>
+<button onclick="openProject()">📂 Open</button>
 <button onclick="preview()">▶ Preview</button>
+<button onclick="copyLink()">🔗 Copy Link</button>
+<button onclick="openLink()">🌐 Open Website</button>
 </header>
 
-<textarea id="editor"><!DOCTYPE html>
+<input id="link" readonly placeholder="Link project akan muncul di sini">
+
+<textarea id="code"><!DOCTYPE html>
 <html>
-<head><title>Website Saya</title></head>
+<head>
+<title>Website Saya</title>
+<style>
+body{font-family:Arial;padding:20px}
+</style>
+</head>
 <body>
 <h1>Hello World</h1>
-<p>Edit halaman ini.</p>
+<p>Edit website ini lalu klik Save.</p>
 </body>
 </html></textarea>
 
-<iframe id="view"></iframe>
+<iframe id="frame"></iframe>
+</div>
+
+<div id="viewer"></div>
 
 <script>
 const DB="https://bahasa-arab-90f36-default-rtdb.asia-southeast1.firebasedatabase.app";
-const editor=document.getElementById("editor");
-const frame=document.getElementById("view");
-const nameBox=document.getElementById("name");
-const list=document.getElementById("list");
+const id=new URLSearchParams(location.search).get("id");
 
-function preview(){
- const d=frame.contentDocument||frame.contentWindow.document;
- d.open();
- d.write(editor.value);
- d.close();
-}
-
-async function refreshProjects(){
- try{
-   const r=await fetch(DB+"/projects.json");
-   const data=await r.json();
-   list.innerHTML="";
-   if(!data) return;
-   Object.keys(data).sort().forEach(k=>{
-      const o=document.createElement("option");
-      o.value=k;o.textContent=k;
-      list.appendChild(o);
-   });
- }catch(e){
-   console.error(e);
- }
-}
-
-async function saveProject(){
- const name=nameBox.value.trim();
- if(!name){alert("Masukkan nama project.");return;}
- const body={
-   code:editor.value,
-   updated:new Date().toISOString()
- };
- const r=await fetch(DB+"/projects/"+encodeURIComponent(name)+".json",{
-   method:"PUT",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify(body)
+if(id){
+ document.getElementById("editor").style.display="none";
+ fetch(DB+"/projects/"+encodeURIComponent(id)+".json")
+ .then(r=>r.json())
+ .then(d=>{
+   if(!d){document.body.innerHTML="<h2>Project tidak ditemukan.</h2>";return;}
+   document.open();
+   document.write(d.code);
+   document.close();
  });
- if(r.ok){
-   alert("Project '"+name+"' tersimpan.");
-   refreshProjects();
- }else{
-   alert("Gagal menyimpan. Periksa Firebase Rules.");
+}else{
+ const code=document.getElementById("code");
+ const frame=document.getElementById("frame");
+ const list=document.getElementById("projects");
+ const name=document.getElementById("name");
+ const link=document.getElementById("link");
+
+ function projectUrl(n){
+   return location.origin+location.pathname+"?id="+encodeURIComponent(n);
  }
-}
 
-async function loadProject(){
- const name=list.value||nameBox.value.trim();
- if(!name)return;
- const r=await fetch(DB+"/projects/"+encodeURIComponent(name)+".json");
- const data=await r.json();
- if(!data){alert("Project tidak ditemukan.");return;}
- nameBox.value=name;
- editor.value=data.code||"";
+ window.preview=function(){
+   const d=frame.contentDocument;
+   d.open(); d.write(code.value); d.close();
+ }
+
+ async function refresh(){
+   try{
+     const r=await fetch(DB+"/projects.json");
+     const data=await r.json()||{};
+     list.innerHTML="";
+     Object.keys(data).sort().forEach(k=>{
+       const o=document.createElement("option");
+       o.value=k;o.textContent=k;
+       list.appendChild(o);
+     });
+   }catch(e){}
+ }
+
+ window.saveProject=async function(){
+   const n=name.value.trim();
+   if(!n){alert("Isi nama project.");return;}
+   const res=await fetch(DB+"/projects/"+encodeURIComponent(n)+".json",{
+     method:"PUT",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({code:code.value,updated:Date.now()})
+   });
+   if(res.ok){
+      link.value=projectUrl(n);
+      await refresh();
+      list.value=n;
+      alert("Project berhasil disimpan.");
+   }else{
+      alert("Gagal menyimpan. Periksa Firebase Rules.");
+   }
+ }
+
+ window.openProject=async function(){
+   const n=list.value;
+   if(!n)return;
+   const r=await fetch(DB+"/projects/"+encodeURIComponent(n)+".json");
+   const d=await r.json();
+   if(d){
+      name.value=n;
+      code.value=d.code;
+      link.value=projectUrl(n);
+      preview();
+   }
+ }
+
+ window.copyLink=function(){
+   if(!link.value){alert("Simpan project dulu.");return;}
+   navigator.clipboard.writeText(link.value);
+   alert("Link disalin.");
+ }
+
+ window.openLink=function(){
+   if(!link.value){alert("Simpan project dulu.");return;}
+   window.open(link.value,"_blank");
+ }
+
+ code.addEventListener("input",preview);
  preview();
+ refresh();
 }
-
-editor.addEventListener("input",preview);
-preview();
-refreshProjects();
 </script>
 </body>
 </html>
