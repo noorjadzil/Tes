@@ -1,98 +1,108 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mini HTML Editor</title>
+<title>Mini HTML Studio</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#202124;color:#fff}
-header{display:flex;gap:8px;align-items:center;padding:10px;background:#111;flex-wrap:wrap}
-input,button{padding:8px;border-radius:6px;border:1px solid #555}
-input{background:#222;color:#fff}
+body{margin:0;font-family:Arial;background:#1e1e1e;color:#fff}
+header{background:#111;padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input,button,select{padding:8px;border-radius:6px;border:1px solid #555;background:#222;color:#fff}
 button{cursor:pointer}
-#editor{width:100%;height:45vh;background:#0d1117;color:#7CFC00;border:none;
-padding:12px;font-family:Consolas,monospace;font-size:14px}
-iframe{width:100%;height:45vh;border:none;background:#fff}
+#editor{width:100%;height:46vh;background:#0d1117;color:#7CFC00;border:none;padding:10px;font-family:Consolas,monospace}
+iframe{width:100%;height:42vh;border:none;background:#fff}
 </style>
 </head>
 <body>
-
 <header>
-<b>📄 Project</b>
-<input id="project" placeholder="contoh: tes.1">
+<input id="name" placeholder="Nama project (contoh: tes.1)">
 <button onclick="saveProject()">💾 Save</button>
+
+<select id="projects"></select>
 <button onclick="openProject()">📂 Open</button>
 <button onclick="preview()">▶ Preview</button>
+<button onclick="deleteProject()">🗑 Hapus</button>
 </header>
 
 <textarea id="editor"><!DOCTYPE html>
 <html>
-<head>
-<title>Halo</title>
-<style>
-body{font-family:Arial;padding:20px}
-h1{color:royalblue}
-</style>
-</head>
+<head><title>Project Baru</title></head>
 <body>
-
 <h1>Hello World</h1>
 <p>Edit kode di sini.</p>
-
-<script>
-console.log("Halo");
-</script>
-
 </body>
 </html></textarea>
 
 <iframe id="view"></iframe>
 
 <script>
-const ed=document.getElementById("editor");
-const view=document.getElementById("view");
-const nameBox=document.getElementById("project");
+const editor=document.getElementById("editor");
+const frame=document.getElementById("view");
+const list=document.getElementById("projects");
+const nameBox=document.getElementById("name");
 
 function preview(){
- const d=view.contentDocument||view.contentWindow.document;
- d.open();
- d.write(ed.value);
- d.close();
+ const d=frame.contentDocument||frame.contentWindow.document;
+ d.open(); d.write(editor.value); d.close();
+}
+
+function refreshList(){
+ list.innerHTML="";
+ let arr=JSON.parse(localStorage.getItem("project_list")||"[]");
+ arr.forEach(n=>{
+   let o=document.createElement("option");
+   o.value=n; o.textContent=n;
+   list.appendChild(o);
+ });
 }
 
 function saveProject(){
- const name=nameBox.value.trim();
- if(!name){alert("Masukkan nama project.");return;}
- localStorage.setItem("project_"+name,ed.value);
- localStorage.setItem("last_project",name);
- alert("Project '"+name+"' berhasil disimpan.");
+ let n=nameBox.value.trim();
+ if(!n){alert("Masukkan nama project.");return;}
+ localStorage.setItem("project_"+n,editor.value);
+ let arr=JSON.parse(localStorage.getItem("project_list")||"[]");
+ if(!arr.includes(n)){arr.push(n);}
+ localStorage.setItem("project_list",JSON.stringify(arr));
+ localStorage.setItem("last_project",n);
+ refreshList();
+ list.value=n;
+ alert("Project '"+n+"' disimpan.");
 }
 
 function openProject(){
- let name=nameBox.value.trim();
- if(!name){
-   name=prompt("Nama project:");
-   if(!name)return;
-   nameBox.value=name;
- }
- const data=localStorage.getItem("project_"+name);
- if(!data){
-   alert("Project tidak ditemukan.");
-   return;
- }
- ed.value=data;
+ const n=list.value||nameBox.value.trim();
+ if(!n){alert("Pilih project.");return;}
+ const data=localStorage.getItem("project_"+n);
+ if(!data){alert("Project tidak ditemukan.");return;}
+ nameBox.value=n;
+ editor.value=data;
+ localStorage.setItem("last_project",n);
  preview();
 }
 
+function deleteProject(){
+ const n=list.value;
+ if(!n)return;
+ if(!confirm("Hapus "+n+"?"))return;
+ localStorage.removeItem("project_"+n);
+ let arr=JSON.parse(localStorage.getItem("project_list")||"[]");
+ arr=arr.filter(x=>x!==n);
+ localStorage.setItem("project_list",JSON.stringify(arr));
+ refreshList();
+ editor.value="";
+ preview();
+}
+
+editor.addEventListener("input",preview);
+refreshList();
 const last=localStorage.getItem("last_project");
 if(last){
+ list.value=last;
  nameBox.value=last;
- const data=localStorage.getItem("project_"+last);
- if(data) ed.value=data;
+ const d=localStorage.getItem("project_"+last);
+ if(d)editor.value=d;
 }
-ed.addEventListener("input",preview);
 preview();
 </script>
-
 </body>
 </html>
