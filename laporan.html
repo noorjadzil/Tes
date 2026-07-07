@@ -541,9 +541,23 @@ const vendorMap={
 let grup={};
 (d.items||[]).forEach(i=>{
  let nama=String(i.barang||'').toLowerCase();
+ let kategori=String(i.kategori||'').toLowerCase();
  let vendor='Vendor Cilok';
- for(const [v,list] of Object.entries(vendorMap)){
-   if(list.some(x=>nama.includes(x))){vendor=v;break;}
+
+ if(kategori.includes('es')){
+   vendor='Vendor Es';
+ }else if(kategori.includes('mie ayam')){
+   vendor='Vendor Mie Ayam';
+ }else if(kategori.includes('bakso')){
+   vendor='Vendor Bakso';
+ }else if(kategori.includes('terang bulan')){
+   vendor='Vendor Terang Bulan';
+ }else if(kategori.includes('snack') || kategori.includes('jajanan 3000')){
+   vendor='Vendor Snack';
+ }else{
+   for(const [v,list] of Object.entries(vendorMap)){
+     if(list.some(x=>nama.includes(x))){vendor=v;break;}
+   }
  }
  let baris=(i.masuk!==undefined||i.retur!==undefined)?
  `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`:
