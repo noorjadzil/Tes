@@ -378,6 +378,7 @@ img{
 </style>
 </head>
 
+<!-- Refactor V4 Stage2 Safe Patch -->
 <body>
 
 <div class="container">
@@ -1883,6 +1884,22 @@ function toLocalDatetime(waktu){
 
 let masterItemsEdit = [];
 
+
+//=== REFACTOR V4 STAGE2 ===
+let __masterMapEdit=null;
+function rebuildMasterMap(){
+ __masterMapEdit=new Map();
+ (masterItemsEdit||[]).forEach(it=>{
+   __masterMapEdit.set(normalizeItemName(it.nama),it);
+ });
+}
+function getVendorFromMaster(item){
+ const key=normalizeItemName(item?.barang||"");
+ const m=__masterMapEdit?.get(key);
+ return (m?.kelompokLaporan||m?.kategori||item.kelompokLaporan||item.kategori||"").trim();
+}
+//=== END STAGE2 ===
+
 function loadMasterItemsEdit(){
   if(masterItemsEdit.length) return Promise.resolve(masterItemsEdit);
 
@@ -1904,6 +1921,7 @@ function loadMasterItemsEdit(){
 
     arr.sort((a,b)=> a.urutan - b.urutan || a.nama.localeCompare(b.nama));
     masterItemsEdit = arr;
+      rebuildMasterMap();
     return masterItemsEdit;
   });
 }
@@ -1928,20 +1946,8 @@ function itemSelectHTML(selectedBarang){
   });
 
   html += `</select>`;
-  html += `<select data-field="kategori" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px;margin-top:6px">
-<option value="">-- Kategori --</option>
-<option>Vendor Cilok</option><option>Vendor Es</option></select>`;
   return html;
 }
-
-document.addEventListener('change',function(e){
- if(e.target.matches('select[data-field="barang"]')){
-   const row=e.target.closest("div[class^='edit-row-']");
-   const ks=row?.querySelector('select[data-field="kategori"]');
-   const f=Object.values(window.__masterMap).find(x=>x.nama===e.target.value);
-   if(ks&&f) ks.value=f.kategori||'';
- }
-});
 function itemMode(items){
   return (items || []).some(i => i.masuk !== undefined || i.retur !== undefined) ? "masukRetur" : "jumlah";
 }
@@ -2080,6 +2086,7 @@ function hapusBarisEdit(btn){
 }
 
 // ================= SIMPAN + RIWAYAT =================
+/*MAX UPDATE*/
 function simpanEdit(key, mode){
 
 db.ref("jajan/"+key).once("value",snap=>{
@@ -2094,17 +2101,25 @@ if(isNaN(newDate)){
 }
 
 let rows = [...document.querySelectorAll(`.edit-row-${key}`)];
+const norm=s=>(s||"").toString().toLowerCase().replace(/\s+/g," ").trim();
+const masterMapEdit=new Map((masterItemsEdit||[]).map(x=>[norm(x.nama),x]));
 let newItems = rows.map((row,index)=>{
   let barang = row.querySelector('[data-field="barang"]').value.trim();
   let lama=(oldData.items||[])[index]||{};
-  const norm=s=>(s||"").toString().toLowerCase().replace(/\s+/g," ").trim();
-  let master=(masterItemsEdit||[]).find(x=>norm(x.nama)===norm(barang))||{};
+  let master=masterMapEdit.get(norm(barang))||{};
   if(!master.nama){
     alert('Item "'+barang+'" tidak ditemukan di master Firebase. Silakan pilih ulang dari dropdown.');
     throw new Error('invalid master');
   }
-  let kategori=master.kategori||lama.kategori||"";
-  let kelompokLaporan=master.kelompokLaporan||lama.kelompokLaporan||kategori;
+  const vendorCilok=['cilok','maklor','cimol','tahu batagor','dimsum','piscok'];
+  let kategori="";
+  let kelompokLaporan="";
+  if(vendorCilok.includes(norm(barang))){
+    kelompokLaporan="Vendor Cilok";
+  }else{
+    kategori=master.kategori||"";
+    kelompokLaporan=master.kelompokLaporan||kategori||"";
+  }
   let harga=master.harga??lama.harga??0;
   if(!kategori){
     const byName=(oldData.items||[]).find(i=>norm(i.barang)===norm(barang));
@@ -2131,10 +2146,8 @@ let newItems = rows.map((row,index)=>{
   };
 }).filter(i => i.barang !== "");
 
-const norm=s=>(s||'').toString().toLowerCase().replace(/\s+/g,' ').trim();
-let masterNames = masterItemsEdit.map(x => norm(x.nama));
 let adaItemKosong = rows.some(row => !row.querySelector('[data-field="barang"]').value.trim());
-let adaItemTidakValid = newItems.some(i => !masterNames.includes(norm(i.barang)));
+let adaItemTidakValid = newItems.some(i => !masterMapEdit.has(norm(i.barang)));
 
 if(adaItemKosong){
   alert("Ada item yang belum dipilih. Pilih dari dropdown item dulu.");
