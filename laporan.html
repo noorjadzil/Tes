@@ -436,7 +436,47 @@ box-shadow:0 8px 18px rgba(15,23,42,.14);
 </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+function resolveVendorFromKategori(src){
+ const v=(src&&typeof src==='object')?(src.kelompokLaporan||src.kategori||''):src;
+ const kategori=String(v||'').trim();
+ if(!kategori) return '';
+ return kategori;
+}
+
+//=== Stage2 Master Map Helpers ===
+function normalizeItemName(n){return String(n||'').trim().toLowerCase().replace(/\s+/g,' ');}
+function buildMasterMap(list){
+ const m={};
+ (list||[]).forEach(it=>{m[normalizeItemName(it.nama)]=it;});
+ return m;
+}
+window.__masterMap=buildMasterMap(window.masterItemsEdit||[]);
+function getMasterItemByName(n){return window.__masterMap[normalizeItemName(n)]||null;}
+//=== End Stage2 ===
+
+
+// STAGE7 HARDENING
+function __normalizeName(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,' ');}
+function __masterLookup(name){
+ const key=__normalizeName(name);
+ if(Array.isArray(masterItemsEdit)){
+   const m=masterItemsEdit.find(x=>__normalizeName(x.nama)===key);
+   if(m) return m;
+ }
+ return null;
+}
+
+
+// Stage8 helper
+function getMasterByNameSafe(name){
+  const key=(name||'').toString().trim().toLowerCase();
+  if(Array.isArray(masterItemsEdit)){
+    return masterItemsEdit.find(it=>((it.nama||'').toString().trim().toLowerCase()===key))||null;
+  }
+  return null;
+}
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
@@ -536,7 +576,7 @@ const vendorMap={
 'Vendor Terang Bulan':['terang bulan'],
 'Vendor Mie Ayam':['mie ayam'],
 'Vendor Bakso':['bakso'],
-'Vendor Snack':['aneka snack','jajanan 3000']
+'Vendor Es':['aneka snack','jajanan 3000']
 };
 let grup={};
 (d.items||[]).forEach(i=>{
@@ -544,7 +584,8 @@ let grup={};
  let kategori=String(i.kategori||'').toLowerCase();
  let vendor='Vendor Cilok';
 
- if(kategori.includes('es')){
+ const isEsName=nama.includes('es ')||nama.startsWith('jus ')||nama.includes('jeruk')||nama.includes('blewah')||nama.includes('coklat')||nama.includes('kedelai');
+ if(kategori.includes('es') && isEsName){
    vendor='Vendor Es';
  }else if(kategori.includes('mie ayam')){
    vendor='Vendor Mie Ayam';
@@ -552,8 +593,8 @@ let grup={};
    vendor='Vendor Bakso';
  }else if(kategori.includes('terang bulan')){
    vendor='Vendor Terang Bulan';
- }else if(kategori.includes('snack') || kategori.includes('jajanan 3000')){
-   vendor='Vendor Snack';
+ }else if(kategori.includes('es') || kategori.includes('jajanan 3000')){
+   vendor='Vendor Es';
  }else{
    for(const [v,list] of Object.entries(vendorMap)){
      if(list.some(x=>nama.includes(x))){vendor=v;break;}
@@ -743,7 +784,7 @@ function kategoriLaporanKhusus(i){
 
   if(kategori.includes("mie ayam") || nama.includes("mie ayam")) return "Mie Ayam";
   if(kategori.includes("bakso") || kategori.includes("terang bulan") || nama.includes("bakso") || nama.includes("terang bulan")) return "Bakso & Terang Bulan";
-  if(kategori.includes("es") || kategori.includes("snack") || kategori.includes("jajanan 3000") || nama.startsWith("es ") || nama.includes("jus ") || nama.includes("aneka snack") || nama.includes("jajanan 3000")) return "Es, Snack & Jajanan 3000";
+  if(kategori.includes("es") || kategori.includes("es") || kategori.includes("jajanan 3000") || nama.startsWith("es ") || nama.includes("jus ") || nama.includes("aneka snack") || nama.includes("jajanan 3000")) return "Es, Snack & Jajanan 3000";
 
   return "Item Khusus Lain";
 }
@@ -1853,8 +1894,9 @@ function loadMasterItemsEdit(){
         let nama = d.nama || d.barang || d.name || "";
         if(nama){
           arr.push({
-            nama: String(nama).trim(),
-            urutan: Number(d.urutan || d.order || 9999)
+            nama:String(nama).trim(),
+            kategori:String(d.kategori||''),
+            urutan:Number(d.urutan||d.order||9999)
           });
         }
       });
@@ -1886,9 +1928,20 @@ function itemSelectHTML(selectedBarang){
   });
 
   html += `</select>`;
+  html += `<select data-field="kategori" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px;margin-top:6px">
+<option value="">-- Kategori --</option>
+<option>Vendor Cilok</option><option>Vendor Es</option></select>`;
   return html;
 }
 
+document.addEventListener('change',function(e){
+ if(e.target.matches('select[data-field="barang"]')){
+   const row=e.target.closest("div[class^='edit-row-']");
+   const ks=row?.querySelector('select[data-field="kategori"]');
+   const f=Object.values(window.__masterMap).find(x=>x.nama===e.target.value);
+   if(ks&&f) ks.value=f.kategori||'';
+ }
+});
 function itemMode(items){
   return (items || []).some(i => i.masuk !== undefined || i.retur !== undefined) ? "masukRetur" : "jumlah";
 }
@@ -2018,7 +2071,7 @@ function rowItemHTML(key, idx, i={}, mode="jumlah"){
 
 function tambahBarisEdit(key, mode){
   let wrap = document.getElementById("editItems-"+key);
-  wrap.insertAdjacentHTML("beforeend", rowItemHTML(key, Date.now(), {}, mode));
+  wrap.insertAdjacentHTML("afterbegin", rowItemHTML(key, Date.now(), {}, mode));
 }
 
 function hapusBarisEdit(btn){
@@ -2041,12 +2094,29 @@ if(isNaN(newDate)){
 }
 
 let rows = [...document.querySelectorAll(`.edit-row-${key}`)];
-let newItems = rows.map(row=>{
+let newItems = rows.map((row,index)=>{
   let barang = row.querySelector('[data-field="barang"]').value.trim();
+  let lama=(oldData.items||[])[index]||{};
+  const norm=s=>(s||"").toString().toLowerCase().replace(/\s+/g," ").trim();
+  let master=(masterItemsEdit||[]).find(x=>norm(x.nama)===norm(barang))||{};
+  if(!master.nama){
+    alert('Item "'+barang+'" tidak ditemukan di master Firebase. Silakan pilih ulang dari dropdown.');
+    throw new Error('invalid master');
+  }
+  let kategori=master.kategori||lama.kategori||"";
+  let kelompokLaporan=master.kelompokLaporan||lama.kelompokLaporan||kategori;
+  let harga=master.harga??lama.harga??0;
+  if(!kategori){
+    const byName=(oldData.items||[]).find(i=>norm(i.barang)===norm(barang));
+    if(byName&&byName.kategori) kategori=byName.kategori;
+  }
 
   if(mode === "masukRetur"){
     return {
       barang: barang,
+      kategori:kategori,
+      kelompokLaporan:kelompokLaporan,
+      harga:harga,
       masuk: Number(row.querySelector('[data-field="masuk"]').value || 0),
       retur: Number(row.querySelector('[data-field="retur"]').value || 0)
     };
@@ -2054,13 +2124,17 @@ let newItems = rows.map(row=>{
 
   return {
     barang: barang,
+    kategori:kategori,
+    kelompokLaporan:kelompokLaporan,
+    harga:harga,
     jumlah: Number(row.querySelector('[data-field="jumlah"]').value || 0)
   };
 }).filter(i => i.barang !== "");
 
-let masterNames = masterItemsEdit.map(x => x.nama.toLowerCase());
+const norm=s=>(s||'').toString().toLowerCase().replace(/\s+/g,' ').trim();
+let masterNames = masterItemsEdit.map(x => norm(x.nama));
 let adaItemKosong = rows.some(row => !row.querySelector('[data-field="barang"]').value.trim());
-let adaItemTidakValid = newItems.some(i => !masterNames.includes(i.barang.toLowerCase()));
+let adaItemTidakValid = newItems.some(i => !masterNames.includes(norm(i.barang)));
 
 if(adaItemKosong){
   alert("Ada item yang belum dipilih. Pilih dari dropdown item dulu.");
@@ -2147,7 +2221,28 @@ box.style.display="block";
 });
 }
 
+
+// === STAGE1 HARDEN EDIT ===
+function normalizeItemName(v){return String(v||'').toLowerCase().trim().replace(/\s+/g,' ');}
+function buildMasterMap(){
+ window.masterMapEdit={};
+ (window.masterItemsEdit||[]).forEach(it=>{
+   const k=normalizeItemName(it.nama||it.barang);
+   if(k) window.masterMapEdit[k]=it;
+ });
+}
+function getMasterItem(nama){
+ if(!window.masterMapEdit) buildMasterMap();
+ return window.masterMapEdit[normalizeItemName(nama)]||null;
+}
+// === END STAGE1 ===
+
 </script>
 
+
+<!-- Stage5 update marker: centralized vendor resolution placeholder -->
+<script>
+function getVendorKey(item){return item.kelompokLaporan||item.kategori||'';}
+</script>
 </body>
 </html>
