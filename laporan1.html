@@ -378,6 +378,7 @@ img{
 </style>
 </head>
 
+<!-- Refactor V4 Stage2 Safe Patch -->
 <body>
 
 <div class="container">
@@ -423,7 +424,6 @@ box-shadow:0 8px 18px rgba(15,23,42,.14);
 
 <div id="tabLaporan">
   <div id="listLaporan">Loading...</div>
-<!-- Versi Vendor Cilok DLL -->
 </div>
 
 <div id="tabRekap" style="display:none;">
@@ -437,7 +437,47 @@ box-shadow:0 8px 18px rgba(15,23,42,.14);
 </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+function resolveVendorFromKategori(src){
+ const v=(src&&typeof src==='object')?(src.kelompokLaporan||src.kategori||''):src;
+ const kategori=String(v||'').trim();
+ if(!kategori) return '';
+ return kategori;
+}
+
+//=== Stage2 Master Map Helpers ===
+function normalizeItemName(n){return String(n||'').trim().toLowerCase().replace(/\s+/g,' ');}
+function buildMasterMap(list){
+ const m={};
+ (list||[]).forEach(it=>{m[normalizeItemName(it.nama)]=it;});
+ return m;
+}
+window.__masterMap=buildMasterMap(window.masterItemsEdit||[]);
+function getMasterItemByName(n){return window.__masterMap[normalizeItemName(n)]||null;}
+//=== End Stage2 ===
+
+
+// STAGE7 HARDENING
+function __normalizeName(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,' ');}
+function __masterLookup(name){
+ const key=__normalizeName(name);
+ if(Array.isArray(masterItemsEdit)){
+   const m=masterItemsEdit.find(x=>__normalizeName(x.nama)===key);
+   if(m) return m;
+ }
+ return null;
+}
+
+
+// Stage8 helper
+function getMasterByNameSafe(name){
+  const key=(name||'').toString().trim().toLowerCase();
+  if(Array.isArray(masterItemsEdit)){
+    return masterItemsEdit.find(it=>((it.nama||'').toString().trim().toLowerCase()===key))||null;
+  }
+  return null;
+}
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
@@ -509,7 +549,7 @@ function loadLaporan(){
 let list=document.getElementById("listLaporan");
 list.innerHTML="Loading...";
 
-db.ref("jajan").limitToLast(50).once("value",snap=>{
+db.ref("jajan").once("value",snap=>{
 
 list.innerHTML="";
 
@@ -531,14 +571,46 @@ arr.reverse();
 
 arr.forEach(d=>{
 
-let items = (d.items || [])
-.map(i=>{
-  if(i.masuk !== undefined || i.retur !== undefined){
-    return `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`;
-  }
-  return `• ${i.barang} (${Number(i.jumlah||0)})`;
-})
-.join("<br>");
+const vendorMap={
+'Vendor Cilok':['cilok','maklor','cimol','tahu batagor','dimsum','piscok'],
+'Vendor Es':['es teh','es jeruk','es blewah','es coklat','jus alpukat','es sari kedelai'],
+'Vendor Terang Bulan':['terang bulan'],
+'Vendor Mie Ayam':['mie ayam'],
+'Vendor Bakso':['bakso'],
+'Vendor Es':['aneka snack','jajanan 3000']
+};
+let grup={};
+(d.items||[]).forEach(i=>{
+ let nama=String(i.barang||'').toLowerCase();
+ let kategori=String(i.kategori||'').toLowerCase();
+ let vendor='Vendor Cilok';
+
+ const isEsName=nama.includes('es ')||nama.startsWith('jus ')||nama.includes('jeruk')||nama.includes('blewah')||nama.includes('coklat')||nama.includes('kedelai');
+ if(kategori.includes('es') && isEsName){
+   vendor='Vendor Es';
+ }else if(kategori.includes('mie ayam')){
+   vendor='Vendor Mie Ayam';
+ }else if(kategori.includes('bakso')){
+   vendor='Vendor Bakso';
+ }else if(kategori.includes('terang bulan')){
+   vendor='Vendor Terang Bulan';
+ }else if(kategori.includes('es') || kategori.includes('jajanan 3000')){
+   vendor='Vendor Es';
+ }else{
+   for(const [v,list] of Object.entries(vendorMap)){
+     if(list.some(x=>nama.includes(x))){vendor=v;break;}
+   }
+ }
+ let baris=(i.masuk!==undefined||i.retur!==undefined)?
+ `• ${i.barang} - Masuk: ${Number(i.masuk||0)}, Retur: ${Number(i.retur||0)}`:
+ `• ${i.barang} (${Number(i.jumlah||0)})`;
+ (grup[vendor]??=[]).push(baris);
+});
+let items=Object.entries(grup).map(([v,arr])=>
+`<div style="margin:10px 0">
+<div style="background:#1e3a8a;color:#fff;padding:6px 10px;border-radius:8px;font-weight:900">${v}</div>
+<div style="padding:8px 10px">${arr.join('<br>')}</div>
+</div>`).join('');
 
 let div=document.createElement("div");
 div.className="laporan-card";
@@ -713,7 +785,7 @@ function kategoriLaporanKhusus(i){
 
   if(kategori.includes("mie ayam") || nama.includes("mie ayam")) return "Mie Ayam";
   if(kategori.includes("bakso") || kategori.includes("terang bulan") || nama.includes("bakso") || nama.includes("terang bulan")) return "Bakso & Terang Bulan";
-  if(kategori.includes("es") || kategori.includes("snack") || kategori.includes("jajanan 3000") || nama.startsWith("es ") || nama.includes("jus ") || nama.includes("aneka snack") || nama.includes("jajanan 3000")) return "Es, Snack & Jajanan 3000";
+  if(kategori.includes("es") || kategori.includes("es") || kategori.includes("jajanan 3000") || nama.startsWith("es ") || nama.includes("jus ") || nama.includes("aneka snack") || nama.includes("jajanan 3000")) return "Es, Snack & Jajanan 3000";
 
   return "Item Khusus Lain";
 }
@@ -1812,6 +1884,22 @@ function toLocalDatetime(waktu){
 
 let masterItemsEdit = [];
 
+
+//=== REFACTOR V4 STAGE2 ===
+let __masterMapEdit=null;
+function rebuildMasterMap(){
+ __masterMapEdit=new Map();
+ (masterItemsEdit||[]).forEach(it=>{
+   __masterMapEdit.set(normalizeItemName(it.nama),it);
+ });
+}
+function getVendorFromMaster(item){
+ const key=normalizeItemName(item?.barang||"");
+ const m=__masterMapEdit?.get(key);
+ return (m?.kelompokLaporan||m?.kategori||item.kelompokLaporan||item.kategori||"").trim();
+}
+//=== END STAGE2 ===
+
 function loadMasterItemsEdit(){
   if(masterItemsEdit.length) return Promise.resolve(masterItemsEdit);
 
@@ -1823,8 +1911,9 @@ function loadMasterItemsEdit(){
         let nama = d.nama || d.barang || d.name || "";
         if(nama){
           arr.push({
-            nama: String(nama).trim(),
-            urutan: Number(d.urutan || d.order || 9999)
+            nama:String(nama).trim(),
+            kategori:String(d.kategori||''),
+            urutan:Number(d.urutan||d.order||9999)
           });
         }
       });
@@ -1832,6 +1921,7 @@ function loadMasterItemsEdit(){
 
     arr.sort((a,b)=> a.urutan - b.urutan || a.nama.localeCompare(b.nama));
     masterItemsEdit = arr;
+      rebuildMasterMap();
     return masterItemsEdit;
   });
 }
@@ -1858,7 +1948,6 @@ function itemSelectHTML(selectedBarang){
   html += `</select>`;
   return html;
 }
-
 function itemMode(items){
   return (items || []).some(i => i.masuk !== undefined || i.retur !== undefined) ? "masukRetur" : "jumlah";
 }
@@ -1988,7 +2077,7 @@ function rowItemHTML(key, idx, i={}, mode="jumlah"){
 
 function tambahBarisEdit(key, mode){
   let wrap = document.getElementById("editItems-"+key);
-  wrap.insertAdjacentHTML("beforeend", rowItemHTML(key, Date.now(), {}, mode));
+  wrap.insertAdjacentHTML("afterbegin", rowItemHTML(key, Date.now(), {}, mode));
 }
 
 function hapusBarisEdit(btn){
@@ -1997,6 +2086,7 @@ function hapusBarisEdit(btn){
 }
 
 // ================= SIMPAN + RIWAYAT =================
+/*MAX UPDATE*/
 function simpanEdit(key, mode){
 
 db.ref("jajan/"+key).once("value",snap=>{
@@ -2011,12 +2101,37 @@ if(isNaN(newDate)){
 }
 
 let rows = [...document.querySelectorAll(`.edit-row-${key}`)];
-let newItems = rows.map(row=>{
+const norm=s=>(s||"").toString().toLowerCase().replace(/\s+/g," ").trim();
+const masterMapEdit=new Map((masterItemsEdit||[]).map(x=>[norm(x.nama),x]));
+let newItems = rows.map((row,index)=>{
   let barang = row.querySelector('[data-field="barang"]').value.trim();
+  let lama=(oldData.items||[])[index]||{};
+  let master=masterMapEdit.get(norm(barang))||{};
+  if(!master.nama){
+    alert('Item "'+barang+'" tidak ditemukan di master Firebase. Silakan pilih ulang dari dropdown.');
+    throw new Error('invalid master');
+  }
+  const vendorCilok=['cilok','maklor','cimol','tahu batagor','dimsum','piscok'];
+  let kategori="";
+  let kelompokLaporan="";
+  if(vendorCilok.includes(norm(barang))){
+    kelompokLaporan="Vendor Cilok";
+  }else{
+    kategori=master.kategori||"";
+    kelompokLaporan=master.kelompokLaporan||kategori||"";
+  }
+  let harga=master.harga??lama.harga??0;
+  if(!kategori){
+    const byName=(oldData.items||[]).find(i=>norm(i.barang)===norm(barang));
+    if(byName&&byName.kategori) kategori=byName.kategori;
+  }
 
   if(mode === "masukRetur"){
     return {
       barang: barang,
+      kategori:kategori,
+      kelompokLaporan:kelompokLaporan,
+      harga:harga,
       masuk: Number(row.querySelector('[data-field="masuk"]').value || 0),
       retur: Number(row.querySelector('[data-field="retur"]').value || 0)
     };
@@ -2024,13 +2139,15 @@ let newItems = rows.map(row=>{
 
   return {
     barang: barang,
+    kategori:kategori,
+    kelompokLaporan:kelompokLaporan,
+    harga:harga,
     jumlah: Number(row.querySelector('[data-field="jumlah"]').value || 0)
   };
 }).filter(i => i.barang !== "");
 
-let masterNames = masterItemsEdit.map(x => x.nama.toLowerCase());
 let adaItemKosong = rows.some(row => !row.querySelector('[data-field="barang"]').value.trim());
-let adaItemTidakValid = newItems.some(i => !masterNames.includes(i.barang.toLowerCase()));
+let adaItemTidakValid = newItems.some(i => !masterMapEdit.has(norm(i.barang)));
 
 if(adaItemKosong){
   alert("Ada item yang belum dipilih. Pilih dari dropdown item dulu.");
@@ -2117,7 +2234,28 @@ box.style.display="block";
 });
 }
 
+
+// === STAGE1 HARDEN EDIT ===
+function normalizeItemName(v){return String(v||'').toLowerCase().trim().replace(/\s+/g,' ');}
+function buildMasterMap(){
+ window.masterMapEdit={};
+ (window.masterItemsEdit||[]).forEach(it=>{
+   const k=normalizeItemName(it.nama||it.barang);
+   if(k) window.masterMapEdit[k]=it;
+ });
+}
+function getMasterItem(nama){
+ if(!window.masterMapEdit) buildMasterMap();
+ return window.masterMapEdit[normalizeItemName(nama)]||null;
+}
+// === END STAGE1 ===
+
 </script>
 
+
+<!-- Stage5 update marker: centralized vendor resolution placeholder -->
+<script>
+function getVendorKey(item){return item.kelompokLaporan||item.kategori||'';}
+</script>
 </body>
 </html>
