@@ -26,10 +26,6 @@
       margin: auto;
     }
 
-    /* =========================
-       LAPORAN
-    ========================= */
-
     #laporan {
       width: 100%;
       background: #ffffff;
@@ -47,7 +43,6 @@
     .header h1 {
       margin: 0;
       font-size: 28px;
-      letter-spacing: 1px;
     }
 
     .header p {
@@ -56,9 +51,7 @@
       font-size: 15px;
     }
 
-    /* =========================
-       RINGKASAN
-    ========================= */
+    /* RINGKASAN */
 
     .summary {
       display: grid;
@@ -86,9 +79,7 @@
       font-size: 25px;
     }
 
-    /* =========================
-       IKHWAN & AKHWAT
-    ========================= */
+    /* IKHWAN & AKHWAT */
 
     .laporan-grid {
       display: grid;
@@ -111,7 +102,6 @@
       font-size: 17px;
       border-bottom: 1px solid #e5e7eb;
       background: #f8fafc;
-      letter-spacing: .5px;
     }
 
     table {
@@ -144,9 +134,7 @@
       border-bottom: none;
     }
 
-    /* =========================
-       TOTAL
-    ========================= */
+    /* TOTAL */
 
     .final-box {
       margin-top: 22px;
@@ -160,7 +148,6 @@
     .final-box small {
       color: #6b7280;
       font-weight: bold;
-      letter-spacing: .5px;
     }
 
     .final-total {
@@ -175,9 +162,7 @@
       font-size: 12px;
     }
 
-    /* =========================
-       TOMBOL
-    ========================= */
+    /* TOMBOL */
 
     .actions {
       display: flex;
@@ -208,13 +193,7 @@
       color: white;
     }
 
-    button:active {
-      transform: scale(.98);
-    }
-
-    /* =========================
-       RESPONSIVE TAMPILAN HP
-    ========================= */
+    /* TAMPILAN HP */
 
     @media (max-width: 700px) {
 
@@ -224,7 +203,6 @@
 
       #laporan {
         padding: 16px;
-        border-radius: 14px;
       }
 
       .header h1 {
@@ -235,7 +213,6 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
-      /* DI HP BOLEH BERTUMPUK */
       .laporan-grid {
         grid-template-columns: 1fr;
       }
@@ -247,13 +224,9 @@
       button {
         width: 100%;
       }
-
     }
 
-    /* =========================
-       MODE KHUSUS GAMBAR
-       PAKSA LANDSCAPE
-    ========================= */
+    /* MODE GAMBAR LANDSCAPE */
 
     #laporan.capture-mode {
       width: 1200px !important;
@@ -267,21 +240,9 @@
       grid-template-columns: repeat(4, 1fr) !important;
     }
 
-    /* IKHWAN KIRI - AKHWAT KANAN */
     #laporan.capture-mode .laporan-grid {
-      display: grid !important;
       grid-template-columns: 1fr 1fr !important;
       gap: 16px !important;
-    }
-
-    #laporan.capture-mode .section {
-      width: auto !important;
-    }
-
-    #laporan.capture-mode th,
-    #laporan.capture-mode td {
-      padding: 10px 7px !important;
-      font-size: 13px !important;
     }
 
   </style>
@@ -290,10 +251,6 @@
 <body>
 
 <div class="app">
-
-  <!-- =========================
-       LAPORAN
-  ========================== -->
 
   <div id="laporan">
 
@@ -318,8 +275,8 @@
       </div>
 
       <div class="summary-card">
-        <small>RETUR IKHWAN</small>
-        <strong id="returIkhwan">0</strong>
+        <small>TOTAL RETUR</small>
+        <strong id="totalRetur">0</strong>
       </div>
 
       <div class="summary-card">
@@ -330,14 +287,12 @@
     </div>
 
 
-    <!-- =========================
-         IKHWAN DAN AKHWAT
-    ========================== -->
+    <!-- IKHWAN & AKHWAT -->
 
     <div class="laporan-grid">
 
 
-      <!-- IKHWAN KIRI -->
+      <!-- IKHWAN -->
 
       <div class="section">
 
@@ -363,7 +318,7 @@
       </div>
 
 
-      <!-- AKHWAT KANAN -->
+      <!-- AKHWAT -->
 
       <div class="section">
 
@@ -377,8 +332,8 @@
             <tr>
               <th>Tanggal</th>
               <th>Masuk</th>
+              <th>Retur</th>
               <th>Sisa</th>
-              <th>Keterangan</th>
             </tr>
           </thead>
 
@@ -391,7 +346,7 @@
     </div>
 
 
-    <!-- TOTAL -->
+    <!-- TOTAL AKHIR -->
 
     <div class="final-box">
 
@@ -402,7 +357,7 @@
       </div>
 
       <p>
-        Total masuk dikurangi retur yang tercatat.
+        Total masuk dikurangi total retur.
       </p>
 
     </div>
@@ -414,17 +369,11 @@
 
   <div class="actions">
 
-    <button
-      class="btn-image"
-      onclick="jadikanGambar()"
-    >
+    <button class="btn-image" onclick="jadikanGambar()">
       🖼️ Jadikan Gambar
     </button>
 
-    <button
-      class="btn-wa"
-      onclick="kirimWhatsApp()"
-    >
+    <button class="btn-wa" onclick="kirimWhatsApp()">
       📤 Kirim / Bagikan WhatsApp
     </button>
 
@@ -463,18 +412,30 @@
 
   const akhwat = [
 
-    { tanggal: "10/8", masuk: 32, sisa: "-", ket: "-" },
-    { tanggal: "11/8", masuk: 35, sisa: 0, ket: "Habis" },
-    { tanggal: "12/8", masuk: 35, sisa: "-", ket: "-" },
-    { tanggal: "13/8", masuk: 42, sisa: 1, ket: "Sisa" },
-    { tanggal: "14/8", masuk: 40, sisa: "-", ket: "-" },
-    { tanggal: "15/8", masuk: 35, sisa: "-", ket: "-" },
-    { tanggal: "16/8", masuk: 43, sisa: 1, ket: "Tidak retur" },
-    { tanggal: "17/8", masuk: 37, sisa: "-", ket: "-" },
-    { tanggal: "18/8", masuk: 40, sisa: "-", ket: "-" },
-    { tanggal: "19/8", masuk: 40, sisa: 2, ket: "Sisa" },
-    { tanggal: "20/8", masuk: 40, sisa: 16, ket: "Tidak retur" },
-    { tanggal: "21/8", masuk: 30, sisa: "-", ket: "-" }
+    { tanggal: "10/8", masuk: 32, retur: 0, sisa: "-" },
+
+    { tanggal: "11/8", masuk: 35, retur: 0, sisa: "Habis" },
+
+    { tanggal: "12/8", masuk: 35, retur: 0, sisa: "-" },
+
+    /* 13 AGUSTUS: SISA 1 = RETUR */
+    { tanggal: "13/8", masuk: 42, retur: 1, sisa: "-" },
+
+    { tanggal: "14/8", masuk: 40, retur: 0, sisa: "-" },
+
+    { tanggal: "15/8", masuk: 35, retur: 0, sisa: "-" },
+
+    { tanggal: "16/8", masuk: 43, retur: 0, sisa: "1 Tidak retur" },
+
+    { tanggal: "17/8", masuk: 37, retur: 0, sisa: "-" },
+
+    { tanggal: "18/8", masuk: 40, retur: 0, sisa: "-" },
+
+    { tanggal: "19/8", masuk: 40, retur: 0, sisa: "2" },
+
+    { tanggal: "20/8", masuk: 40, retur: 0, sisa: "16 Tidak retur" },
+
+    { tanggal: "21/8", masuk: 30, retur: 0, sisa: "-" }
 
   ];
 
@@ -516,8 +477,8 @@
       <tr>
         <td>${item.tanggal}</td>
         <td>${item.masuk}</td>
+        <td>${item.retur > 0 ? item.retur : "-"}</td>
         <td>${item.sisa}</td>
-        <td>${item.ket}</td>
       </tr>
     `;
 
@@ -546,13 +507,23 @@
       0
     );
 
-  const totalMasukSemua =
+  const totalReturAkhwat =
+    akhwat.reduce(
+      (total, item) => total + item.retur,
+      0
+    );
+
+  const totalMasuk =
     totalMasukIkhwan +
     totalMasukAkhwat;
 
+  const totalRetur =
+    totalReturIkhwan +
+    totalReturAkhwat;
+
   const totalAkhir =
-    totalMasukSemua -
-    totalReturIkhwan;
+    totalMasuk -
+    totalRetur;
 
 
   /* =========================
@@ -565,8 +536,8 @@
   document.getElementById("masukAkhwat")
     .textContent = totalMasukAkhwat;
 
-  document.getElementById("returIkhwan")
-    .textContent = totalReturIkhwan;
+  document.getElementById("totalRetur")
+    .textContent = totalRetur;
 
   document.getElementById("totalAkhirAtas")
     .textContent = totalAkhir;
@@ -576,7 +547,7 @@
 
 
   /* =========================
-     BUAT CANVAS LANDSCAPE
+     BUAT GAMBAR LANDSCAPE
   ========================= */
 
   async function buatCanvas() {
@@ -584,19 +555,7 @@
     const laporan =
       document.getElementById("laporan");
 
-    /*
-      Aktifkan mode gambar.
-      Ini memaksa:
-      IKHWAN KIRI
-      AKHWAT KANAN
-    */
-
     laporan.classList.add("capture-mode");
-
-    /*
-      Tunggu browser merender ulang
-      layout menjadi landscape
-    */
 
     await new Promise(resolve =>
       setTimeout(resolve, 300)
@@ -615,10 +574,6 @@
           scrollY: -window.scrollY
         }
       );
-
-    /*
-      Kembalikan tampilan normal
-    */
 
     laporan.classList.remove("capture-mode");
 
@@ -649,13 +604,9 @@
 
       link.click();
 
-    }
+    } catch (error) {
 
-    catch (error) {
-
-      alert(
-        "Gagal membuat gambar. Coba lagi."
-      );
+      alert("Gagal membuat gambar.");
 
       console.error(error);
 
@@ -665,7 +616,7 @@
 
 
   /* =========================
-     KIRIM / BAGIKAN WA
+     KIRIM WHATSAPP
   ========================= */
 
   async function kirimWhatsApp() {
@@ -693,23 +644,20 @@
         );
 
       const pesan =
-        "🍩 Laporan Donat\n" +
+        "🍩 LAPORAN DONAT\n" +
         "Periode 10–21 Agustus 2026\n\n" +
-        "Ikhwan masuk: " +
+        "Masuk Ikhwan: " +
         totalMasukIkhwan +
-        "\nAkhwat masuk: " +
+        "\nMasuk Akhwat: " +
         totalMasukAkhwat +
-        "\nRetur Ikhwan: " +
-        totalReturIkhwan +
-        "\nTotal akhir: " +
+        "\nTotal Retur: " +
+        totalRetur +
+        "\nTotal Akhir: " +
         totalAkhir +
         " donat";
 
 
-      /*
-        HP modern:
-        buka menu bagikan dan sertakan GAMBAR
-      */
+      /* HP: BAGIKAN GAMBAR LANGSUNG */
 
       if (
         navigator.canShare &&
@@ -724,15 +672,9 @@
           files: [file]
         });
 
-      }
+      } else {
 
-      else {
-
-        /*
-          Fallback:
-          gambar diunduh,
-          lalu WhatsApp dibuka
-        */
+        /* FALLBACK */
 
         const link =
           document.createElement("a");
@@ -744,7 +686,6 @@
           URL.createObjectURL(blob);
 
         link.click();
-
 
         setTimeout(() => {
 
@@ -758,18 +699,9 @@
 
       }
 
-    }
+    } catch (error) {
 
-    catch (error) {
-
-      /*
-        User membatalkan share
-        bukan dianggap error besar
-      */
-
-      if (
-        error.name !== "AbortError"
-      ) {
+      if (error.name !== "AbortError") {
 
         console.error(error);
 
