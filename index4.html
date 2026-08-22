@@ -3,320 +3,1044 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rekap Terang Bulan Juni 2025</title>
 
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<title>Laporan Gorengan Agustus 2026</title>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+
+* {
+  box-sizing: border-box;
 }
 
-body{
-    background:#f4f6f9;
-    font-family:Arial, Helvetica, sans-serif;
-    padding:20px;
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #eef1f4;
+  color: #1f2933;
 }
 
-#laporan{
-    max-width:1100px;
-    margin:auto;
-    background:#fff;
-    border-radius:15px;
-    padding:25px;
-    box-shadow:0 2px 10px rgba(0,0,0,.1);
+.app {
+  max-width: 1100px;
+  margin: auto;
 }
 
-.header{
-    text-align:center;
-    margin-bottom:25px;
+/* =========================
+   LAPORAN
+========================= */
+
+#laporan {
+  width: 100%;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06);
 }
 
-.header h1{
-    font-size:30px;
-    margin-bottom:8px;
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-.header p{
-    color:#666;
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 1px;
 }
 
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-    align-items:stretch;
+.header p {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 15px;
 }
 
-.box{
-    border:1px solid #ddd;
-    border-radius:12px;
-    overflow:hidden;
+/* =========================
+   RINGKASAN
+========================= */
 
-    display:flex;
-    flex-direction:column;
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 22px 0;
 }
 
-.box h2{
-    background:#0d6efd;
-    color:white;
-    text-align:center;
-    padding:12px;
+.summary-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px 10px;
+  text-align: center;
+  background: #fafafa;
 }
 
-.box table{
-    width:100%;
-    border-collapse:collapse;
-    flex-grow:1;
+.summary-card small {
+  display: block;
+  color: #6b7280;
+  margin-bottom: 7px;
+  font-size: 12px;
 }
 
-th{
-    background:#f2f2f2;
+.summary-card strong {
+  font-size: 25px;
 }
 
-th,td{
-    border:1px solid #ddd;
-    padding:8px;
+/* =========================
+   IKHWAN & AKHWAT
+========================= */
+
+.laporan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
 }
 
-td:last-child,
-th:last-child{
-    text-align:right;
+.section {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
 }
 
-.total-row{
-    font-weight:bold;
-    background:#fafafa;
+.section-title {
+  padding: 14px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 17px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  letter-spacing: .5px;
 }
 
-.omzet{
-    margin-top:auto;
-    padding:12px;
-    text-align:center;
-    font-weight:bold;
-    background:#fafafa;
-    border-top:1px solid #ddd;
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.summary{
-    margin-top:25px;
-    border:2px solid #0d6efd;
-    border-radius:12px;
-    overflow:hidden;
+th {
+  background: #f1f5f9;
+  font-size: 12px;
+  color: #4b5563;
+  white-space: nowrap;
 }
 
-.summary h2{
-    background:#0d6efd;
-    color:white;
-    text-align:center;
-    padding:12px;
+th,
+td {
+  padding: 10px 7px;
+  border-bottom: 1px solid #edf0f2;
+  text-align: center;
+  font-size: 13px;
 }
 
-.summary table{
-    width:100%;
-    border-collapse:collapse;
+th:first-child,
+td:first-child {
+  text-align: left;
+  padding-left: 14px;
 }
 
-.summary td{
-    padding:12px;
+tr:last-child td {
+  border-bottom: none;
 }
 
-.grand-total{
-    font-weight:bold;
-    font-size:18px;
-    background:#f8f9fa;
+.total-row {
+  font-weight: bold;
+  background: #f8fafc;
 }
 
-.actions{
-    text-align:center;
-    margin-top:20px;
+/* =========================
+   TOTAL AKHIR
+========================= */
+
+.final-box {
+  margin-top: 22px;
+  border: 2px solid #d1d5db;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  background: #fafafa;
 }
 
-button{
-    padding:12px 20px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    margin:5px;
-    color:white;
+.final-box small {
+  color: #6b7280;
+  font-weight: bold;
+  letter-spacing: .5px;
 }
 
-.download{
-    background:#198754;
+.final-total {
+  font-size: 40px;
+  font-weight: bold;
+  margin: 6px 0;
 }
 
-.whatsapp{
-    background:#25D366;
+.final-box p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
 }
 
-@media(max-width:768px){
-    .grid{
-        grid-template-columns:1fr;
-    }
+/* =========================
+   TOMBOL
+========================= */
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
 }
+
+button {
+  border: none;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  min-width: 190px;
+}
+
+.btn-image {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #111827;
+}
+
+.btn-wa {
+  background: #111827;
+  color: white;
+}
+
+button:active {
+  transform: scale(.98);
+}
+
+/* =========================
+   RESPONSIVE HP
+========================= */
+
+@media (max-width: 700px) {
+
+  body {
+    padding: 10px;
+  }
+
+  #laporan {
+    padding: 16px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .laporan-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .final-total {
+    font-size: 34px;
+  }
+
+  button {
+    width: 100%;
+  }
+
+}
+
+/* =========================
+   MODE GAMBAR
+   SELALU LANDSCAPE
+========================= */
+
+#laporan.capture-mode {
+  width: 1200px !important;
+  max-width: none !important;
+  padding: 32px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+#laporan.capture-mode .summary {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+#laporan.capture-mode .laporan-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 16px !important;
+}
+
+#laporan.capture-mode .section {
+  width: auto !important;
+}
+
 </style>
 </head>
+
+
 <body>
 
-<div id="laporan">
+<div class="app">
 
-<div class="header">
-    <h1>REKAP PENGIRIMAN TERANG BULAN</h1>
-    <p>Periode Juni 2025</p>
-</div>
+  <!-- =========================
+       LAPORAN
+  ========================== -->
 
-<div class="grid">
+  <div id="laporan">
 
-    <!-- IKHWAN -->
-    <div class="box">
+    <div class="header">
+      <h1>🍽️ LAPORAN GORENGAN</h1>
+      <p>Periode 9–22 Agustus 2026</p>
+    </div>
 
-        <h2>IKHWAN</h2>
 
-        <table>
-            <tr>
-                <th>Tanggal</th>
-                <th>Kirim</th>
-            </tr>
+    <!-- =========================
+         RINGKASAN
+    ========================== -->
 
-            <tr><td>02 Juni 2025</td><td>34</td></tr>
-            <tr><td>04 Juni 2025</td><td>32</td></tr>
-            <tr><td>05 Juni 2025</td><td>35</td></tr>
-            <tr><td>07 Juni 2025</td><td>23</td></tr>
-            <tr><td>08 Juni 2025</td><td>40</td></tr>
-            <tr><td>09 Juni 2025</td><td>36</td></tr>
-            <tr><td>11 Juni 2025</td><td>40</td></tr>
-            <tr><td>12 Juni 2025</td><td>41</td></tr>
-            <tr><td>13 Juni 2025</td><td>36</td></tr>
-            <tr><td>15 Juni 2025</td><td>30</td></tr>
-            <tr><td>16 Juni 2025</td><td>35</td></tr>
-            <tr><td>17 Juni 2025</td><td>41</td></tr>
+    <div class="summary">
 
-            <tr class="total-row">
-                <td>Total Ikhwan</td>
-                <td>423</td>
-            </tr>
-        </table>
+      <div class="summary-card">
+        <small>MASUK IKHWAN</small>
+        <strong id="masukIkhwan">0</strong>
+      </div>
 
-        <div class="omzet">
-            Omzet Ikhwan : Rp2.749.500
-        </div>
+      <div class="summary-card">
+        <small>MASUK AKHWAT</small>
+        <strong id="masukAkhwat">0</strong>
+      </div>
+
+      <div class="summary-card">
+        <small>TOTAL RETUR</small>
+        <strong id="totalRetur">0</strong>
+      </div>
+
+      <div class="summary-card">
+        <small>TOTAL AKHIR</small>
+        <strong id="totalAkhirAtas">0</strong>
+      </div>
 
     </div>
 
-    <!-- AKHWAT -->
-    <div class="box">
 
-        <h2>AKHWAT</h2>
+    <!-- =========================
+         IKHWAN KIRI
+         AKHWAT KANAN
+    ========================== -->
+
+    <div class="laporan-grid">
+
+
+      <!-- IKHWAN -->
+
+      <div class="section">
+
+        <div class="section-title">
+          IKHWAN
+        </div>
 
         <table>
+
+          <thead>
             <tr>
-                <th>Tanggal</th>
-                <th>Kirim</th>
+              <th>Tanggal</th>
+              <th>Masuk</th>
+              <th>Retur</th>
+              <th>Sisa/Ket.</th>
             </tr>
+          </thead>
 
-            <tr><td>04 Juni 2025</td><td>30</td></tr>
-            <tr><td>05 Juni 2025</td><td>32</td></tr>
-            <tr><td>09 Juni 2025</td><td>20</td></tr>
-            <tr><td>14 Juni 2025</td><td>28</td></tr>
-            <tr><td>15 Juni 2025</td><td>21</td></tr>
-            <tr><td>16 Juni 2025</td><td>45</td></tr>
+          <tbody id="tableIkhwan"></tbody>
 
-            <tr class="total-row">
-                <td>Total Akhwat</td>
-                <td>176</td>
-            </tr>
         </table>
 
-        <div class="omzet">
-            Omzet Akhwat : Rp1.144.000
+      </div>
+
+
+      <!-- AKHWAT -->
+
+      <div class="section">
+
+        <div class="section-title">
+          AKHWAT
         </div>
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Masuk</th>
+              <th>Retur</th>
+              <th>Sisa/Ket.</th>
+            </tr>
+          </thead>
+
+          <tbody id="tableAkhwat"></tbody>
+
+        </table>
+
+      </div>
 
     </div>
 
-</div>
 
-<div class="summary">
+    <!-- =========================
+         TOTAL AKHIR
+    ========================== -->
 
-    <h2>RINGKASAN KESELURUHAN</h2>
+    <div class="final-box">
 
-    <table>
+      <small>TOTAL GORENGAN KESELURUHAN</small>
 
-        <tr>
-            <td>Total Kirim Ikhwan</td>
-            <td align="right">423 pcs</td>
-        </tr>
+      <div class="final-total">
+        <span id="finalTotal">0</span>
+      </div>
 
-        <tr>
-            <td>Total Kirim Akhwat</td>
-            <td align="right">176 pcs</td>
-        </tr>
+      <p>
+        Total masuk dikurangi retur yang tercatat.
+      </p>
 
-        <tr>
-            <td>Total Kirim</td>
-            <td align="right">599 pcs</td>
-        </tr>
+    </div>
 
-        <tr>
-            <td>Harga per pcs</td>
-            <td align="right">Rp6.500</td>
-        </tr>
+  </div>
 
-        <tr class="grand-total">
-            <td>Total Omzet</td>
-            <td align="right">Rp3.893.500</td>
-        </tr>
 
-    </table>
+  <!-- =========================
+       TOMBOL
+  ========================== -->
 
-</div>
+  <div class="actions">
 
-</div>
-
-<div class="actions">
-    <button class="download" onclick="downloadPNG()">
-        Download PNG
+    <button
+      class="btn-image"
+      onclick="jadikanGambar()">
+      🖼️ Jadikan Gambar
     </button>
 
-    <button class="whatsapp" onclick="kirimWA()">
-        Kirim WhatsApp
+    <button
+      class="btn-wa"
+      onclick="kirimWhatsApp()">
+      📤 Kirim / Bagikan WhatsApp
     </button>
+
+  </div>
+
 </div>
+
 
 <script>
-function downloadPNG(){
-    html2canvas(document.querySelector("#laporan"),{
-        scale:2
-    }).then(canvas=>{
-        const link=document.createElement("a");
-        link.download="rekap-terang-bulan-juni-2025.png";
-        link.href=canvas.toDataURL("image/png");
-        link.click();
-    });
+
+/* =====================================================
+   DATA IKHWAN
+===================================================== */
+
+const ikhwan = [
+
+  {
+    tanggal: "9/8",
+    masuk: 90,
+    retur: 0,
+    ket: "Habis"
+  },
+
+  {
+    tanggal: "10/8",
+    masuk: 90,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "11/8",
+    masuk: 115,
+    retur: 0,
+    ket: "Habis"
+  },
+
+  {
+    tanggal: "12/8",
+    masuk: 115,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "13/8",
+    masuk: 128,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "14/8",
+    masuk: 157,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "15/8",
+    masuk: 168,
+    retur: 2,
+    ket: "Retur/sisa"
+  },
+
+  {
+    tanggal: "16/8",
+    masuk: 165,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "17/8",
+    masuk: 145,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "18/8",
+    masuk: 142,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "19/8",
+    masuk: 170,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "20/8",
+    masuk: 143,
+    retur: 0,
+    ket: "Habis"
+  },
+
+  {
+    tanggal: "21/8",
+    masuk: 125,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "22/8",
+    masuk: 105,
+    retur: 0,
+    ket: "-"
+  }
+
+];
+
+
+/* =====================================================
+   DATA AKHWAT
+===================================================== */
+
+const akhwat = [
+
+  {
+    tanggal: "9/8",
+    masuk: 90,
+    retur: 0,
+    ket: "Sisa 11"
+  },
+
+  {
+    tanggal: "10/8",
+    masuk: 87,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "11/8",
+    masuk: 112,
+    retur: 0,
+    ket: "Habis"
+  },
+
+  {
+    tanggal: "12/8",
+    masuk: 115,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "13/8",
+    masuk: 125,
+    retur: 0,
+    ket: "Sisa 14"
+  },
+
+  {
+    tanggal: "14/8",
+    masuk: 142,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "15/8",
+    masuk: 165,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "16/8",
+    masuk: 154,
+    retur: 0,
+    ket: "Sisa 7"
+  },
+
+  {
+    tanggal: "17/8",
+    masuk: 133,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "18/8",
+    masuk: 139,
+    retur: 0,
+    ket: "-"
+  },
+
+  {
+    tanggal: "19/8",
+    masuk: 170,
+    retur: 0,
+    ket: "Sisa banyak"
+  },
+
+  {
+    tanggal: "20/8",
+    masuk: 130,
+    retur: 0,
+    ket: "Sisa 34"
+  },
+
+  {
+    tanggal: "21/8",
+    masuk: 87,
+    retur: 0,
+    ket: "Sisa 4"
+  },
+
+  {
+    tanggal: "22/8",
+    masuk: 65,
+    retur: 0,
+    ket: "Sisa 2"
+  }
+
+];
+
+
+/* =====================================================
+   TAMPILKAN IKHWAN
+===================================================== */
+
+const tableIkhwan =
+  document.getElementById("tableIkhwan");
+
+ikhwan.forEach(item => {
+
+  tableIkhwan.innerHTML += `
+
+    <tr>
+
+      <td>${item.tanggal}</td>
+
+      <td>${item.masuk}</td>
+
+      <td>
+        ${
+          item.retur > 0
+          ? item.retur
+          : "-"
+        }
+      </td>
+
+      <td>${item.ket}</td>
+
+    </tr>
+
+  `;
+
+});
+
+
+/* =====================================================
+   TOTAL BARIS IKHWAN
+===================================================== */
+
+const totalRowIkhwan =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.masuk,
+    0
+  );
+
+const returRowIkhwan =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.retur,
+    0
+  );
+
+
+tableIkhwan.innerHTML += `
+
+  <tr class="total-row">
+
+    <td>TOTAL</td>
+
+    <td>${totalRowIkhwan}</td>
+
+    <td>${returRowIkhwan}</td>
+
+    <td>
+      ${totalRowIkhwan - returRowIkhwan}
+    </td>
+
+  </tr>
+
+`;
+
+
+/* =====================================================
+   TAMPILKAN AKHWAT
+===================================================== */
+
+const tableAkhwat =
+  document.getElementById("tableAkhwat");
+
+akhwat.forEach(item => {
+
+  tableAkhwat.innerHTML += `
+
+    <tr>
+
+      <td>${item.tanggal}</td>
+
+      <td>${item.masuk}</td>
+
+      <td>
+        ${
+          item.retur > 0
+          ? item.retur
+          : "-"
+        }
+      </td>
+
+      <td>${item.ket}</td>
+
+    </tr>
+
+  `;
+
+});
+
+
+/* =====================================================
+   TOTAL BARIS AKHWAT
+===================================================== */
+
+const totalRowAkhwat =
+  akhwat.reduce(
+    (total, item) =>
+      total + item.masuk,
+    0
+  );
+
+const returRowAkhwat =
+  akhwat.reduce(
+    (total, item) =>
+      total + item.retur,
+    0
+  );
+
+
+tableAkhwat.innerHTML += `
+
+  <tr class="total-row">
+
+    <td>TOTAL</td>
+
+    <td>${totalRowAkhwat}</td>
+
+    <td>${returRowAkhwat}</td>
+
+    <td>
+      ${totalRowAkhwat - returRowAkhwat}
+    </td>
+
+  </tr>
+
+`;
+
+
+/* =====================================================
+   HITUNG KESELURUHAN
+===================================================== */
+
+const totalMasuk =
+  totalRowIkhwan +
+  totalRowAkhwat;
+
+const totalRetur =
+  returRowIkhwan +
+  returRowAkhwat;
+
+const totalAkhir =
+  totalMasuk -
+  totalRetur;
+
+
+/* =====================================================
+   TAMPILKAN RINGKASAN
+===================================================== */
+
+document.getElementById("masukIkhwan")
+  .textContent = totalRowIkhwan;
+
+document.getElementById("masukAkhwat")
+  .textContent = totalRowAkhwat;
+
+document.getElementById("totalRetur")
+  .textContent = totalRetur;
+
+document.getElementById("totalAkhirAtas")
+  .textContent = totalAkhir;
+
+document.getElementById("finalTotal")
+  .textContent = totalAkhir;
+
+
+/* =====================================================
+   BUAT GAMBAR
+===================================================== */
+
+async function buatCanvas() {
+
+  const laporan =
+    document.getElementById("laporan");
+
+  /*
+    Paksa laporan menjadi landscape.
+    IKHWAN = KIRI
+    AKHWAT = KANAN
+  */
+
+  laporan.classList.add("capture-mode");
+
+  await new Promise(resolve =>
+    setTimeout(resolve, 300)
+  );
+
+  const canvas =
+    await html2canvas(
+      laporan,
+      {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        width: 1200,
+        windowWidth: 1200,
+        scrollX: 0,
+        scrollY: -window.scrollY
+      }
+    );
+
+  laporan.classList.remove("capture-mode");
+
+  return canvas;
 }
 
-function kirimWA(){
 
-const pesan =
-`*REKAP PENGIRIMAN TERANG BULAN*
-Periode Juni 2025
+/* =====================================================
+   JADIKAN GAMBAR
+===================================================== */
 
-Ikhwan : 423 pcs
-Omzet : Rp2.749.500
+async function jadikanGambar() {
 
-Akhwat : 176 pcs
-Omzet : Rp1.144.000
+  try {
 
-Total Kirim : 599 pcs
-Total Omzet : Rp3.893.500`;
+    const canvas =
+      await buatCanvas();
 
-window.open(
-`https://wa.me/?text=${encodeURIComponent(pesan)}`,
-'_blank'
-);
+    const link =
+      document.createElement("a");
+
+    link.download =
+      "Laporan-Gorengan-9-22-Agustus-2026.png";
+
+    link.href =
+      canvas.toDataURL("image/png");
+
+    link.click();
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Gagal membuat gambar laporan."
+    );
+
+  }
 
 }
+
+
+/* =====================================================
+   KIRIM / BAGIKAN WHATSAPP
+===================================================== */
+
+async function kirimWhatsApp() {
+
+  try {
+
+    const canvas =
+      await buatCanvas();
+
+    const blob =
+      await new Promise(resolve => {
+
+        canvas.toBlob(
+          resolve,
+          "image/png"
+        );
+
+      });
+
+
+    const file =
+      new File(
+        [blob],
+        "Laporan-Gorengan-9-22-Agustus-2026.png",
+        {
+          type: "image/png"
+        }
+      );
+
+
+    const pesan =
+      "🍽️ LAPORAN GORENGAN\n" +
+      "Periode 9–22 Agustus 2026\n\n" +
+      "Masuk Ikhwan: " +
+      totalRowIkhwan +
+      "\nMasuk Akhwat: " +
+      totalRowAkhwat +
+      "\nTotal masuk: " +
+      totalMasuk +
+      "\nTotal retur: " +
+      totalRetur +
+      "\nTotal akhir: " +
+      totalAkhir;
+
+
+    /*
+      Jika HP mendukung
+      Web Share dengan file,
+      gambar langsung masuk
+      ke menu berbagi.
+    */
+
+    if (
+      navigator.canShare &&
+      navigator.canShare({
+        files: [file]
+      })
+    ) {
+
+      await navigator.share({
+
+        title:
+          "Laporan Gorengan",
+
+        text:
+          pesan,
+
+        files:
+          [file]
+
+      });
+
+    }
+
+    else {
+
+      /*
+        FALLBACK
+      */
+
+      const link =
+        document.createElement("a");
+
+      link.download =
+        "Laporan-Gorengan-9-22-Agustus-2026.png";
+
+      link.href =
+        URL.createObjectURL(blob);
+
+      link.click();
+
+
+      setTimeout(() => {
+
+        window.open(
+          "https://wa.me/?text=" +
+          encodeURIComponent(pesan),
+          "_blank"
+        );
+
+      }, 800);
+
+    }
+
+  }
+
+  catch (error) {
+
+    if (
+      error.name !== "AbortError"
+    ) {
+
+      console.error(error);
+
+      alert(
+        "Gagal membagikan laporan."
+      );
+
+    }
+
+  }
+
+}
+
 </script>
 
 </body>
