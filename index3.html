@@ -6,6 +6,9 @@
 
   <title>Laporan Donat Agustus 2026</title>
 
+  <!-- Library untuk mengubah laporan menjadi gambar -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -15,454 +18,683 @@
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      color: #222;
+      background: #eef1f4;
+      color: #1f2933;
     }
 
-    .container {
-      max-width: 900px;
+    .app {
+      max-width: 1000px;
       margin: auto;
     }
 
-    .header {
+    /* =========================
+       LAPORAN
+    ========================= */
+
+    #laporan {
       background: #ffffff;
-      padding: 20px;
-      border-radius: 16px;
-      margin-bottom: 20px;
+      padding: 35px;
+      border-radius: 20px;
+    }
+
+    .header {
       text-align: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      padding-bottom: 25px;
+      border-bottom: 2px solid #e5e7eb;
     }
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 24px;
-    }
-
-    .periode {
-      color: #666;
+    .header h1 {
       margin: 0;
+      font-size: 28px;
+      letter-spacing: 1px;
     }
+
+    .header p {
+      margin: 8px 0 0;
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    /* =========================
+       RINGKASAN
+    ========================= */
 
     .summary {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      margin-bottom: 20px;
+      margin: 25px 0;
     }
 
-    .card {
-      background: white;
-      padding: 16px;
+    .summary-card {
+      border: 1px solid #e5e7eb;
       border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: 18px 10px;
       text-align: center;
     }
 
-    .card h3 {
-      margin: 0;
-      font-size: 14px;
-      color: #666;
-      font-weight: normal;
+    .summary-card small {
+      display: block;
+      color: #6b7280;
+      margin-bottom: 8px;
+      font-size: 12px;
     }
 
-    .card .number {
-      font-size: 28px;
-      font-weight: bold;
-      margin-top: 8px;
+    .summary-card strong {
+      font-size: 24px;
+    }
+
+    /* =========================
+       IKHWAN & AKHWAT
+    ========================= */
+
+    .laporan-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
     }
 
     .section {
-      background: white;
-      padding: 18px;
+      border: 1px solid #e5e7eb;
       border-radius: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      overflow: hidden;
     }
 
-    .section h2 {
-      margin-top: 0;
-      font-size: 20px;
-    }
-
-    .table-wrapper {
-      overflow-x: auto;
+    .section-title {
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 500px;
     }
 
     th {
-      background: #f1f3f5;
+      background: #f8fafc;
+      font-size: 13px;
+      color: #4b5563;
     }
 
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #e5e5e5;
-      text-align: left;
-    }
-
-    td.number {
+    th,
+    td {
+      padding: 11px 8px;
+      border-bottom: 1px solid #edf0f2;
       text-align: center;
-      font-weight: bold;
+      font-size: 13px;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+      padding-left: 15px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     .total-row {
-      background: #f8f9fa;
       font-weight: bold;
+      background: #f8fafc;
     }
 
-    .footer-total {
-      background: white;
-      padding: 20px;
+    .empty {
+      color: #9ca3af;
+    }
+
+    /* =========================
+       TOTAL AKHIR
+    ========================= */
+
+    .final-box {
+      margin-top: 25px;
+      border: 2px solid #d1d5db;
       border-radius: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: 22px;
+      text-align: center;
+    }
+
+    .final-box small {
+      color: #6b7280;
     }
 
     .final-total {
-      font-size: 32px;
+      font-size: 42px;
       font-weight: bold;
-      text-align: center;
-      margin: 10px 0;
+      margin: 8px 0;
     }
 
-    .note {
-      color: #666;
+    .final-box p {
+      margin: 0;
+      color: #6b7280;
       font-size: 13px;
-      line-height: 1.6;
     }
 
-    @media (max-width: 600px) {
+    /* =========================
+       TOMBOL
+    ========================= */
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      min-width: 180px;
+    }
+
+    .btn-image {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      color: #111827;
+    }
+
+    .btn-wa {
+      background: #111827;
+      color: white;
+    }
+
+    button:active {
+      transform: scale(.98);
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 700px) {
+
       body {
-        padding: 12px;
+        padding: 10px;
+      }
+
+      #laporan {
+        padding: 18px;
+        border-radius: 14px;
+      }
+
+      .header h1 {
+        font-size: 22px;
       }
 
       .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .laporan-grid {
         grid-template-columns: 1fr;
       }
 
-      h1 {
-        font-size: 20px;
+      .final-total {
+        font-size: 36px;
       }
+
+      button {
+        width: 100%;
+      }
+
+    }
+
+    /* Saat dibuat gambar */
+    .capture-mode {
+      border-radius: 0 !important;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+  <div class="app">
 
-  <div class="header">
-    <h1>🍩 Laporan Donat</h1>
-    <p class="periode">9–22 Agustus 2026</p>
+    <!-- =========================
+         LAPORAN YANG AKAN DIFOTO
+    ========================== -->
+
+    <div id="laporan">
+
+      <div class="header">
+        <h1>🍩 LAPORAN DONAT</h1>
+        <p>Periode 10–21 Agustus 2026</p>
+      </div>
+
+
+      <!-- RINGKASAN -->
+
+      <div class="summary">
+
+        <div class="summary-card">
+          <small>Masuk Ikhwan</small>
+          <strong id="masukIkhwan">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <small>Masuk Akhwat</small>
+          <strong id="masukAkhwat">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <small>Retur Ikhwan</small>
+          <strong id="returIkhwan">0</strong>
+        </div>
+
+        <div class="summary-card">
+          <small>Total Akhir</small>
+          <strong id="totalAkhirAtas">0</strong>
+        </div>
+
+      </div>
+
+
+      <!-- TABEL IKHWAN & AKHWAT -->
+
+      <div class="laporan-grid">
+
+
+        <!-- IKHWAN -->
+
+        <div class="section">
+
+          <div class="section-title">
+            IKHWAN
+          </div>
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Masuk</th>
+                <th>Retur</th>
+                <th>Terjual</th>
+              </tr>
+            </thead>
+
+            <tbody id="tableIkhwan"></tbody>
+
+          </table>
+
+        </div>
+
+
+        <!-- AKHWAT -->
+
+        <div class="section">
+
+          <div class="section-title">
+            AKHWAT
+          </div>
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Masuk</th>
+                <th>Sisa</th>
+                <th>Ket.</th>
+              </tr>
+            </thead>
+
+            <tbody id="tableAkhwat"></tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      <!-- TOTAL AKHIR -->
+
+      <div class="final-box">
+
+        <small>TOTAL DONAT KESELURUHAN</small>
+
+        <div class="final-total">
+          <span id="finalTotal">0</span>
+        </div>
+
+        <p>
+          Total masuk dikurangi retur yang tercatat.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- TOMBOL -->
+
+    <div class="actions">
+
+      <button
+        class="btn-image"
+        onclick="jadikanGambar()"
+      >
+        🖼️ Jadikan Gambar
+      </button>
+
+      <button
+        class="btn-wa"
+        onclick="kirimWhatsApp()"
+      >
+        📤 Bagikan ke WhatsApp
+      </button>
+
+    </div>
+
   </div>
 
 
-  <!-- RINGKASAN -->
-  <div class="summary">
+  <script>
 
-    <div class="card">
-      <h3>Total Masuk Ikhwan</h3>
-      <div class="number" id="totalIkhwan">0</div>
-    </div>
+    /* =========================
+       DATA IKHWAN
+    ========================= */
 
-    <div class="card">
-      <h3>Total Masuk Akhwat</h3>
-      <div class="number" id="totalAkhwat">0</div>
-    </div>
+    const ikhwan = [
 
-    <div class="card">
-      <h3>Total Keseluruhan</h3>
-      <div class="number" id="totalSemua">0</div>
-    </div>
+      { tanggal: "10/8", masuk: 40, retur: 0 },
+      { tanggal: "11/8", masuk: 42, retur: 0 },
+      { tanggal: "12/8", masuk: 41, retur: 0 },
+      { tanggal: "13/8", masuk: 50, retur: 0 },
+      { tanggal: "14/8", masuk: 50, retur: 0 },
+      { tanggal: "15/8", masuk: 50, retur: 0 },
+      { tanggal: "16/8", masuk: 50, retur: 0 },
+      { tanggal: "17/8", masuk: 50, retur: 0 },
+      { tanggal: "18/8", masuk: 55, retur: 0 },
+      { tanggal: "19/8", masuk: 56, retur: 0 },
+      { tanggal: "20/8", masuk: 57, retur: 0 },
+      { tanggal: "21/8", masuk: 50, retur: 1 }
 
-  </div>
-
-
-  <!-- IKHWAN -->
-  <div class="section">
-
-    <h2>👨 Ikhwan</h2>
-
-    <div class="table-wrapper">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Masuk</th>
-            <th>Sisa / Retur</th>
-            <th>Terjual</th>
-          </tr>
-        </thead>
-
-        <tbody id="tableIkhwan"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
+    ];
 
 
-  <!-- AKHWAT -->
-  <div class="section">
+    /* =========================
+       DATA AKHWAT
+    ========================= */
 
-    <h2>👩 Akhwat</h2>
+    const akhwat = [
 
-    <div class="table-wrapper">
+      { tanggal: "10/8", masuk: 32, sisa: "-", ket: "" },
+      { tanggal: "11/8", masuk: 35, sisa: 0, ket: "Habis" },
+      { tanggal: "12/8", masuk: 35, sisa: "-", ket: "" },
+      { tanggal: "13/8", masuk: 42, sisa: 1, ket: "" },
+      { tanggal: "14/8", masuk: 40, sisa: "-", ket: "" },
+      { tanggal: "15/8", masuk: 35, sisa: "-", ket: "" },
+      { tanggal: "16/8", masuk: 43, sisa: 1, ket: "Tidak retur" },
+      { tanggal: "17/8", masuk: 37, sisa: "-", ket: "" },
+      { tanggal: "18/8", masuk: 40, sisa: "-", ket: "" },
+      { tanggal: "19/8", masuk: 40, sisa: 2, ket: "" },
+      { tanggal: "20/8", masuk: 40, sisa: 16, ket: "Tidak retur" },
+      { tanggal: "21/8", masuk: 30, sisa: "-", ket: "" }
 
-      <table>
-
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Masuk</th>
-            <th>Sisa</th>
-          </tr>
-        </thead>
-
-        <tbody id="tableAkhwat"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
+    ];
 
 
-  <!-- TOTAL -->
-  <div class="footer-total">
+    /* =========================
+       TAMPILKAN IKHWAN
+    ========================= */
 
-    <h2 style="text-align:center;">Total Keseluruhan</h2>
+    const tableIkhwan =
+      document.getElementById("tableIkhwan");
 
-    <div class="final-total">
-      <span id="finalTotal">0</span> Donat
-    </div>
+    ikhwan.forEach(item => {
 
-    <div class="note">
-      <p>
-        Total masuk seluruh donat dikurangi retur Ikhwan sebanyak 1 donat.
-      </p>
-    </div>
+      const terjual =
+        item.masuk - item.retur;
 
-  </div>
+      tableIkhwan.innerHTML += `
 
-</div>
+        <tr>
 
+          <td>${item.tanggal}</td>
 
-<script>
+          <td>${item.masuk}</td>
 
-  /*
-  ==========================
-  DATA IKHWAN
-  ==========================
-  */
-
-  const ikhwan = [
-
-    { tanggal: "10 Agustus", masuk: 40, retur: 0 },
-    { tanggal: "11 Agustus", masuk: 42, retur: 0, habis: true },
-    { tanggal: "12 Agustus", masuk: 41, retur: 0 },
-    { tanggal: "13 Agustus", masuk: 50, retur: 0 },
-    { tanggal: "14 Agustus", masuk: 50, retur: 0 },
-    { tanggal: "15 Agustus", masuk: 50, retur: 0 },
-    { tanggal: "16 Agustus", masuk: 50, retur: 0 },
-    { tanggal: "17 Agustus", masuk: 50, retur: 0 },
-    { tanggal: "18 Agustus", masuk: 55, retur: 0 },
-    { tanggal: "19 Agustus", masuk: 56, retur: 0 },
-    { tanggal: "20 Agustus", masuk: 57, retur: 0, habis: true },
-    { tanggal: "21 Agustus", masuk: 50, retur: 1 }
-
-  ];
-
-
-  /*
-  ==========================
-  DATA AKHWAT
-  ==========================
-  */
-
-  const akhwat = [
-
-    { tanggal: "10 Agustus", masuk: 32, sisa: 0 },
-    { tanggal: "11 Agustus", masuk: 35, sisa: 0, habis: true },
-    { tanggal: "12 Agustus", masuk: 35, sisa: 0 },
-    { tanggal: "13 Agustus", masuk: 42, sisa: 1 },
-    { tanggal: "14 Agustus", masuk: 40, sisa: 0 },
-    { tanggal: "15 Agustus", masuk: 35, sisa: 0 },
-    { tanggal: "16 Agustus", masuk: 43, sisa: 1 },
-    { tanggal: "17 Agustus", masuk: 37, sisa: 0 },
-    { tanggal: "18 Agustus", masuk: 40, sisa: 0 },
-    { tanggal: "19 Agustus", masuk: 40, sisa: 2 },
-    { tanggal: "20 Agustus", masuk: 40, sisa: 25 },
-    { tanggal: "21 Agustus", masuk: 30, sisa: 0 }
-
-  ];
-
-
-  /*
-  ==========================
-  TAMPILKAN IKHWAN
-  ==========================
-  */
-
-  const tableIkhwan =
-    document.getElementById("tableIkhwan");
-
-  ikhwan.forEach(data => {
-
-    const terjual =
-      data.masuk - data.retur;
-
-    tableIkhwan.innerHTML += `
-
-      <tr>
-
-        <td>${data.tanggal}</td>
-
-        <td class="number">
-          ${data.masuk}
-        </td>
-
-        <td>
-          ${
-            data.habis
-              ? "Habis"
-              : data.retur > 0
-                ? data.retur + " Retur"
+          <td>
+            ${
+              item.retur > 0
+                ? item.retur
                 : "-"
+            }
+          </td>
+
+          <td>${terjual}</td>
+
+        </tr>
+
+      `;
+
+    });
+
+
+    /* =========================
+       TAMPILKAN AKHWAT
+    ========================= */
+
+    const tableAkhwat =
+      document.getElementById("tableAkhwat");
+
+    akhwat.forEach(item => {
+
+      tableAkhwat.innerHTML += `
+
+        <tr>
+
+          <td>${item.tanggal}</td>
+
+          <td>${item.masuk}</td>
+
+          <td>${item.sisa}</td>
+
+          <td>${item.ket || "-"}</td>
+
+        </tr>
+
+      `;
+
+    });
+
+
+    /* =========================
+       HITUNG TOTAL
+    ========================= */
+
+    const totalMasukIkhwan =
+      ikhwan.reduce(
+        (total, item) => total + item.masuk,
+        0
+      );
+
+    const totalReturIkhwan =
+      ikhwan.reduce(
+        (total, item) => total + item.retur,
+        0
+      );
+
+    const totalMasukAkhwat =
+      akhwat.reduce(
+        (total, item) => total + item.masuk,
+        0
+      );
+
+    const totalMasukSemua =
+      totalMasukIkhwan +
+      totalMasukAkhwat;
+
+    const totalAkhir =
+      totalMasukSemua -
+      totalReturIkhwan;
+
+
+    /* =========================
+       MASUKKAN TOTAL KE HTML
+    ========================= */
+
+    document.getElementById("masukIkhwan")
+      .textContent = totalMasukIkhwan;
+
+    document.getElementById("masukAkhwat")
+      .textContent = totalMasukAkhwat;
+
+    document.getElementById("returIkhwan")
+      .textContent = totalReturIkhwan;
+
+    document.getElementById("totalAkhirAtas")
+      .textContent = totalAkhir;
+
+    document.getElementById("finalTotal")
+      .textContent = totalAkhir;
+
+
+    /* =========================
+       BUAT GAMBAR
+    ========================= */
+
+    async function buatCanvas() {
+
+      const laporan =
+        document.getElementById("laporan");
+
+      laporan.classList.add("capture-mode");
+
+      const canvas =
+        await html2canvas(
+          laporan,
+          {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            useCORS: true
           }
-        </td>
+        );
 
-        <td class="number">
-          ${
-            data.habis
-              ? data.masuk
-              : data.retur > 0
-                ? terjual
-                : "-"
+      laporan.classList.remove("capture-mode");
+
+      return canvas;
+    }
+
+
+    /* =========================
+       DOWNLOAD GAMBAR
+    ========================= */
+
+    async function jadikanGambar() {
+
+      const canvas =
+        await buatCanvas();
+
+      const link =
+        document.createElement("a");
+
+      link.download =
+        "Laporan-Donat-Agustus-2026.png";
+
+      link.href =
+        canvas.toDataURL("image/png");
+
+      link.click();
+
+    }
+
+
+    /* =========================
+       BAGIKAN KE WHATSAPP
+    ========================= */
+
+    async function kirimWhatsApp() {
+
+      const canvas =
+        await buatCanvas();
+
+      const blob =
+        await new Promise(
+          resolve =>
+            canvas.toBlob(
+              resolve,
+              "image/png"
+            )
+        );
+
+      const file =
+        new File(
+          [blob],
+          "Laporan-Donat-Agustus-2026.png",
+          {
+            type: "image/png"
           }
-        </td>
+        );
 
-      </tr>
+      const pesan =
+        "Laporan Donat Periode 10–21 Agustus 2026";
 
-    `;
+      /*
+        Jika browser HP mendukung
+        Web Share API, gambar akan
+        dibagikan langsung.
+      */
 
-  });
+      if (
+        navigator.canShare &&
+        navigator.canShare({
+          files: [file]
+        })
+      ) {
 
+        await navigator.share({
+          title: "Laporan Donat",
+          text: pesan,
+          files: [file]
+        });
 
-  /*
-  ==========================
-  TAMPILKAN AKHWAT
-  ==========================
-  */
+      }
 
-  const tableAkhwat =
-    document.getElementById("tableAkhwat");
+      else {
 
-  akhwat.forEach(data => {
+        /*
+          Fallback:
+          Download gambar lalu buka WhatsApp
+        */
 
-    tableAkhwat.innerHTML += `
+        const link =
+          document.createElement("a");
 
-      <tr>
+        link.download =
+          "Laporan-Donat-Agustus-2026.png";
 
-        <td>${data.tanggal}</td>
+        link.href =
+          URL.createObjectURL(blob);
 
-        <td class="number">
-          ${data.masuk}
-        </td>
+        link.click();
 
-        <td>
-          ${
-            data.habis
-              ? "Habis"
-              : data.sisa > 0
-                ? data.sisa
-                : "-"
-          }
-        </td>
+        setTimeout(() => {
 
-      </tr>
+          window.open(
+            "https://wa.me/?text=" +
+            encodeURIComponent(pesan),
+            "_blank"
+          );
 
-    `;
+        }, 700);
 
-  });
+      }
 
+    }
 
-  /*
-  ==========================
-  HITUNG TOTAL
-  ==========================
-  */
-
-  const totalMasukIkhwan =
-    ikhwan.reduce(
-      (total, data) =>
-        total + data.masuk,
-      0
-    );
-
-  const totalReturIkhwan =
-    ikhwan.reduce(
-      (total, data) =>
-        total + data.retur,
-      0
-    );
-
-  const totalIkhwan =
-    totalMasukIkhwan -
-    totalReturIkhwan;
-
-
-  const totalAkhwat =
-    akhwat.reduce(
-      (total, data) =>
-        total + data.masuk,
-      0
-    );
-
-
-  const totalSemua =
-    totalIkhwan +
-    totalAkhwat;
-
-
-  /*
-  ==========================
-  TAMPILKAN TOTAL
-  ==========================
-  */
-
-  document.getElementById(
-    "totalIkhwan"
-  ).textContent =
-    totalMasukIkhwan;
-
-
-  document.getElementById(
-    "totalAkhwat"
-  ).textContent =
-    totalAkhwat;
-
-
-  document.getElementById(
-    "totalSemua"
-  ).textContent =
-    totalMasukIkhwan +
-    totalAkhwat;
-
-
-  document.getElementById(
-    "finalTotal"
-  ).textContent =
-    totalSemua;
-
-
-</script>
+  </script>
 
 </body>
 </html>
