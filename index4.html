@@ -259,8 +259,7 @@ button:active {
 }
 
 /* =========================
-   MODE GAMBAR
-   SELALU LANDSCAPE
+   MODE GAMBAR LANDSCAPE
 ========================= */
 
 #laporan.capture-mode {
@@ -288,14 +287,9 @@ button:active {
 </style>
 </head>
 
-
 <body>
 
 <div class="app">
-
-  <!-- =========================
-       LAPORAN
-  ========================== -->
 
   <div id="laporan">
 
@@ -305,9 +299,7 @@ button:active {
     </div>
 
 
-    <!-- =========================
-         RINGKASAN
-    ========================== -->
+    <!-- RINGKASAN -->
 
     <div class="summary">
 
@@ -317,30 +309,24 @@ button:active {
       </div>
 
       <div class="summary-card">
+        <small>SISA IKHWAN</small>
+        <strong id="sisaIkhwan">0</strong>
+      </div>
+
+      <div class="summary-card">
         <small>MASUK AKHWAT</small>
         <strong id="masukAkhwat">0</strong>
       </div>
 
       <div class="summary-card">
-        <small>TOTAL RETUR</small>
-        <strong id="totalRetur">0</strong>
-      </div>
-
-      <div class="summary-card">
-        <small>TOTAL AKHIR</small>
-        <strong id="totalAkhirAtas">0</strong>
+        <small>SISA AKHWAT</small>
+        <strong id="sisaAkhwat">0</strong>
       </div>
 
     </div>
 
 
-    <!-- =========================
-         IKHWAN KIRI
-         AKHWAT KANAN
-    ========================== -->
-
     <div class="laporan-grid">
-
 
       <!-- IKHWAN -->
 
@@ -356,8 +342,7 @@ button:active {
             <tr>
               <th>Tanggal</th>
               <th>Masuk</th>
-              <th>Retur</th>
-              <th>Sisa/Ket.</th>
+              <th>Sisa</th>
             </tr>
           </thead>
 
@@ -382,8 +367,7 @@ button:active {
             <tr>
               <th>Tanggal</th>
               <th>Masuk</th>
-              <th>Retur</th>
-              <th>Sisa/Ket.</th>
+              <th>Sisa</th>
             </tr>
           </thead>
 
@@ -396,30 +380,40 @@ button:active {
     </div>
 
 
-    <!-- =========================
-         TOTAL AKHIR
-    ========================== -->
+    <!-- PERHITUNGAN AKHIR -->
 
     <div class="final-box">
 
-      <small>TOTAL GORENGAN KESELURUHAN</small>
+      <small>REKAP PERHITUNGAN</small>
+
+      <div style="margin-top:15px; font-size:16px; line-height:1.8">
+
+        <div>
+          <strong>Ikhwan:</strong>
+          <span id="perhitunganIkhwan"></span>
+        </div>
+
+        <div>
+          <strong>Akhwat:</strong>
+          <span id="perhitunganAkhwat"></span>
+        </div>
+
+      </div>
+
+      <hr style="margin:18px 0; border:0; border-top:1px solid #d1d5db">
+
+      <small>IKHWAN + AKHWAT</small>
 
       <div class="final-total">
         <span id="finalTotal">0</span>
       </div>
-
-      <p>
-        Total masuk dikurangi retur yang tercatat.
-      </p>
 
     </div>
 
   </div>
 
 
-  <!-- =========================
-       TOMBOL
-  ========================== -->
+  <!-- TOMBOL -->
 
   <div class="actions">
 
@@ -448,103 +442,20 @@ button:active {
 
 const ikhwan = [
 
-  {
-    tanggal: "9/8",
-    masuk: 90,
-    retur: 0,
-    ket: "Habis"
-  },
-
-  {
-    tanggal: "10/8",
-    masuk: 90,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "11/8",
-    masuk: 115,
-    retur: 0,
-    ket: "Habis"
-  },
-
-  {
-    tanggal: "12/8",
-    masuk: 115,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "13/8",
-    masuk: 128,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "14/8",
-    masuk: 157,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "15/8",
-    masuk: 168,
-    retur: 2,
-    ket: "Retur/sisa"
-  },
-
-  {
-    tanggal: "16/8",
-    masuk: 165,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "17/8",
-    masuk: 145,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "18/8",
-    masuk: 142,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "19/8",
-    masuk: 170,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "20/8",
-    masuk: 143,
-    retur: 0,
-    ket: "Habis"
-  },
-
-  {
-    tanggal: "21/8",
-    masuk: 125,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "22/8",
-    masuk: 105,
-    retur: 0,
-    ket: "-"
-  }
+  { tanggal: "9/8",  masuk: 90,  sisa: 0 },
+  { tanggal: "10/8", masuk: 90,  sisa: 0 },
+  { tanggal: "11/8", masuk: 115, sisa: 0 },
+  { tanggal: "12/8", masuk: 115, sisa: 0 },
+  { tanggal: "13/8", masuk: 128, sisa: 0 },
+  { tanggal: "14/8", masuk: 157, sisa: 0 },
+  { tanggal: "15/8", masuk: 168, sisa: 2 },
+  { tanggal: "16/8", masuk: 165, sisa: 0 },
+  { tanggal: "17/8", masuk: 145, sisa: 0 },
+  { tanggal: "18/8", masuk: 142, sisa: 0 },
+  { tanggal: "19/8", masuk: 170, sisa: 0 },
+  { tanggal: "20/8", masuk: 143, sisa: 0 },
+  { tanggal: "21/8", masuk: 125, sisa: 0 },
+  { tanggal: "22/8", masuk: 105, sisa: 4 }
 
 ];
 
@@ -555,302 +466,177 @@ const ikhwan = [
 
 const akhwat = [
 
-  {
-    tanggal: "9/8",
-    masuk: 90,
-    retur: 0,
-    ket: "Sisa 11"
-  },
-
-  {
-    tanggal: "10/8",
-    masuk: 87,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "11/8",
-    masuk: 112,
-    retur: 0,
-    ket: "Habis"
-  },
-
-  {
-    tanggal: "12/8",
-    masuk: 115,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "13/8",
-    masuk: 125,
-    retur: 0,
-    ket: "Sisa 14"
-  },
-
-  {
-    tanggal: "14/8",
-    masuk: 142,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "15/8",
-    masuk: 165,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "16/8",
-    masuk: 154,
-    retur: 0,
-    ket: "Sisa 7"
-  },
-
-  {
-    tanggal: "17/8",
-    masuk: 133,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "18/8",
-    masuk: 139,
-    retur: 0,
-    ket: "-"
-  },
-
-  {
-    tanggal: "19/8",
-    masuk: 170,
-    retur: 0,
-    ket: "Sisa banyak"
-  },
-
-  {
-    tanggal: "20/8",
-    masuk: 130,
-    retur: 0,
-    ket: "Sisa 34"
-  },
-
-  {
-    tanggal: "21/8",
-    masuk: 87,
-    retur: 0,
-    ket: "Sisa 4"
-  },
-
-  {
-    tanggal: "22/8",
-    masuk: 65,
-    retur: 0,
-    ket: "Sisa 2"
-  }
+  { tanggal: "9/8",  masuk: 90,  sisa: 11 },
+  { tanggal: "10/8", masuk: 87,  sisa: 0 },
+  { tanggal: "11/8", masuk: 112, sisa: 0 },
+  { tanggal: "12/8", masuk: 115, sisa: 0 },
+  { tanggal: "13/8", masuk: 125, sisa: 14 },
+  { tanggal: "14/8", masuk: 142, sisa: 0 },
+  { tanggal: "15/8", masuk: 165, sisa: 0 },
+  { tanggal: "16/8", masuk: 154, sisa: 7 },
+  { tanggal: "17/8", masuk: 133, sisa: 0 },
+  { tanggal: "18/8", masuk: 139, sisa: 0 },
+  { tanggal: "19/8", masuk: 170, sisa: 70 },
+  { tanggal: "20/8", masuk: 130, sisa: 34 },
+  { tanggal: "21/8", masuk: 87,  sisa: 4 },
+  { tanggal: "22/8", masuk: 65,  sisa: 2 }
 
 ];
 
 
 /* =====================================================
-   TAMPILKAN IKHWAN
+   TAMPILKAN TABEL
 ===================================================== */
 
-const tableIkhwan =
-  document.getElementById("tableIkhwan");
+function tampilkanTabel(data, elementId) {
 
-ikhwan.forEach(item => {
+  const table =
+    document.getElementById(elementId);
 
-  tableIkhwan.innerHTML += `
+  data.forEach(item => {
 
-    <tr>
+    table.innerHTML += `
+      <tr>
+        <td>${item.tanggal}</td>
+        <td>${item.masuk}</td>
+        <td>${item.sisa > 0 ? item.sisa : "-"}</td>
+      </tr>
+    `;
 
-      <td>${item.tanggal}</td>
+  });
 
-      <td>${item.masuk}</td>
-
-      <td>
-        ${
-          item.retur > 0
-          ? item.retur
-          : "-"
-        }
-      </td>
-
-      <td>${item.ket}</td>
-
-    </tr>
-
-  `;
-
-});
+}
 
 
 /* =====================================================
-   TOTAL BARIS IKHWAN
+   HITUNG TOTAL
 ===================================================== */
 
-const totalRowIkhwan =
-  ikhwan.reduce(
-    (total, item) =>
-      total + item.masuk,
+function totalMasuk(data) {
+
+  return data.reduce(
+    (total, item) => total + item.masuk,
     0
   );
 
-const returRowIkhwan =
-  ikhwan.reduce(
-    (total, item) =>
-      total + item.retur,
+}
+
+
+function totalSisa(data) {
+
+  return data.reduce(
+    (total, item) => total + item.sisa,
     0
   );
 
-
-tableIkhwan.innerHTML += `
-
-  <tr class="total-row">
-
-    <td>TOTAL</td>
-
-    <td>${totalRowIkhwan}</td>
-
-    <td>${returRowIkhwan}</td>
-
-    <td>
-      ${totalRowIkhwan - returRowIkhwan}
-    </td>
-
-  </tr>
-
-`;
+}
 
 
 /* =====================================================
-   TAMPILKAN AKHWAT
+   TOTAL DATA
 ===================================================== */
 
-const tableAkhwat =
-  document.getElementById("tableAkhwat");
+const masukIkhwan =
+  totalMasuk(ikhwan);
 
-akhwat.forEach(item => {
+const sisaIkhwan =
+  totalSisa(ikhwan);
 
-  tableAkhwat.innerHTML += `
-
-    <tr>
-
-      <td>${item.tanggal}</td>
-
-      <td>${item.masuk}</td>
-
-      <td>
-        ${
-          item.retur > 0
-          ? item.retur
-          : "-"
-        }
-      </td>
-
-      <td>${item.ket}</td>
-
-    </tr>
-
-  `;
-
-});
+const akhirIkhwan =
+  masukIkhwan - sisaIkhwan;
 
 
-/* =====================================================
-   TOTAL BARIS AKHWAT
-===================================================== */
+const masukAkhwat =
+  totalMasuk(akhwat);
 
-const totalRowAkhwat =
-  akhwat.reduce(
-    (total, item) =>
-      total + item.masuk,
-    0
-  );
+const sisaAkhwat =
+  totalSisa(akhwat);
 
-const returRowAkhwat =
-  akhwat.reduce(
-    (total, item) =>
-      total + item.retur,
-    0
-  );
+const akhirAkhwat =
+  masukAkhwat - sisaAkhwat;
 
-
-tableAkhwat.innerHTML += `
-
-  <tr class="total-row">
-
-    <td>TOTAL</td>
-
-    <td>${totalRowAkhwat}</td>
-
-    <td>${returRowAkhwat}</td>
-
-    <td>
-      ${totalRowAkhwat - returRowAkhwat}
-    </td>
-
-  </tr>
-
-`;
-
-
-/* =====================================================
-   HITUNG KESELURUHAN
-===================================================== */
-
-const totalMasuk =
-  totalRowIkhwan +
-  totalRowAkhwat;
-
-const totalRetur =
-  returRowIkhwan +
-  returRowAkhwat;
 
 const totalAkhir =
-  totalMasuk -
-  totalRetur;
+  akhirIkhwan + akhirAkhwat;
 
 
 /* =====================================================
-   TAMPILKAN RINGKASAN
+   TAMPILKAN DATA
+===================================================== */
+
+tampilkanTabel(
+  ikhwan,
+  "tableIkhwan"
+);
+
+tampilkanTabel(
+  akhwat,
+  "tableAkhwat"
+);
+
+
+/* =====================================================
+   TAMBAH BARIS TOTAL
+===================================================== */
+
+document.getElementById("tableIkhwan").innerHTML += `
+  <tr class="total-row">
+    <td>TOTAL</td>
+    <td>${masukIkhwan}</td>
+    <td>${sisaIkhwan}</td>
+  </tr>
+`;
+
+document.getElementById("tableAkhwat").innerHTML += `
+  <tr class="total-row">
+    <td>TOTAL</td>
+    <td>${masukAkhwat}</td>
+    <td>${sisaAkhwat}</td>
+  </tr>
+`;
+
+
+/* =====================================================
+   RINGKASAN
 ===================================================== */
 
 document.getElementById("masukIkhwan")
-  .textContent = totalRowIkhwan;
+  .textContent = masukIkhwan;
+
+document.getElementById("sisaIkhwan")
+  .textContent = sisaIkhwan;
 
 document.getElementById("masukAkhwat")
-  .textContent = totalRowAkhwat;
+  .textContent = masukAkhwat;
 
-document.getElementById("totalRetur")
-  .textContent = totalRetur;
+document.getElementById("sisaAkhwat")
+  .textContent = sisaAkhwat;
 
-document.getElementById("totalAkhirAtas")
-  .textContent = totalAkhir;
+
+/* =====================================================
+   PERHITUNGAN
+===================================================== */
+
+document.getElementById("perhitunganIkhwan")
+  .textContent =
+    `${masukIkhwan} − ${sisaIkhwan} = ${akhirIkhwan}`;
+
+document.getElementById("perhitunganAkhwat")
+  .textContent =
+    `${masukAkhwat} − ${sisaAkhwat} = ${akhirAkhwat}`;
 
 document.getElementById("finalTotal")
   .textContent = totalAkhir;
 
 
 /* =====================================================
-   BUAT GAMBAR
+   BUAT CANVAS
 ===================================================== */
 
 async function buatCanvas() {
 
   const laporan =
     document.getElementById("laporan");
-
-  /*
-    Paksa laporan menjadi landscape.
-    IKHWAN = KIRI
-    AKHWAT = KANAN
-  */
 
   laporan.classList.add("capture-mode");
 
@@ -875,6 +661,7 @@ async function buatCanvas() {
   laporan.classList.remove("capture-mode");
 
   return canvas;
+
 }
 
 
@@ -916,7 +703,7 @@ async function jadikanGambar() {
 
 
 /* =====================================================
-   KIRIM / BAGIKAN WHATSAPP
+   BAGIKAN WHATSAPP
 ===================================================== */
 
 async function kirimWhatsApp() {
@@ -950,24 +737,21 @@ async function kirimWhatsApp() {
     const pesan =
       "🍽️ LAPORAN GORENGAN\n" +
       "Periode 9–22 Agustus 2026\n\n" +
-      "Masuk Ikhwan: " +
-      totalRowIkhwan +
-      "\nMasuk Akhwat: " +
-      totalRowAkhwat +
-      "\nTotal masuk: " +
-      totalMasuk +
-      "\nTotal retur: " +
-      totalRetur +
-      "\nTotal akhir: " +
+      "Ikhwan: " +
+      masukIkhwan +
+      " - " +
+      sisaIkhwan +
+      " = " +
+      akhirIkhwan +
+      "\n\nAkhwat: " +
+      masukAkhwat +
+      " - " +
+      sisaAkhwat +
+      " = " +
+      akhirAkhwat +
+      "\n\nIkhwan + Akhwat = " +
       totalAkhir;
 
-
-    /*
-      Jika HP mendukung
-      Web Share dengan file,
-      gambar langsung masuk
-      ke menu berbagi.
-    */
 
     if (
       navigator.canShare &&
@@ -992,10 +776,6 @@ async function kirimWhatsApp() {
     }
 
     else {
-
-      /*
-        FALLBACK
-      */
 
       const link =
         document.createElement("a");
