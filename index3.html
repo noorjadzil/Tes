@@ -130,7 +130,7 @@
       border-bottom: none;
     }
 
-    /* TOTAL BARIS */
+    /* TOTAL TABEL */
 
     .total-row td {
       font-weight: bold;
@@ -153,8 +153,14 @@
 
     /* HASIL AKHIR */
 
-    .final-box {
+    .final-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
       margin-top: 22px;
+    }
+
+    .final-box {
       border: 2px solid #d1d5db;
       border-radius: 14px;
       padding: 18px;
@@ -170,23 +176,19 @@
     .final-total {
       font-size: 40px;
       font-weight: bold;
-      margin: 6px 0;
-    }
-
-    .final-detail {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-      font-size: 13px;
-      color: #4b5563;
+      margin: 7px 0;
     }
 
     .final-box p {
-      margin: 12px 0 0;
+      margin: 0;
       color: #6b7280;
       font-size: 12px;
+    }
+
+    .calculation {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #4b5563;
     }
 
     /* TOMBOL */
@@ -220,7 +222,7 @@
       color: white;
     }
 
-    /* HP */
+    /* TAMPILAN HP */
 
     @media (max-width: 700px) {
 
@@ -240,12 +242,12 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .final-total {
-        font-size: 34px;
+      .final-grid {
+        grid-template-columns: 1fr;
       }
 
-      .final-detail {
-        gap: 15px;
+      .final-total {
+        font-size: 34px;
       }
 
       button {
@@ -271,6 +273,10 @@
 
     #laporan.capture-mode .summary {
       grid-template-columns: repeat(4, 1fr) !important;
+    }
+
+    #laporan.capture-mode .final-grid {
+      grid-template-columns: 1fr 1fr !important;
     }
 
   </style>
@@ -302,18 +308,18 @@
   </div>
 
   <div class="summary-card">
+    <small>RETUR DONAT</small>
+    <strong id="totalReturDonat">0</strong>
+  </div>
+
+  <div class="summary-card">
     <small>GORENGAN MASUK</small>
     <strong id="totalGorenganMasuk">0</strong>
   </div>
 
   <div class="summary-card">
-    <small>TOTAL RETUR</small>
-    <strong id="totalRetur">0</strong>
-  </div>
-
-  <div class="summary-card">
-    <small>TOTAL BERSIH</small>
-    <strong id="totalBersih">0</strong>
+    <small>RETUR GORENGAN</small>
+    <strong id="totalReturGorengan">0</strong>
   </div>
 
 </div>
@@ -347,23 +353,22 @@
 </div>
 
 
-<!-- RINGKASAN RETUR -->
+<!-- CATATAN -->
 
 <div class="note">
 
-  <strong>Rincian retur:</strong><br>
-
-  Gorengan:
-  8/9 = 1,
-  9/9 = 4,
-  12/9 = 4,
-  16/9 = 8,
-  18/9 = 12,
+  <strong>Rincian retur gorengan:</strong><br>
+  8/9 = 1 &nbsp;•&nbsp;
+  9/9 = 4 &nbsp;•&nbsp;
+  12/9 = 4 &nbsp;•&nbsp;
+  16/9 = 8 &nbsp;•&nbsp;
+  18/9 = 12 &nbsp;•&nbsp;
   19/9 = 4.
+
   <br>
 
-  Donat:
-  13/9 = 2,
+  <strong>Rincian retur donat:</strong><br>
+  13/9 = 2 &nbsp;•&nbsp;
   16/9 = 1.
 
   <br><br>
@@ -377,31 +382,54 @@
 
 <!-- HASIL AKHIR -->
 
-<div class="final-box">
+<div class="final-grid">
 
-  <small>TOTAL MAQSHOF IKHWAN SETELAH RETUR</small>
+  <!-- TOTAL DONAT -->
 
-  <div class="final-total">
-    <span id="finalTotal">0</span> PCS
+  <div class="final-box">
+
+    <small>🍩 TOTAL DONAT</small>
+
+    <div class="final-total">
+      <span id="donatBersih">0</span>
+    </div>
+
+    <div class="calculation">
+      <span id="donatMasukDetail">0</span>
+      masuk −
+      <span id="donatReturDetail">0</span>
+      retur
+    </div>
+
+    <p>
+      Total donat setelah retur.
+    </p>
+
   </div>
 
-  <div class="final-detail">
 
-    <span>
-      🍩 Donat bersih:
-      <strong id="donatBersih">0</strong>
-    </span>
+  <!-- TOTAL GORENGAN -->
 
-    <span>
-      🍢 Gorengan bersih:
-      <strong id="gorenganBersih">0</strong>
-    </span>
+  <div class="final-box">
+
+    <small>🍢 TOTAL GORENGAN</small>
+
+    <div class="final-total">
+      <span id="gorenganBersih">0</span>
+    </div>
+
+    <div class="calculation">
+      <span id="gorenganMasukDetail">0</span>
+      masuk −
+      <span id="gorenganReturDetail">0</span>
+      retur
+    </div>
+
+    <p>
+      Total gorengan setelah retur.
+    </p>
 
   </div>
-
-  <p>
-    Total masuk dikurangi total retur.
-  </p>
 
 </div>
 ```
@@ -489,12 +517,6 @@ const tableIkhwan =
 
 ikhwan.forEach(item => {
 
-  const adaDonat =
-    item.masukDonat > 0;
-
-  const adaGorengan =
-    item.masukGorengan > 0;
-
   tableIkhwan.innerHTML += `
 
     <tr>
@@ -502,11 +524,11 @@ ikhwan.forEach(item => {
       <td>${item.tanggal}</td>
 
       <td>
-        ${adaDonat ? item.masukDonat : "-"}
+        ${item.masukDonat > 0 ? item.masukDonat : "-"}
       </td>
 
       <td>
-        ${adaGorengan ? item.masukGorengan : "-"}
+        ${item.masukGorengan > 0 ? item.masukGorengan : "-"}
       </td>
 
       <td>
@@ -564,61 +586,70 @@ const totalReturGorengan =
   );
 
 
-const totalRetur =
-  totalReturDonat +
-  totalReturGorengan;
+/* =========================
+   TOTAL BERSIH PER JENIS
+========================= */
 
-
-const donatBersih =
+const totalDonat =
   totalDonatMasuk -
   totalReturDonat;
 
 
-const gorenganBersih =
+const totalGorengan =
   totalGorenganMasuk -
   totalReturGorengan;
 
 
-const totalMasuk =
-  totalDonatMasuk +
-  totalGorenganMasuk;
-
-
-const totalBersih =
-  totalMasuk -
-  totalRetur;
-
-
 /* =========================
-   TAMPILKAN TOTAL
+   TAMPILKAN RINGKASAN
 ========================= */
 
 document.getElementById("totalDonatMasuk")
   .textContent = totalDonatMasuk;
 
 
+document.getElementById("totalReturDonat")
+  .textContent = totalReturDonat;
+
+
 document.getElementById("totalGorenganMasuk")
   .textContent = totalGorenganMasuk;
 
 
-document.getElementById("totalRetur")
-  .textContent = totalRetur;
+document.getElementById("totalReturGorengan")
+  .textContent = totalReturGorengan;
 
 
-document.getElementById("totalBersih")
-  .textContent = totalBersih;
-
+/* =========================
+   TAMPILKAN TOTAL DONAT
+========================= */
 
 document.getElementById("donatBersih")
-  .textContent = donatBersih;
+  .textContent = totalDonat;
 
+
+document.getElementById("donatMasukDetail")
+  .textContent = totalDonatMasuk;
+
+
+document.getElementById("donatReturDetail")
+  .textContent = totalReturDonat;
+
+
+/* =========================
+   TAMPILKAN TOTAL GORENGAN
+========================= */
 
 document.getElementById("gorenganBersih")
-  .textContent = gorenganBersih;
+  .textContent = totalGorengan;
 
 
-document.getElementById("finalTotal")
-  .textContent = totalBersih;
+document.getElementById("gorenganMasukDetail")
+  .textContent = totalGorenganMasuk;
+
+
+document.getElementById("gorenganReturDetail")
+  .textContent = totalReturGorengan;
 
 
 /* =========================
@@ -705,11 +736,11 @@ async function jadikanGambar() {
 
   } catch (error) {
 
+    console.error(error);
+
     alert(
       "Gagal membuat gambar."
     );
-
-    console.error(error);
 
   }
 
@@ -750,40 +781,33 @@ async function kirimWhatsApp() {
       "🍩🍢 LAPORAN MAQSHOF IKHWAN\n" +
       "Periode 30 Agustus – 19 September 2026\n\n" +
 
-      "Donat masuk: " +
+      "DONAT\n" +
+      "Masuk: " +
       totalDonatMasuk +
       "\n" +
 
-      "Gorengan masuk: " +
-      totalGorenganMasuk +
-      "\n\n" +
-
-      "Retur donat: " +
+      "Retur: " +
       totalReturDonat +
       "\n" +
 
-      "Retur gorengan: " +
+      "TOTAL DONAT: " +
+      totalDonat +
+      "\n\n" +
+
+      "GORENGAN\n" +
+      "Masuk: " +
+      totalGorenganMasuk +
+      "\n" +
+
+      "Retur: " +
       totalReturGorengan +
       "\n" +
 
-      "Total retur: " +
-      totalRetur +
-      "\n\n" +
-
-      "Donat bersih: " +
-      donatBersih +
-      "\n" +
-
-      "Gorengan bersih: " +
-      gorenganBersih +
-      "\n" +
-
-      "TOTAL BERSIH: " +
-      totalBersih +
-      " pcs";
+      "TOTAL GORENGAN: " +
+      totalGorengan;
 
 
-    /* HP: BAGIKAN GAMBAR LANGSUNG */
+    /* BAGIKAN LANGSUNG DI HP */
 
     if (
       navigator.canShare &&
