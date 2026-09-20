@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -34,6 +35,8 @@
       box-shadow: 0 4px 20px rgba(0,0,0,.06);
     }
 
+    /* HEADER */
+
     .header {
       text-align: center;
       padding-bottom: 20px;
@@ -51,9 +54,11 @@
       font-size: 15px;
     }
 
+    /* RINGKASAN */
+
     .summary {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 12px;
       margin: 22px 0;
     }
@@ -76,6 +81,8 @@
     .summary-card strong {
       font-size: 25px;
     }
+
+    /* TABEL */
 
     .section {
       border: 1px solid #e5e7eb;
@@ -123,11 +130,15 @@
       border-bottom: none;
     }
 
+    /* TOTAL PER JENIS */
+
     .total-row td {
       font-weight: bold;
       background: #f8fafc;
       border-top: 2px solid #d1d5db;
     }
+
+    /* KETERANGAN */
 
     .note {
       margin-top: 16px;
@@ -139,6 +150,8 @@
       color: #6b7280;
       line-height: 1.6;
     }
+
+    /* HASIL AKHIR */
 
     .final-box {
       margin-top: 22px;
@@ -154,20 +167,23 @@
       font-weight: bold;
     }
 
-    .final-total {
-      font-size: 40px;
-      font-weight: bold;
-      margin: 6px 0;
-    }
-
     .final-detail {
       display: flex;
       justify-content: center;
-      gap: 30px;
-      margin-top: 10px;
+      gap: 40px;
+      margin-top: 12px;
       flex-wrap: wrap;
-      font-size: 13px;
+      font-size: 15px;
       color: #4b5563;
+    }
+
+    .final-detail span {
+      min-width: 180px;
+    }
+
+    .final-detail strong {
+      font-size: 25px;
+      color: #1f2933;
     }
 
     .final-box p {
@@ -175,6 +191,8 @@
       color: #6b7280;
       font-size: 12px;
     }
+
+    /* TOMBOL */
 
     .actions {
       display: flex;
@@ -205,7 +223,10 @@
       color: white;
     }
 
+    /* HP */
+
     @media (max-width: 700px) {
+
       body {
         padding: 10px;
       }
@@ -222,12 +243,8 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .final-total {
-        font-size: 34px;
-      }
-
       .final-detail {
-        gap: 15px;
+        gap: 20px;
       }
 
       button {
@@ -241,6 +258,8 @@
       }
     }
 
+    /* MODE GAMBAR LANDSCAPE */
+
     #laporan.capture-mode {
       width: 1200px !important;
       max-width: none !important;
@@ -250,8 +269,9 @@
     }
 
     #laporan.capture-mode .summary {
-      grid-template-columns: repeat(4, 1fr) !important;
+      grid-template-columns: repeat(2, 1fr) !important;
     }
+
   </style>
 </head>
 
@@ -261,10 +281,15 @@
 
   <div id="laporan">
 
+    <!-- HEADER -->
+
     <div class="header">
       <h1>🍩🍢 LAPORAN MAQSHOF IKHWAN</h1>
       <p>Periode 30 Agustus – 19 September 2026</p>
     </div>
+
+
+    <!-- RINGKASAN -->
 
     <div class="summary">
 
@@ -278,17 +303,10 @@
         <strong id="totalGorenganMasuk">0</strong>
       </div>
 
-      <div class="summary-card">
-        <small>TOTAL RETUR</small>
-        <strong id="totalRetur">0</strong>
-      </div>
-
-      <div class="summary-card">
-        <small>TOTAL BERSIH</small>
-        <strong id="totalBersih">0</strong>
-      </div>
-
     </div>
+
+
+    <!-- TABEL -->
 
     <div class="section">
 
@@ -315,6 +333,9 @@
 
     </div>
 
+
+    <!-- RINGKASAN RETUR -->
+
     <div class="note">
 
       <strong>Rincian retur:</strong><br>
@@ -337,39 +358,43 @@
 
       <strong>Catatan:</strong>
       Sisa donat yang tercatat sebagai <em>tidak retur</em>
-      tidak dikurangkan dari total retur.
+      tidak dikurangkan dari retur donat.
 
     </div>
 
+
+    <!-- HASIL AKHIR TERPISAH -->
+
     <div class="final-box">
 
-      <small>TOTAL MAQSHOF IKHWAN SETELAH RETUR</small>
-
-      <div class="final-total">
-        <span id="finalTotal">0</span> PCS
-      </div>
+      <small>HASIL AKHIR SETELAH RETUR</small>
 
       <div class="final-detail">
 
         <span>
           🍩 Donat bersih:
-          <strong id="donatBersih">0</strong>
+          <br>
+          <strong id="donatBersih">0</strong> pcs
         </span>
 
         <span>
           🍢 Gorengan bersih:
-          <strong id="gorenganBersih">0</strong>
+          <br>
+          <strong id="gorenganBersih">0</strong> pcs
         </span>
 
       </div>
 
       <p>
-        Total masuk dikurangi total retur.
+        Masing-masing dihitung dari jumlah masuk dikurangi retur jenis tersebut.
       </p>
 
     </div>
 
   </div>
+
+
+  <!-- TOMBOL -->
 
   <div class="actions">
 
@@ -384,6 +409,7 @@
   </div>
 
 </div>
+
 
 <script>
 
@@ -487,7 +513,7 @@ ikhwan.forEach(item => {
 
 
 /* =========================
-   HITUNG TOTAL
+   HITUNG PER JENIS
 ========================= */
 
 const totalDonatMasuk =
@@ -518,10 +544,6 @@ const totalReturGorengan =
     0
   );
 
-const totalRetur =
-  totalReturDonat +
-  totalReturGorengan;
-
 const donatBersih =
   totalDonatMasuk -
   totalReturDonat;
@@ -529,14 +551,6 @@ const donatBersih =
 const gorenganBersih =
   totalGorenganMasuk -
   totalReturGorengan;
-
-const totalMasuk =
-  totalDonatMasuk +
-  totalGorenganMasuk;
-
-const totalBersih =
-  totalMasuk -
-  totalRetur;
 
 
 /* =========================
@@ -549,20 +563,11 @@ document.getElementById("totalDonatMasuk")
 document.getElementById("totalGorenganMasuk")
   .textContent = totalGorenganMasuk;
 
-document.getElementById("totalRetur")
-  .textContent = totalRetur;
-
-document.getElementById("totalBersih")
-  .textContent = totalBersih;
-
 document.getElementById("donatBersih")
   .textContent = donatBersih;
 
 document.getElementById("gorenganBersih")
   .textContent = gorenganBersih;
-
-document.getElementById("finalTotal")
-  .textContent = totalBersih;
 
 
 /* =========================
@@ -692,38 +697,34 @@ async function kirimWhatsApp() {
       "🍩🍢 LAPORAN MAQSHOF IKHWAN\n" +
       "Periode 30 Agustus – 19 September 2026\n\n" +
 
+      "🍩 DONAT\n" +
       "Donat masuk: " +
       totalDonatMasuk +
       "\n" +
 
-      "Gorengan masuk: " +
-      totalGorenganMasuk +
-      "\n\n" +
-
       "Retur donat: " +
       totalReturDonat +
+      "\n" +
+
+      "Donat bersih: " +
+      donatBersih +
+      " pcs\n\n" +
+
+      "🍢 GORENGAN\n" +
+      "Gorengan masuk: " +
+      totalGorenganMasuk +
       "\n" +
 
       "Retur gorengan: " +
       totalReturGorengan +
       "\n" +
 
-      "Total retur: " +
-      totalRetur +
-      "\n\n" +
-
-      "Donat bersih: " +
-      donatBersih +
-      "\n" +
-
       "Gorengan bersih: " +
       gorenganBersih +
-      "\n" +
-
-      "TOTAL BERSIH: " +
-      totalBersih +
       " pcs";
 
+
+    /* HP: BAGIKAN GAMBAR LANGSUNG */
 
     if (
       navigator.canShare &&
@@ -746,6 +747,8 @@ async function kirimWhatsApp() {
       });
 
     } else {
+
+      /* FALLBACK */
 
       const link =
         document.createElement("a");
@@ -792,3 +795,4 @@ async function kirimWhatsApp() {
 
 </body>
 </html>
+```
