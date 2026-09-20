@@ -1,131 +1,794 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mini Studio</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#0f172a;color:#fff}
-.top{display:flex;gap:8px;padding:10px;background:#111827;align-items:center}
-.top input,.top button{padding:8px 10px;border-radius:8px;border:1px solid #374151;background:#1f2937;color:#fff}
-.layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 56px)}
-.side{border-right:1px solid #374151;padding:10px;overflow:auto}
-.main{padding:10px}
-.item{padding:10px;background:#1f2937;border-radius:8px;margin-bottom:6px;cursor:pointer}
-.item:hover{background:#2563eb}
-textarea{width:100%;height:45%;background:#020617;color:#86efac;border:1px solid #374151;border-radius:8px;padding:10px;font-family:Consolas,monospace}
-iframe{width:100%;height:45%;border:1px solid #374151;background:#fff;border-radius:8px;margin-top:10px}
-#share{width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid #374151;background:#1f2937;color:#fff}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Laporan Maqshof Ikhwan 2026</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #eef1f4;
+      color: #1f2933;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    #laporan {
+      width: 100%;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    }
+
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 8px 0 0;
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 22px 0;
+    }
+
+    .summary-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px 10px;
+      text-align: center;
+      background: #fafafa;
+    }
+
+    .summary-card small {
+      display: block;
+      color: #6b7280;
+      margin-bottom: 7px;
+      font-size: 12px;
+    }
+
+    .summary-card strong {
+      font-size: 25px;
+    }
+
+    .section {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .section-title {
+      padding: 14px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 17px;
+      border-bottom: 1px solid #e5e7eb;
+      background: #f8fafc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #f1f5f9;
+      font-size: 12px;
+      color: #4b5563;
+      white-space: nowrap;
+    }
+
+    th,
+    td {
+      padding: 10px 7px;
+      border-bottom: 1px solid #edf0f2;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+      padding-left: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .total-row td {
+      font-weight: bold;
+      background: #f8fafc;
+      border-top: 2px solid #d1d5db;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+
+    .final-box {
+      margin-top: 22px;
+      border: 2px solid #d1d5db;
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      background: #fafafa;
+    }
+
+    .final-box small {
+      color: #6b7280;
+      font-weight: bold;
+    }
+
+    .final-total {
+      font-size: 40px;
+      font-weight: bold;
+      margin: 6px 0;
+    }
+
+    .final-detail {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    .final-box p {
+      margin: 12px 0 0;
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      min-width: 190px;
+    }
+
+    .btn-image {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      color: #111827;
+    }
+
+    .btn-wa {
+      background: #111827;
+      color: white;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 10px;
+      }
+
+      #laporan {
+        padding: 16px;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .final-total {
+        font-size: 34px;
+      }
+
+      .final-detail {
+        gap: 15px;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      th,
+      td {
+        padding: 9px 5px;
+        font-size: 12px;
+      }
+    }
+
+    #laporan.capture-mode {
+      width: 1200px !important;
+      max-width: none !important;
+      padding: 32px !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+
+    #laporan.capture-mode .summary {
+      grid-template-columns: repeat(4, 1fr) !important;
+    }
+  </style>
 </head>
+
 <body>
+
+<div class="app">
+
+  <div id="laporan">
+
+    <div class="header">
+      <h1>🍩🍢 LAPORAN MAQSHOF IKHWAN</h1>
+      <p>Periode 30 Agustus – 19 September 2026</p>
+    </div>
+
+    <div class="summary">
+
+      <div class="summary-card">
+        <small>DONAT MASUK</small>
+        <strong id="totalDonatMasuk">0</strong>
+      </div>
+
+      <div class="summary-card">
+        <small>GORENGAN MASUK</small>
+        <strong id="totalGorenganMasuk">0</strong>
+      </div>
+
+      <div class="summary-card">
+        <small>TOTAL RETUR</small>
+        <strong id="totalRetur">0</strong>
+      </div>
+
+      <div class="summary-card">
+        <small>TOTAL BERSIH</small>
+        <strong id="totalBersih">0</strong>
+      </div>
+
+    </div>
+
+    <div class="section">
+
+      <div class="section-title">
+        RINCIAN HARIAN
+      </div>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Donat<br>Masuk</th>
+            <th>Gorengan<br>Masuk</th>
+            <th>Retur<br>Donat</th>
+            <th>Retur<br>Gorengan</th>
+            <th>Sisa Donat<br>Tidak Retur</th>
+          </tr>
+        </thead>
+
+        <tbody id="tableIkhwan"></tbody>
+
+      </table>
+
+    </div>
+
+    <div class="note">
+
+      <strong>Rincian retur:</strong><br>
+
+      Gorengan:
+      8/9 = 1,
+      9/9 = 4,
+      12/9 = 4,
+      16/9 = 8,
+      18/9 = 12,
+      19/9 = 4.
+
+      <br>
+
+      Donat:
+      13/9 = 2,
+      16/9 = 1.
+
+      <br><br>
+
+      <strong>Catatan:</strong>
+      Sisa donat yang tercatat sebagai <em>tidak retur</em>
+      tidak dikurangkan dari total retur.
+
+    </div>
+
+    <div class="final-box">
+
+      <small>TOTAL MAQSHOF IKHWAN SETELAH RETUR</small>
+
+      <div class="final-total">
+        <span id="finalTotal">0</span> PCS
+      </div>
+
+      <div class="final-detail">
+
+        <span>
+          🍩 Donat bersih:
+          <strong id="donatBersih">0</strong>
+        </span>
+
+        <span>
+          🍢 Gorengan bersih:
+          <strong id="gorenganBersih">0</strong>
+        </span>
+
+      </div>
+
+      <p>
+        Total masuk dikurangi total retur.
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="actions">
+
+    <button class="btn-image" onclick="jadikanGambar()">
+      🖼️ Jadikan Gambar
+    </button>
+
+    <button class="btn-wa" onclick="kirimWhatsApp()">
+      📤 Kirim / Bagikan WhatsApp
+    </button>
+
+  </div>
+
+</div>
+
 <script>
-const DB="https://bahasa-arab-90f36-default-rtdb.asia-southeast1.firebasedatabase.app";
-const id=new URLSearchParams(location.search).get("id");
-if(id){
- fetch(DB+"/projects/"+encodeURIComponent(id)+".json")
- .then(r=>r.json())
- .then(d=>{
-   if(!d||!d.code){document.body.innerHTML="<h2 style='font-family:sans-serif'>Project tidak ditemukan.</h2>";return;}
-   document.open();document.write(d.code);document.close();
- });
+
+/* =========================
+   DATA IKHWAN
+========================= */
+
+const ikhwan = [
+
+  { tanggal: "30/8", masukDonat: 56, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "31/8", masukDonat: 47, masukGorengan: 125, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "1/9", masukDonat: 42, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "2/9", masukDonat: 60, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "3/9", masukDonat: 50, masukGorengan: 120, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "4/9", masukDonat: 48, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "5/9", masukDonat: 50, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "6/9", masukDonat: 50, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "7/9", masukDonat: 65, masukGorengan: 140, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "8/9", masukDonat: 0, masukGorengan: 135, returDonat: 0, returGorengan: 1, sisaDonat: "-" },
+
+  { tanggal: "9/9", masukDonat: 70, masukGorengan: 130, returDonat: 0, returGorengan: 4, sisaDonat: "-" },
+
+  { tanggal: "10/9", masukDonat: 0, masukGorengan: 0, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "11/9", masukDonat: 70, masukGorengan: 100, returDonat: 0, returGorengan: 0, sisaDonat: 13 },
+
+  { tanggal: "12/9", masukDonat: 54, masukGorengan: 130, returDonat: 0, returGorengan: 4, sisaDonat: 13 },
+
+  { tanggal: "13/9", masukDonat: 50, masukGorengan: 120, returDonat: 2, returGorengan: 0, sisaDonat: 19 },
+
+  { tanggal: "14/9", masukDonat: 46, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: 12 },
+
+  { tanggal: "15/9", masukDonat: 30, masukGorengan: 110, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "16/9", masukDonat: 47, masukGorengan: 130, returDonat: 1, returGorengan: 8, sisaDonat: 7 },
+
+  { tanggal: "17/9", masukDonat: 45, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "18/9", masukDonat: 58, masukGorengan: 130, returDonat: 0, returGorengan: 12, sisaDonat: "-" },
+
+  { tanggal: "19/9", masukDonat: 0, masukGorengan: 130, returDonat: 0, returGorengan: 4, sisaDonat: "-" }
+
+];
+
+
+/* =========================
+   TAMPILKAN TABEL
+========================= */
+
+const tableIkhwan =
+  document.getElementById("tableIkhwan");
+
+ikhwan.forEach(item => {
+
+  const adaDonat =
+    item.masukDonat > 0;
+
+  const adaGorengan =
+    item.masukGorengan > 0;
+
+  tableIkhwan.innerHTML += `
+
+    <tr>
+
+      <td>${item.tanggal}</td>
+
+      <td>
+        ${adaDonat ? item.masukDonat : "-"}
+      </td>
+
+      <td>
+        ${adaGorengan ? item.masukGorengan : "-"}
+      </td>
+
+      <td>
+        ${item.returDonat > 0 ? item.returDonat : "-"}
+      </td>
+
+      <td>
+        ${item.returGorengan > 0 ? item.returGorengan : "-"}
+      </td>
+
+      <td>
+        ${item.sisaDonat !== "-" ? item.sisaDonat : "-"}
+      </td>
+
+    </tr>
+
+  `;
+
+});
+
+
+/* =========================
+   HITUNG TOTAL
+========================= */
+
+const totalDonatMasuk =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.masukDonat,
+    0
+  );
+
+const totalGorenganMasuk =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.masukGorengan,
+    0
+  );
+
+const totalReturDonat =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.returDonat,
+    0
+  );
+
+const totalReturGorengan =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.returGorengan,
+    0
+  );
+
+const totalRetur =
+  totalReturDonat +
+  totalReturGorengan;
+
+const donatBersih =
+  totalDonatMasuk -
+  totalReturDonat;
+
+const gorenganBersih =
+  totalGorenganMasuk -
+  totalReturGorengan;
+
+const totalMasuk =
+  totalDonatMasuk +
+  totalGorenganMasuk;
+
+const totalBersih =
+  totalMasuk -
+  totalRetur;
+
+
+/* =========================
+   TAMPILKAN TOTAL
+========================= */
+
+document.getElementById("totalDonatMasuk")
+  .textContent = totalDonatMasuk;
+
+document.getElementById("totalGorenganMasuk")
+  .textContent = totalGorenganMasuk;
+
+document.getElementById("totalRetur")
+  .textContent = totalRetur;
+
+document.getElementById("totalBersih")
+  .textContent = totalBersih;
+
+document.getElementById("donatBersih")
+  .textContent = donatBersih;
+
+document.getElementById("gorenganBersih")
+  .textContent = gorenganBersih;
+
+document.getElementById("finalTotal")
+  .textContent = totalBersih;
+
+
+/* =========================
+   BARIS TOTAL
+========================= */
+
+tableIkhwan.innerHTML += `
+
+  <tr class="total-row">
+
+    <td>TOTAL</td>
+
+    <td>${totalDonatMasuk}</td>
+
+    <td>${totalGorenganMasuk}</td>
+
+    <td>${totalReturDonat}</td>
+
+    <td>${totalReturGorengan}</td>
+
+    <td>—</td>
+
+  </tr>
+
+`;
+
+
+/* =========================
+   BUAT CANVAS
+========================= */
+
+async function buatCanvas() {
+
+  const laporan =
+    document.getElementById("laporan");
+
+  laporan.classList.add("capture-mode");
+
+  await new Promise(resolve =>
+    setTimeout(resolve, 300)
+  );
+
+  const canvas =
+    await html2canvas(
+      laporan,
+      {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        width: 1200,
+        windowWidth: 1200,
+        scrollX: 0,
+        scrollY: -window.scrollY
+      }
+    );
+
+  laporan.classList.remove("capture-mode");
+
+  return canvas;
 }
+
+
+/* =========================
+   JADIKAN GAMBAR
+========================= */
+
+async function jadikanGambar() {
+
+  try {
+
+    const canvas =
+      await buatCanvas();
+
+    const link =
+      document.createElement("a");
+
+    link.download =
+      "Laporan-Maqshof-Ikhwan-30-8-19-9-2026.png";
+
+    link.href =
+      canvas.toDataURL("image/png");
+
+    link.click();
+
+  } catch (error) {
+
+    alert(
+      "Gagal membuat gambar."
+    );
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* =========================
+   KIRIM WHATSAPP
+========================= */
+
+async function kirimWhatsApp() {
+
+  try {
+
+    const canvas =
+      await buatCanvas();
+
+    const blob =
+      await new Promise(resolve =>
+        canvas.toBlob(
+          resolve,
+          "image/png"
+        )
+      );
+
+    const file =
+      new File(
+        [blob],
+        "Laporan-Maqshof-Ikhwan-30-8-19-9-2026.png",
+        {
+          type: "image/png"
+        }
+      );
+
+    const pesan =
+      "🍩🍢 LAPORAN MAQSHOF IKHWAN\n" +
+      "Periode 30 Agustus – 19 September 2026\n\n" +
+
+      "Donat masuk: " +
+      totalDonatMasuk +
+      "\n" +
+
+      "Gorengan masuk: " +
+      totalGorenganMasuk +
+      "\n\n" +
+
+      "Retur donat: " +
+      totalReturDonat +
+      "\n" +
+
+      "Retur gorengan: " +
+      totalReturGorengan +
+      "\n" +
+
+      "Total retur: " +
+      totalRetur +
+      "\n\n" +
+
+      "Donat bersih: " +
+      donatBersih +
+      "\n" +
+
+      "Gorengan bersih: " +
+      gorenganBersih +
+      "\n" +
+
+      "TOTAL BERSIH: " +
+      totalBersih +
+      " pcs";
+
+
+    if (
+      navigator.canShare &&
+      navigator.canShare({
+        files: [file]
+      })
+    ) {
+
+      await navigator.share({
+
+        title:
+          "Laporan Maqshof Ikhwan",
+
+        text:
+          pesan,
+
+        files:
+          [file]
+
+      });
+
+    } else {
+
+      const link =
+        document.createElement("a");
+
+      link.download =
+        "Laporan-Maqshof-Ikhwan-30-8-19-9-2026.png";
+
+      link.href =
+        URL.createObjectURL(blob);
+
+      link.click();
+
+      setTimeout(() => {
+
+        window.open(
+          "https://wa.me/?text=" +
+          encodeURIComponent(pesan),
+          "_blank"
+        );
+
+      }, 800);
+
+    }
+
+  } catch (error) {
+
+    if (
+      error.name !== "AbortError"
+    ) {
+
+      console.error(error);
+
+      alert(
+        "Gagal membagikan laporan."
+      );
+
+    }
+
+  }
+
+}
+
 </script>
 
-<div id="app">
-<div class="top">
-<input id="name" placeholder="Nama project">
-<button id="saveBtn">💾 Save</button>
-<button id="previewBtn">▶ Preview</button>
-<button id="copyBtn">🔗 Copy Link</button>
-<button id="openBtn">🌐 Open</button>
-</div>
-<div class="layout">
-<div class="side">
-<h3>📁 Open</h3>
-<div id="files"></div>
-</div>
-<div class="main">
-<textarea id="editor"><!DOCTYPE html>
-<html>
-<head><title>Halo</title></head>
-<body>
-<h1>Hello World</h1>
-<p>Edit saya...</p>
-</body>
-</html></textarea>
-<input id="share" readonly placeholder="Link project">
-<iframe id="preview"></iframe>
-</div>
-</div>
-</div>
-
-<script>
-if(id){document.getElementById("app").style.display="none";}
-
-if(!id){
-const editor=document.getElementById("editor");
-const frame=document.getElementById("preview");
-const files=document.getElementById("files");
-const nameInput=document.getElementById("name");
-const share=document.getElementById("share");
-
-function render(){
- const doc=frame.contentDocument;
- doc.open();doc.write(editor.value);doc.close();
-}
-function linkOf(n){return location.origin+location.pathname+"?id="+encodeURIComponent(n);}
-
-async function loadFiles(){
- files.innerHTML="Memuat...";
- try{
-  const res=await fetch(DB+"/projects.json");
-  const data=await res.json();
-  files.innerHTML="";
-  if(!data){files.innerHTML="<i>Belum ada project</i>";return;}
-  Object.keys(data).sort().forEach(k=>{
-    const d=document.createElement("div");
-    d.className="item";
-    d.textContent=k;
-    d.onclick=async()=>{
-      const r=await fetch(DB+"/projects/"+encodeURIComponent(k)+".json");
-      const p=await r.json();
-      if(!p)return;
-      nameInput.value=k;
-      editor.value=p.code||"";
-      share.value=linkOf(k);
-      render();
-    };
-    files.appendChild(d);
-  });
- }catch(e){
-  files.innerHTML="<b>Gagal memuat.</b>";
- }
-}
-
-document.getElementById("saveBtn").onclick=async()=>{
- const n=nameInput.value.trim();
- if(!n){alert("Masukkan nama project.");return;}
- const res=await fetch(DB+"/projects/"+encodeURIComponent(n)+".json",{
-   method:"PUT",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({code:editor.value,updated:Date.now()})
- });
- if(res.ok){
-   share.value=linkOf(n);
-   await loadFiles();
-   alert("Berhasil disimpan.");
- }else alert("Gagal menyimpan. Periksa Firebase Rules.");
-};
-
-document.getElementById("previewBtn").onclick=render;
-document.getElementById("copyBtn").onclick=()=>{if(!share.value)return; navigator.clipboard.writeText(share.value); alert("Link disalin.");};
-document.getElementById("openBtn").onclick=()=>{if(share.value) window.open(share.value,"_blank");};
-
-editor.addEventListener("input",render);
-render();
-loadFiles();
-}
-</script>
 </body>
 </html>
