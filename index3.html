@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Laporan Donat Agustus 2026</title>
+  <title>Laporan Maqshof Ikhwan 2026</title>
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
@@ -26,10 +27,6 @@
       margin: auto;
     }
 
-    /* =========================
-       LAPORAN
-    ========================= */
-
     #laporan {
       width: 100%;
       background: #ffffff;
@@ -37,6 +34,8 @@
       border-radius: 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,.06);
     }
+
+    /* HEADER */
 
     .header {
       text-align: center;
@@ -47,7 +46,6 @@
     .header h1 {
       margin: 0;
       font-size: 28px;
-      letter-spacing: 1px;
     }
 
     .header p {
@@ -56,9 +54,7 @@
       font-size: 15px;
     }
 
-    /* =========================
-       RINGKASAN
-    ========================= */
+    /* RINGKASAN */
 
     .summary {
       display: grid;
@@ -86,16 +82,7 @@
       font-size: 25px;
     }
 
-    /* =========================
-       IKHWAN & AKHWAT
-    ========================= */
-
-    .laporan-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
+    /* TABEL */
 
     .section {
       border: 1px solid #e5e7eb;
@@ -111,7 +98,6 @@
       font-size: 17px;
       border-bottom: 1px solid #e5e7eb;
       background: #f8fafc;
-      letter-spacing: .5px;
     }
 
     table {
@@ -144,9 +130,28 @@
       border-bottom: none;
     }
 
-    /* =========================
-       TOTAL
-    ========================= */
+    /* TOTAL BARIS */
+
+    .total-row td {
+      font-weight: bold;
+      background: #f8fafc;
+      border-top: 2px solid #d1d5db;
+    }
+
+    /* KETERANGAN */
+
+    .note {
+      margin-top: 16px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+
+    /* HASIL AKHIR */
 
     .final-box {
       margin-top: 22px;
@@ -160,7 +165,6 @@
     .final-box small {
       color: #6b7280;
       font-weight: bold;
-      letter-spacing: .5px;
     }
 
     .final-total {
@@ -169,15 +173,23 @@
       margin: 6px 0;
     }
 
+    .final-detail {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
     .final-box p {
-      margin: 0;
+      margin: 12px 0 0;
       color: #6b7280;
       font-size: 12px;
     }
 
-    /* =========================
-       TOMBOL
-    ========================= */
+    /* TOMBOL */
 
     .actions {
       display: flex;
@@ -208,13 +220,7 @@
       color: white;
     }
 
-    button:active {
-      transform: scale(.98);
-    }
-
-    /* =========================
-       RESPONSIVE TAMPILAN HP
-    ========================= */
+    /* HP */
 
     @media (max-width: 700px) {
 
@@ -224,7 +230,6 @@
 
       #laporan {
         padding: 16px;
-        border-radius: 14px;
       }
 
       .header h1 {
@@ -235,25 +240,26 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
-      /* DI HP BOLEH BERTUMPUK */
-      .laporan-grid {
-        grid-template-columns: 1fr;
-      }
-
       .final-total {
         font-size: 34px;
+      }
+
+      .final-detail {
+        gap: 15px;
       }
 
       button {
         width: 100%;
       }
 
+      th,
+      td {
+        padding: 9px 5px;
+        font-size: 12px;
+      }
     }
 
-    /* =========================
-       MODE KHUSUS GAMBAR
-       PAKSA LANDSCAPE
-    ========================= */
+    /* MODE GAMBAR LANDSCAPE */
 
     #laporan.capture-mode {
       width: 1200px !important;
@@ -267,521 +273,583 @@
       grid-template-columns: repeat(4, 1fr) !important;
     }
 
-    /* IKHWAN KIRI - AKHWAT KANAN */
-    #laporan.capture-mode .laporan-grid {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr !important;
-      gap: 16px !important;
-    }
-
-    #laporan.capture-mode .section {
-      width: auto !important;
-    }
-
-    #laporan.capture-mode th,
-    #laporan.capture-mode td {
-      padding: 10px 7px !important;
-      font-size: 13px !important;
-    }
-
   </style>
+
 </head>
 
 <body>
 
 <div class="app">
 
-  <!-- =========================
-       LAPORAN
-  ========================== -->
-
   <div id="laporan">
 
-    <div class="header">
-      <h1>🍩 LAPORAN DONAT</h1>
-      <p>Periode 10–21 Agustus 2026</p>
-    </div>
+```
+<!-- HEADER -->
+
+<div class="header">
+  <h1>🍩🍢 LAPORAN MAQSHOF IKHWAN</h1>
+  <p>Periode 30 Agustus – 19 September 2026</p>
+</div>
 
 
-    <!-- RINGKASAN -->
+<!-- RINGKASAN -->
 
-    <div class="summary">
+<div class="summary">
 
-      <div class="summary-card">
-        <small>MASUK IKHWAN</small>
-        <strong id="masukIkhwan">0</strong>
-      </div>
-
-      <div class="summary-card">
-        <small>MASUK AKHWAT</small>
-        <strong id="masukAkhwat">0</strong>
-      </div>
-
-      <div class="summary-card">
-        <small>RETUR IKHWAN</small>
-        <strong id="returIkhwan">0</strong>
-      </div>
-
-      <div class="summary-card">
-        <small>TOTAL AKHIR</small>
-        <strong id="totalAkhirAtas">0</strong>
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         IKHWAN DAN AKHWAT
-    ========================== -->
-
-    <div class="laporan-grid">
-
-
-      <!-- IKHWAN KIRI -->
-
-      <div class="section">
-
-        <div class="section-title">
-          IKHWAN
-        </div>
-
-        <table>
-
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Masuk</th>
-              <th>Retur</th>
-              <th>Terjual</th>
-            </tr>
-          </thead>
-
-          <tbody id="tableIkhwan"></tbody>
-
-        </table>
-
-      </div>
-
-
-      <!-- AKHWAT KANAN -->
-
-      <div class="section">
-
-        <div class="section-title">
-          AKHWAT
-        </div>
-
-        <table>
-
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Masuk</th>
-              <th>Sisa</th>
-              <th>Keterangan</th>
-            </tr>
-          </thead>
-
-          <tbody id="tableAkhwat"></tbody>
-
-        </table>
-
-      </div>
-
-    </div>
-
-
-    <!-- TOTAL -->
-
-    <div class="final-box">
-
-      <small>TOTAL DONAT KESELURUHAN</small>
-
-      <div class="final-total">
-        <span id="finalTotal">0</span> DONAT
-      </div>
-
-      <p>
-        Total masuk dikurangi retur yang tercatat.
-      </p>
-
-    </div>
-
+  <div class="summary-card">
+    <small>DONAT MASUK</small>
+    <strong id="totalDonatMasuk">0</strong>
   </div>
 
+  <div class="summary-card">
+    <small>GORENGAN MASUK</small>
+    <strong id="totalGorenganMasuk">0</strong>
+  </div>
 
-  <!-- TOMBOL -->
+  <div class="summary-card">
+    <small>TOTAL RETUR</small>
+    <strong id="totalRetur">0</strong>
+  </div>
 
-  <div class="actions">
-
-    <button
-      class="btn-image"
-      onclick="jadikanGambar()"
-    >
-      🖼️ Jadikan Gambar
-    </button>
-
-    <button
-      class="btn-wa"
-      onclick="kirimWhatsApp()"
-    >
-      📤 Kirim / Bagikan WhatsApp
-    </button>
-
+  <div class="summary-card">
+    <small>TOTAL BERSIH</small>
+    <strong id="totalBersih">0</strong>
   </div>
 
 </div>
 
 
+<!-- TABEL -->
+
+<div class="section">
+
+  <div class="section-title">
+    RINCIAN HARIAN
+  </div>
+
+  <table>
+
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Donat<br>Masuk</th>
+        <th>Gorengan<br>Masuk</th>
+        <th>Retur<br>Donat</th>
+        <th>Retur<br>Gorengan</th>
+        <th>Sisa Donat<br>Tidak Retur</th>
+      </tr>
+    </thead>
+
+    <tbody id="tableIkhwan"></tbody>
+
+  </table>
+
+</div>
+
+
+<!-- RINGKASAN RETUR -->
+
+<div class="note">
+
+  <strong>Rincian retur:</strong><br>
+
+  Gorengan:
+  8/9 = 1,
+  9/9 = 4,
+  12/9 = 4,
+  16/9 = 8,
+  18/9 = 12,
+  19/9 = 4.
+  <br>
+
+  Donat:
+  13/9 = 2,
+  16/9 = 1.
+
+  <br><br>
+
+  <strong>Catatan:</strong>
+  Sisa donat yang tercatat sebagai <em>tidak retur</em>
+  tidak dikurangkan dari total retur.
+
+</div>
+
+
+<!-- HASIL AKHIR -->
+
+<div class="final-box">
+
+  <small>TOTAL MAQSHOF IKHWAN SETELAH RETUR</small>
+
+  <div class="final-total">
+    <span id="finalTotal">0</span> PCS
+  </div>
+
+  <div class="final-detail">
+
+    <span>
+      🍩 Donat bersih:
+      <strong id="donatBersih">0</strong>
+    </span>
+
+    <span>
+      🍢 Gorengan bersih:
+      <strong id="gorenganBersih">0</strong>
+    </span>
+
+  </div>
+
+  <p>
+    Total masuk dikurangi total retur.
+  </p>
+
+</div>
+```
+
+  </div>
+
+  <!-- TOMBOL -->
+
+  <div class="actions">
+
+```
+<button class="btn-image" onclick="jadikanGambar()">
+  🖼️ Jadikan Gambar
+</button>
+
+<button class="btn-wa" onclick="kirimWhatsApp()">
+  📤 Kirim / Bagikan WhatsApp
+</button>
+```
+
+  </div>
+
+</div>
+
 <script>
 
-  /* =========================
-     DATA IKHWAN
-  ========================= */
+/* =========================
+   DATA IKHWAN
+========================= */
 
-  const ikhwan = [
+const ikhwan = [
 
-    { tanggal: "10/8", masuk: 40, retur: 0 },
-    { tanggal: "11/8", masuk: 42, retur: 0 },
-    { tanggal: "12/8", masuk: 41, retur: 0 },
-    { tanggal: "13/8", masuk: 50, retur: 0 },
-    { tanggal: "14/8", masuk: 50, retur: 0 },
-    { tanggal: "15/8", masuk: 50, retur: 0 },
-    { tanggal: "16/8", masuk: 50, retur: 0 },
-    { tanggal: "17/8", masuk: 50, retur: 0 },
-    { tanggal: "18/8", masuk: 55, retur: 0 },
-    { tanggal: "19/8", masuk: 56, retur: 0 },
-    { tanggal: "20/8", masuk: 57, retur: 0 },
-    { tanggal: "21/8", masuk: 50, retur: 1 }
+  { tanggal: "30/8", masukDonat: 56, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-  ];
+  { tanggal: "31/8", masukDonat: 47, masukGorengan: 125, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
+  { tanggal: "1/9", masukDonat: 42, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-  /* =========================
-     DATA AKHWAT
-  ========================= */
+  { tanggal: "2/9", masukDonat: 60, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-  const akhwat = [
+  { tanggal: "3/9", masukDonat: 50, masukGorengan: 120, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-    { tanggal: "10/8", masuk: 32, sisa: "-", ket: "-" },
-    { tanggal: "11/8", masuk: 35, sisa: 0, ket: "Habis" },
-    { tanggal: "12/8", masuk: 35, sisa: "-", ket: "-" },
-    { tanggal: "13/8", masuk: 42, sisa: 1, ket: "Sisa" },
-    { tanggal: "14/8", masuk: 40, sisa: "-", ket: "-" },
-    { tanggal: "15/8", masuk: 35, sisa: "-", ket: "-" },
-    { tanggal: "16/8", masuk: 43, sisa: 1, ket: "Tidak retur" },
-    { tanggal: "17/8", masuk: 37, sisa: "-", ket: "-" },
-    { tanggal: "18/8", masuk: 40, sisa: "-", ket: "-" },
-    { tanggal: "19/8", masuk: 40, sisa: 2, ket: "Sisa" },
-    { tanggal: "20/8", masuk: 40, sisa: 16, ket: "Tidak retur" },
-    { tanggal: "21/8", masuk: 30, sisa: "-", ket: "-" }
+  { tanggal: "4/9", masukDonat: 48, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-  ];
+  { tanggal: "5/9", masukDonat: 50, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
+  { tanggal: "6/9", masukDonat: 50, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-  /* =========================
-     TAMPILKAN IKHWAN
-  ========================= */
+  { tanggal: "7/9", masukDonat: 65, masukGorengan: 140, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-  const tableIkhwan =
-    document.getElementById("tableIkhwan");
+  { tanggal: "8/9", masukDonat: 0, masukGorengan: 135, returDonat: 0, returGorengan: 1, sisaDonat: "-" },
 
-  ikhwan.forEach(item => {
+  { tanggal: "9/9", masukDonat: 70, masukGorengan: 130, returDonat: 0, returGorengan: 4, sisaDonat: "-" },
 
-    const terjual =
-      item.masuk - item.retur;
+  { tanggal: "10/9", masukDonat: 0, masukGorengan: 0, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
 
-    tableIkhwan.innerHTML += `
-      <tr>
-        <td>${item.tanggal}</td>
-        <td>${item.masuk}</td>
-        <td>${item.retur > 0 ? item.retur : "-"}</td>
-        <td>${terjual}</td>
-      </tr>
-    `;
+  { tanggal: "11/9", masukDonat: 70, masukGorengan: 100, returDonat: 0, returGorengan: 0, sisaDonat: 13 },
 
-  });
+  { tanggal: "12/9", masukDonat: 54, masukGorengan: 130, returDonat: 0, returGorengan: 4, sisaDonat: 13 },
+
+  { tanggal: "13/9", masukDonat: 50, masukGorengan: 120, returDonat: 2, returGorengan: 0, sisaDonat: 19 },
+
+  { tanggal: "14/9", masukDonat: 46, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: 12 },
+
+  { tanggal: "15/9", masukDonat: 30, masukGorengan: 110, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "16/9", masukDonat: 47, masukGorengan: 130, returDonat: 1, returGorengan: 8, sisaDonat: 7 },
+
+  { tanggal: "17/9", masukDonat: 45, masukGorengan: 130, returDonat: 0, returGorengan: 0, sisaDonat: "-" },
+
+  { tanggal: "18/9", masukDonat: 58, masukGorengan: 130, returDonat: 0, returGorengan: 12, sisaDonat: "-" },
+
+  { tanggal: "19/9", masukDonat: 0, masukGorengan: 130, returDonat: 0, returGorengan: 4, sisaDonat: "-" }
+
+];
 
 
-  /* =========================
-     TAMPILKAN AKHWAT
-  ========================= */
+/* =========================
+   TAMPILKAN TABEL
+========================= */
 
-  const tableAkhwat =
-    document.getElementById("tableAkhwat");
-
-  akhwat.forEach(item => {
-
-    tableAkhwat.innerHTML += `
-      <tr>
-        <td>${item.tanggal}</td>
-        <td>${item.masuk}</td>
-        <td>${item.sisa}</td>
-        <td>${item.ket}</td>
-      </tr>
-    `;
-
-  });
+const tableIkhwan =
+  document.getElementById("tableIkhwan");
 
 
-  /* =========================
-     HITUNG TOTAL
-  ========================= */
+ikhwan.forEach(item => {
 
-  const totalMasukIkhwan =
-    ikhwan.reduce(
-      (total, item) => total + item.masuk,
-      0
+  const adaDonat =
+    item.masukDonat > 0;
+
+  const adaGorengan =
+    item.masukGorengan > 0;
+
+  tableIkhwan.innerHTML += `
+
+    <tr>
+
+      <td>${item.tanggal}</td>
+
+      <td>
+        ${adaDonat ? item.masukDonat : "-"}
+      </td>
+
+      <td>
+        ${adaGorengan ? item.masukGorengan : "-"}
+      </td>
+
+      <td>
+        ${item.returDonat > 0 ? item.returDonat : "-"}
+      </td>
+
+      <td>
+        ${item.returGorengan > 0 ? item.returGorengan : "-"}
+      </td>
+
+      <td>
+        ${item.sisaDonat !== "-" ? item.sisaDonat : "-"}
+      </td>
+
+    </tr>
+
+  `;
+
+});
+
+
+/* =========================
+   HITUNG TOTAL
+========================= */
+
+const totalDonatMasuk =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.masukDonat,
+    0
+  );
+
+
+const totalGorenganMasuk =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.masukGorengan,
+    0
+  );
+
+
+const totalReturDonat =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.returDonat,
+    0
+  );
+
+
+const totalReturGorengan =
+  ikhwan.reduce(
+    (total, item) =>
+      total + item.returGorengan,
+    0
+  );
+
+
+const totalRetur =
+  totalReturDonat +
+  totalReturGorengan;
+
+
+const donatBersih =
+  totalDonatMasuk -
+  totalReturDonat;
+
+
+const gorenganBersih =
+  totalGorenganMasuk -
+  totalReturGorengan;
+
+
+const totalMasuk =
+  totalDonatMasuk +
+  totalGorenganMasuk;
+
+
+const totalBersih =
+  totalMasuk -
+  totalRetur;
+
+
+/* =========================
+   TAMPILKAN TOTAL
+========================= */
+
+document.getElementById("totalDonatMasuk")
+  .textContent = totalDonatMasuk;
+
+
+document.getElementById("totalGorenganMasuk")
+  .textContent = totalGorenganMasuk;
+
+
+document.getElementById("totalRetur")
+  .textContent = totalRetur;
+
+
+document.getElementById("totalBersih")
+  .textContent = totalBersih;
+
+
+document.getElementById("donatBersih")
+  .textContent = donatBersih;
+
+
+document.getElementById("gorenganBersih")
+  .textContent = gorenganBersih;
+
+
+document.getElementById("finalTotal")
+  .textContent = totalBersih;
+
+
+/* =========================
+   BARIS TOTAL
+========================= */
+
+tableIkhwan.innerHTML += `
+
+  <tr class="total-row">
+
+    <td>TOTAL</td>
+
+    <td>${totalDonatMasuk}</td>
+
+    <td>${totalGorenganMasuk}</td>
+
+    <td>${totalReturDonat}</td>
+
+    <td>${totalReturGorengan}</td>
+
+    <td>—</td>
+
+  </tr>
+
+`;
+
+
+/* =========================
+   BUAT CANVAS
+========================= */
+
+async function buatCanvas() {
+
+  const laporan =
+    document.getElementById("laporan");
+
+  laporan.classList.add("capture-mode");
+
+  await new Promise(resolve =>
+    setTimeout(resolve, 300)
+  );
+
+  const canvas =
+    await html2canvas(
+      laporan,
+      {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        width: 1200,
+        windowWidth: 1200,
+        scrollX: 0,
+        scrollY: -window.scrollY
+      }
     );
 
-  const totalReturIkhwan =
-    ikhwan.reduce(
-      (total, item) => total + item.retur,
-      0
-    );
+  laporan.classList.remove("capture-mode");
 
-  const totalMasukAkhwat =
-    akhwat.reduce(
-      (total, item) => total + item.masuk,
-      0
-    );
-
-  const totalMasukSemua =
-    totalMasukIkhwan +
-    totalMasukAkhwat;
-
-  const totalAkhir =
-    totalMasukSemua -
-    totalReturIkhwan;
+  return canvas;
+}
 
 
-  /* =========================
-     TAMPILKAN TOTAL
-  ========================= */
+/* =========================
+   JADIKAN GAMBAR
+========================= */
 
-  document.getElementById("masukIkhwan")
-    .textContent = totalMasukIkhwan;
+async function jadikanGambar() {
 
-  document.getElementById("masukAkhwat")
-    .textContent = totalMasukAkhwat;
-
-  document.getElementById("returIkhwan")
-    .textContent = totalReturIkhwan;
-
-  document.getElementById("totalAkhirAtas")
-    .textContent = totalAkhir;
-
-  document.getElementById("finalTotal")
-    .textContent = totalAkhir;
-
-
-  /* =========================
-     BUAT CANVAS LANDSCAPE
-  ========================= */
-
-  async function buatCanvas() {
-
-    const laporan =
-      document.getElementById("laporan");
-
-    /*
-      Aktifkan mode gambar.
-      Ini memaksa:
-      IKHWAN KIRI
-      AKHWAT KANAN
-    */
-
-    laporan.classList.add("capture-mode");
-
-    /*
-      Tunggu browser merender ulang
-      layout menjadi landscape
-    */
-
-    await new Promise(resolve =>
-      setTimeout(resolve, 300)
-    );
+  try {
 
     const canvas =
-      await html2canvas(
-        laporan,
-        {
-          scale: 2,
-          backgroundColor: "#ffffff",
-          useCORS: true,
-          width: 1200,
-          windowWidth: 1200,
-          scrollX: 0,
-          scrollY: -window.scrollY
-        }
-      );
+      await buatCanvas();
 
-    /*
-      Kembalikan tampilan normal
-    */
+    const link =
+      document.createElement("a");
 
-    laporan.classList.remove("capture-mode");
+    link.download =
+      "Laporan-Maqshof-Ikhwan-30-8-19-9-2026.png";
 
-    return canvas;
+    link.href =
+      canvas.toDataURL("image/png");
+
+    link.click();
+
+  } catch (error) {
+
+    alert(
+      "Gagal membuat gambar."
+    );
+
+    console.error(error);
 
   }
 
+}
 
-  /* =========================
-     JADIKAN GAMBAR
-  ========================= */
 
-  async function jadikanGambar() {
+/* =========================
+   KIRIM WHATSAPP
+========================= */
 
-    try {
+async function kirimWhatsApp() {
 
-      const canvas =
-        await buatCanvas();
+  try {
+
+    const canvas =
+      await buatCanvas();
+
+    const blob =
+      await new Promise(resolve =>
+        canvas.toBlob(
+          resolve,
+          "image/png"
+        )
+      );
+
+
+    const file =
+      new File(
+        [blob],
+        "Laporan-Maqshof-Ikhwan-30-8-19-9-2026.png",
+        {
+          type: "image/png"
+        }
+      );
+
+
+    const pesan =
+      "🍩🍢 LAPORAN MAQSHOF IKHWAN\n" +
+      "Periode 30 Agustus – 19 September 2026\n\n" +
+
+      "Donat masuk: " +
+      totalDonatMasuk +
+      "\n" +
+
+      "Gorengan masuk: " +
+      totalGorenganMasuk +
+      "\n\n" +
+
+      "Retur donat: " +
+      totalReturDonat +
+      "\n" +
+
+      "Retur gorengan: " +
+      totalReturGorengan +
+      "\n" +
+
+      "Total retur: " +
+      totalRetur +
+      "\n\n" +
+
+      "Donat bersih: " +
+      donatBersih +
+      "\n" +
+
+      "Gorengan bersih: " +
+      gorenganBersih +
+      "\n" +
+
+      "TOTAL BERSIH: " +
+      totalBersih +
+      " pcs";
+
+
+    /* HP: BAGIKAN GAMBAR LANGSUNG */
+
+    if (
+      navigator.canShare &&
+      navigator.canShare({
+        files: [file]
+      })
+    ) {
+
+      await navigator.share({
+
+        title:
+          "Laporan Maqshof Ikhwan",
+
+        text:
+          pesan,
+
+        files:
+          [file]
+
+      });
+
+    } else {
+
+      /* FALLBACK */
 
       const link =
         document.createElement("a");
 
       link.download =
-        "Laporan-Donat-10-21-Agustus-2026.png";
+        "Laporan-Maqshof-Ikhwan-30-8-19-9-2026.png";
 
       link.href =
-        canvas.toDataURL("image/png");
+        URL.createObjectURL(blob);
 
       link.click();
 
+
+      setTimeout(() => {
+
+        window.open(
+          "https://wa.me/?text=" +
+          encodeURIComponent(pesan),
+          "_blank"
+        );
+
+      }, 800);
+
     }
 
-    catch (error) {
+  } catch (error) {
 
-      alert(
-        "Gagal membuat gambar. Coba lagi."
-      );
+    if (
+      error.name !== "AbortError"
+    ) {
 
       console.error(error);
 
-    }
-
-  }
-
-
-  /* =========================
-     KIRIM / BAGIKAN WA
-  ========================= */
-
-  async function kirimWhatsApp() {
-
-    try {
-
-      const canvas =
-        await buatCanvas();
-
-      const blob =
-        await new Promise(resolve =>
-          canvas.toBlob(
-            resolve,
-            "image/png"
-          )
-        );
-
-      const file =
-        new File(
-          [blob],
-          "Laporan-Donat-10-21-Agustus-2026.png",
-          {
-            type: "image/png"
-          }
-        );
-
-      const pesan =
-        "🍩 Laporan Donat\n" +
-        "Periode 10–21 Agustus 2026\n\n" +
-        "Ikhwan masuk: " +
-        totalMasukIkhwan +
-        "\nAkhwat masuk: " +
-        totalMasukAkhwat +
-        "\nRetur Ikhwan: " +
-        totalReturIkhwan +
-        "\nTotal akhir: " +
-        totalAkhir +
-        " donat";
-
-
-      /*
-        HP modern:
-        buka menu bagikan dan sertakan GAMBAR
-      */
-
-      if (
-        navigator.canShare &&
-        navigator.canShare({
-          files: [file]
-        })
-      ) {
-
-        await navigator.share({
-          title: "Laporan Donat",
-          text: pesan,
-          files: [file]
-        });
-
-      }
-
-      else {
-
-        /*
-          Fallback:
-          gambar diunduh,
-          lalu WhatsApp dibuka
-        */
-
-        const link =
-          document.createElement("a");
-
-        link.download =
-          "Laporan-Donat-10-21-Agustus-2026.png";
-
-        link.href =
-          URL.createObjectURL(blob);
-
-        link.click();
-
-
-        setTimeout(() => {
-
-          window.open(
-            "https://wa.me/?text=" +
-            encodeURIComponent(pesan),
-            "_blank"
-          );
-
-        }, 800);
-
-      }
-
-    }
-
-    catch (error) {
-
-      /*
-        User membatalkan share
-        bukan dianggap error besar
-      */
-
-      if (
-        error.name !== "AbortError"
-      ) {
-
-        console.error(error);
-
-        alert(
-          "Gagal membagikan laporan."
-        );
-
-      }
+      alert(
+        "Gagal membagikan laporan."
+      );
 
     }
 
   }
+
+}
 
 </script>
 
